@@ -18,6 +18,7 @@ type apiTest struct {
 	method           string
 	body             []byte
 	statusCode       int
+	setup            func(db *repo.Database) error
 	expectedResponse func() ([]byte, error)
 }
 
@@ -31,13 +32,24 @@ func runAPITests(t *testing.T, tests apiTests) {
 		db: db,
 	}
 
-	ts := httptest.NewServer(server.newV1Router())
+	r := server.newV1Router()
+	ts := httptest.NewServer(r)
 	defer ts.Close()
 
+	var cookies []*http.Cookie
 	for _, test := range tests {
+		if test.setup != nil {
+			if err := test.setup(db); err != nil {
+				t.Fatal(err)
+			}
+		}
+
 		req, err := http.NewRequest(test.method, fmt.Sprintf("%s%s", ts.URL, test.path), bytes.NewReader(test.body))
 		if err != nil {
 			t.Fatal(err)
+		}
+		for _, cookie := range cookies {
+			req.AddCookie(cookie)
 		}
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -47,6 +59,10 @@ func runAPITests(t *testing.T, tests apiTests) {
 			t.Errorf("%s. Expected status code %d, got %d", test.name, test.statusCode, res.StatusCode)
 			continue
 		}
+		if len(res.Cookies()) > 0 {
+			cookies = res.Cookies()
+		}
+
 		response, err := ioutil.ReadAll(res.Body)
 		res.Body.Close()
 		if err != nil {

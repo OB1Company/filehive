@@ -1,13 +1,17 @@
 package app
 
 import (
+	"context"
 	"crypto/rand"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"github.com/OB1Company/filehive/repo"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/op/go-logging"
+	"golang.org/x/crypto/pbkdf2"
 	"net"
 	"net/http"
 )
@@ -19,6 +23,7 @@ type FileHiveServer struct {
 	db       *repo.Database
 	listener net.Listener
 	handler  http.Handler
+	jwtKey   []byte
 	shutdown chan struct{}
 
 	useSSL  bool
@@ -39,6 +44,9 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 		return nil, errors.New("database is nil")
 	}
 
+	jwtKey := make([]byte, 32)
+	rand.Read(jwtKey)
+
 	var (
 		s = &FileHiveServer{
 			db:       db,
@@ -46,6 +54,7 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 			useSSL:   options.UseSSL,
 			sslCert:  options.SSLCert,
 			sslKey:   options.SSLKey,
+			jwtKey:   jwtKey,
 			shutdown: make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
@@ -57,10 +66,12 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 	rand.Read(csrfKey)
 
 	csrfMiddleware := csrf.Protect(csrfKey)
-	r.Use(csrfMiddleware)
-	r.Use(s.setCSRFHeaderMiddleware)
+	r.Use(
+		csrfMiddleware,
+		s.setCSRFHeaderMiddleware,
+	)
 
-	topMux.Handle("/v1/", r)
+	topMux.Handle("/api/v1/", r)
 
 	s.handler = topMux
 	return s, nil
@@ -86,7 +97,16 @@ func (s *FileHiveServer) Serve() error {
 
 func (s *FileHiveServer) newV1Router() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/v1/user", s.handlePOSTUser).Methods("POST")
+	// Unauthenticated Handlers
+	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
+	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
+
+	// Authenticated Handlers
+	subRouter := r.PathPrefix("/api/v1").Subrouter()
+	subRouter.Use(s.authenticationMiddleware)
+
+	subRouter.HandleFunc("/user", s.handleGETUser).Methods("GET")
+
 	return r
 }
 
@@ -96,6 +116,43 @@ func (s *FileHiveServer) setCSRFHeaderMiddleware(next http.Handler) http.Handler
 			w.Header().Set("X-CSRF-Token", csrf.Token(r))
 		}
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				http.Error(w, wrapError(err), http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, wrapError(err), http.StatusBadRequest)
+			return
+		}
+
+		tknStr := c.Value
+		claims := &claims{}
+
+		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+			return s.jwtKey, nil
+		})
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				http.Error(w, wrapError(err), http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, wrapError(err), http.StatusBadRequest)
+			return
+		}
+		if !tkn.Valid {
+			http.Error(w, wrapError(err), http.StatusUnauthorized)
+			return
+		}
+		ctx := context.WithValue(context.Background(), "email", claims.Email)
+		req := r.WithContext(ctx)
+
+		next.ServeHTTP(w, req)
 	})
 }
 
@@ -141,4 +198,14 @@ func SSLKey(sslKey string) Option {
 		o.SSLKey = sslKey
 		return nil
 	}
+}
+
+func hashPassword(pw, salt []byte) []byte {
+	return pbkdf2.Key(pw, salt, 100000, 256, sha512.New512_256)
+}
+
+func makeSalt() []byte {
+	salt := make([]byte, 32)
+	rand.Read(salt)
+	return salt
 }
