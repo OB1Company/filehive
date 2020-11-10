@@ -83,6 +83,32 @@ func Test_Handlers(t *testing.T) {
 					})
 				},
 			},
+			{
+				name:       "Get user from path",
+				path:       "/api/v1/user/brian@ob1.io",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: func() ([]byte, error) {
+					return marshalAndSanitizeJSON(struct {
+						Email   string
+						Name    string
+						Country string
+					}{
+						Email:   "brian@ob1.io",
+						Name:    "Brian",
+						Country: "United_States",
+					})
+				},
+			},
+			{
+				name:       "Get user from path not found",
+				path:       "/api/v1/user/chris@ob1.io",
+				method:     http.MethodGet,
+				statusCode: http.StatusNotFound,
+				expectedResponse: func() ([]byte, error) {
+					return errorReturn(ErrUserNotFound), nil
+				},
+			},
 		})
 	})
 

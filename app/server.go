@@ -99,6 +99,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r := mux.NewRouter()
 	// Unauthenticated Handlers
 	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
+	r.HandleFunc("/api/v1/user/{email}", s.handleGETUser).Methods("GET")
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 
 	// Authenticated Handlers

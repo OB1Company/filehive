@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/OB1Company/filehive/repo/models"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"net/http"
 	"regexp"
@@ -161,12 +162,19 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
-	emailIface := r.Context().Value("email")
+	var email string
+	emailFromPath := mux.Vars(r)["email"]
+	if emailFromPath != "" {
+		email = emailFromPath
+	} else {
+		emailIface := r.Context().Value("email")
 
-	email, ok := emailIface.(string)
-	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
-		return
+		emailFromToken, ok := emailIface.(string)
+		if !ok {
+			http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+			return
+		}
+		email = emailFromToken
 	}
 
 	var user models.User
