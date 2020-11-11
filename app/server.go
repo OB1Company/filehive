@@ -14,6 +14,8 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 	"net"
 	"net/http"
+	"os"
+	"path"
 )
 
 var log = logging.MustGetLogger("APP")
@@ -53,6 +55,10 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, o
 		jwtKey := make([]byte, 32)
 		rand.Read(jwtKey)
 		options.JWTKey = jwtKey
+	}
+
+	if err := os.MkdirAll(path.Join(staticFileDir, "images"), os.ModePerm); err != nil {
+		return nil, err
 	}
 
 	var (

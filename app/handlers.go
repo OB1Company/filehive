@@ -291,7 +291,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 
 		if d.Avatar != "" {
 			filename := fmt.Sprintf("avatar-%d.jpg", user.ID)
-			if err := saveAvatar(path.Join(s.staticFileDir, filename), d.Avatar); err != nil {
+			if err := saveAvatar(path.Join(s.staticFileDir, "images", filename), d.Avatar); err != nil {
 				return err
 			}
 			user.AvatarFilename = filename
@@ -321,7 +321,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 func (s *FileHiveServer) handleGETImage(w http.ResponseWriter, r *http.Request) {
 	filename := mux.Vars(r)["filename"]
 
-	f, err := os.Open(path.Join(s.staticFileDir, filename))
+	f, err := os.Open(path.Join(s.staticFileDir, "images", filename))
 	if err != nil {
 		http.Error(w, wrapError(ErrImageNotFound), http.StatusNotFound)
 		return

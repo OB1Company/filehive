@@ -146,7 +146,7 @@ func LoadConfig() (*Config, error) {
 	setupLogging(cfg.LogDir, cfg.LogLevel)
 
 	if cfg.StaticFileDir == "" {
-		cfg.StaticFileDir = cleanAndExpandPath(path.Join(cfg.DataDir, "www", "images"))
+		cfg.StaticFileDir = cleanAndExpandPath(path.Join(cfg.DataDir, "www"))
 	}
 	if err := os.MkdirAll(cfg.StaticFileDir, os.ModePerm); err != nil {
 		return nil, err

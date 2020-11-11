@@ -44,8 +44,8 @@ func runAPITests(t *testing.T, tests apiTests) {
 		t.Fatal(err)
 	}
 
-	staticDir := path.Join(os.TempDir(), "filehive_apiTests", "static")
-	if err := os.MkdirAll(staticDir, os.ModePerm); err != nil {
+	staticDir := path.Join(os.TempDir(), "filehive_apiTests", "www")
+	if err := os.MkdirAll(path.Join(staticDir, "images"), os.ModePerm); err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(staticDir)
