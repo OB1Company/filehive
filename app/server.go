@@ -120,6 +120,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 
 	subRouter.HandleFunc("/token/extend", s.handlePOSTTokenExtend).Methods("POST")
 	subRouter.HandleFunc("/user", s.handleGETUser).Methods("GET")
+	subRouter.HandleFunc("/user", s.handlePATCHUser).Methods("PATCH")
 
 	return r
 }

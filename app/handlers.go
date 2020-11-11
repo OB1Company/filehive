@@ -217,3 +217,83 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		Country: user.Country,
 	})
 }
+
+func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	currentEmail, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", currentEmail).First(&user).Error
+
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	type data struct {
+		Email    string `json:"email"`
+		Name     string `json:"name"`
+		Password string `json:"password"`
+		Country  string `json:"country"`
+	}
+	var d data
+	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+	var newPW []byte
+	if d.Password != "" {
+		newPW = hashPassword([]byte(d.Password), user.Salt)
+	}
+
+	err = s.db.Update(func(db *gorm.DB) error {
+		if d.Email != "" && d.Email != currentEmail {
+			if !isEmailValid(d.Email) {
+				return ErrInvalidEmail
+			}
+
+			var checkUser models.User
+			if err := db.Where("email = ?", d.Email).First(&checkUser).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrUserExists
+			}
+
+			user.Email = d.Email
+
+			if err := db.Where("email = ?", currentEmail).Delete(&models.User{}).Error; err != nil {
+				return err
+			}
+		}
+		if d.Name != "" {
+			user.Name = d.Name
+		}
+		if d.Country != "" {
+			user.Country = d.Country
+		}
+		if newPW != nil {
+			user.HashedPassword = newPW
+		}
+		return db.Save(&user).Error
+	})
+	if err != nil {
+		if errors.Is(err, ErrInvalidEmail) {
+			http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+			return
+		} else if errors.Is(err, ErrUserExists) {
+			http.Error(w, wrapError(ErrInvalidJSON), http.StatusConflict)
+			return
+		}
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusInternalServerError)
+		return
+	}
+}

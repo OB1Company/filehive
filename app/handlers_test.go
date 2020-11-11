@@ -88,6 +88,59 @@ func Test_Handlers(t *testing.T) {
 				statusCode:       http.StatusNotFound,
 				expectedResponse: errorReturn(ErrUserNotFound),
 			},
+			{
+				name:             "Patch user success",
+				path:             "/api/v1/user",
+				method:           http.MethodPatch,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian@ob1.io", "password":"ffff", "name": "Brian2", "country": "Botswana"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Check user patched correctly",
+				path:       "/api/v1/user/brian@ob1.io",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Email   string
+					Name    string
+					Country string
+				}{
+					Email:   "brian@ob1.io",
+					Name:    "Brian2",
+					Country: "Botswana",
+				}),
+			},
+			{
+				name:             "Patch user change email",
+				path:             "/api/v1/user",
+				method:           http.MethodPatch,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian2@ob1.io"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Check user patched correctly",
+				path:       "/api/v1/user/brian2@ob1.io",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Email   string
+					Name    string
+					Country string
+				}{
+					Email:   "brian2@ob1.io",
+					Name:    "Brian2",
+					Country: "Botswana",
+				}),
+			},
+			{
+				name:             "Check previous email deleted correctly",
+				path:             "/api/v1/user/brian@ob1.io",
+				method:           http.MethodGet,
+				statusCode:       http.StatusNotFound,
+				expectedResponse: errorReturn(ErrUserNotFound),
+			},
 		})
 	})
 
