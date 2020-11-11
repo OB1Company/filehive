@@ -40,12 +40,17 @@ func sanitizedJSONResponse(w http.ResponseWriter, i interface{}) {
 	fmt.Fprint(w, string(ret))
 }
 
-func marshalAndSanitizeJSON(i interface{}) ([]byte, error) {
+func mustMarshalAndSanitizeJSON(i interface{}) []byte {
 	out, err := json.MarshalIndent(i, "", "    ")
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return sanitizeJSON(out)
+
+	ret, err := sanitizeJSON(out)
+	if err != nil {
+		panic(err)
+	}
+	return ret
 }
 
 func sanitizeJSON(s []byte) ([]byte, error) {

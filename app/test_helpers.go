@@ -19,7 +19,11 @@ type apiTest struct {
 	body             []byte
 	statusCode       int
 	setup            func(db *repo.Database) error
-	expectedResponse func() ([]byte, error)
+	expectedResponse []byte
+}
+
+func errorReturn(err error) []byte {
+	return []byte(fmt.Sprintf(`{"error": "%s"}%s`, err.Error(), "\n"))
 }
 
 func runAPITests(t *testing.T, tests apiTests) {
@@ -68,12 +72,9 @@ func runAPITests(t *testing.T, tests apiTests) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		expected, err := test.expectedResponse()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if expected != nil && !bytes.Equal(response, expected) {
-			t.Errorf("%s: Expected response %s, got %s", test.name, string(expected), string(response))
+
+		if test.expectedResponse != nil && !bytes.Equal(response, test.expectedResponse) {
+			t.Errorf("%s: Expected response %s, got %s", test.name, string(test.expectedResponse), string(response))
 			continue
 		}
 	}
