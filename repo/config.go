@@ -137,12 +137,12 @@ func LoadConfig() (*Config, error) {
 	if configFileError != nil {
 		log.Errorf("%v", configFileError)
 	}
-	setupLogging(cfg.LogDir, cfg.LogLevel)
 
 	cfg.DataDir = cleanAndExpandPath(cfg.DataDir)
 	if cfg.LogDir == "" {
 		cfg.LogDir = cleanAndExpandPath(path.Join(cfg.DataDir, "logs"))
 	}
+	setupLogging(cfg.LogDir, cfg.LogLevel)
 
 	return &cfg, nil
 }

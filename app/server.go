@@ -45,8 +45,11 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 		return nil, errors.New("database is nil")
 	}
 
-	jwtKey := make([]byte, 32)
-	rand.Read(jwtKey)
+	if options.JWTKey == nil {
+		jwtKey := make([]byte, 32)
+		rand.Read(jwtKey)
+		options.JWTKey = jwtKey
+	}
 
 	var (
 		s = &FileHiveServer{
@@ -55,7 +58,7 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 			useSSL:   options.UseSSL,
 			sslCert:  options.SSLCert,
 			sslKey:   options.SSLKey,
-			jwtKey:   jwtKey,
+			jwtKey:   options.JWTKey,
 			domain:   options.Domain,
 			shutdown: make(chan struct{}),
 		}
@@ -169,6 +172,7 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 
 // Options represents the filehive server options.
 type Options struct {
+	JWTKey  []byte
 	Domain  string
 	UseSSL  bool
 	SSLCert string
@@ -187,6 +191,16 @@ func (o *Options) Apply(opts ...Option) error {
 
 // Option represents a db option.
 type Option func(*Options) error
+
+// JWTKey represents a JSON Web Token key for the server.
+// Use this if you want to persist the key to disk. If
+// This option is nil a random key will be generated.
+func JWTKey(key []byte) Option {
+	return func(o *Options) error {
+		o.JWTKey = key
+		return nil
+	}
+}
 
 // Domain sets the domain the server is running on.  Defaults to the current domain of the request
 // only (recommended).

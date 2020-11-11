@@ -1,13 +1,16 @@
 package main
 
 import (
+	"crypto/rand"
 	"github.com/OB1Company/filehive/app"
 	"github.com/OB1Company/filehive/repo"
 	"github.com/jessevdk/go-flags"
 	"github.com/op/go-logging"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
+	"path"
 )
 
 var log = logging.MustGetLogger("MAIN")
@@ -40,7 +43,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	key, err := loadJWTKey(config.DataDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	serverOpts := []app.Option{
+		app.JWTKey(key),
 		app.Domain(config.Domain),
 	}
 	if config.UseSSL {
@@ -77,4 +86,18 @@ func main() {
 		log.Info("filehive stopping...")
 		os.Exit(0)
 	}
+}
+
+func loadJWTKey(dataDir string) ([]byte, error) {
+	filename := path.Join(dataDir, "server.key")
+	key, err := ioutil.ReadFile(filename)
+	if os.IsNotExist(err) {
+		jwtKey := make([]byte, 32)
+		rand.Read(jwtKey)
+		if err := ioutil.WriteFile(filename, key, os.ModePerm); err != nil {
+			return nil, err
+		}
+		return jwtKey, nil
+	}
+	return key, nil
 }

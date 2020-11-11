@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	dbName = "crawler"
+	dbName = "filehive"
 )
 
 var silentLogger = logger.New(
