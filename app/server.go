@@ -106,15 +106,16 @@ func (s *FileHiveServer) Serve() error {
 
 func (s *FileHiveServer) newV1Router() *mux.Router {
 	r := mux.NewRouter()
-	// Unauthenticated Handlers
+	// Unauthenticated Routes
 	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
 	r.HandleFunc("/api/v1/user/{email}", s.handleGETUser).Methods("GET")
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 
-	// Authenticated Handlers
+	// Authenticated Routes
 	subRouter := r.PathPrefix("/api/v1").Subrouter()
 	subRouter.Use(s.authenticationMiddleware)
 
+	subRouter.HandleFunc("/token/extend", s.handlePOSTTokenExtend).Methods("POST")
 	subRouter.HandleFunc("/user", s.handleGETUser).Methods("GET")
 
 	return r
@@ -134,7 +135,7 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 		c, err := r.Cookie("token")
 		if err != nil {
 			if err == http.ErrNoCookie {
-				http.Error(w, wrapError(err), http.StatusUnauthorized)
+				http.Error(w, wrapError(ErrNotLoggedIn), http.StatusUnauthorized)
 				return
 			}
 			http.Error(w, wrapError(err), http.StatusBadRequest)

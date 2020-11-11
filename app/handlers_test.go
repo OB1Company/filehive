@@ -94,6 +94,14 @@ func Test_Handlers(t *testing.T) {
 	t.Run("Login Tests", func(t *testing.T) {
 		runAPITests(t, apiTests{
 			{
+				name:             "Post extend token not logged in",
+				path:             "/api/v1/token/extend",
+				method:           http.MethodPost,
+				statusCode:       http.StatusUnauthorized,
+				body:             nil,
+				expectedResponse: errorReturn(ErrNotLoggedIn),
+			},
+			{
 				name:             "Post login invalid email",
 				path:             "/api/v1/login",
 				method:           http.MethodPost,
@@ -165,6 +173,14 @@ func Test_Handlers(t *testing.T) {
 					Name:    "Brian",
 					Country: "United_States",
 				}),
+			},
+			{
+				name:             "Post extend token",
+				path:             "/api/v1/token/extend",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             nil,
+				expectedResponse: nil,
 			},
 		})
 	})

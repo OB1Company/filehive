@@ -23,11 +23,12 @@ var (
 	ErrInvalidEmail       = errors.New("email address is invalid")
 	ErrInvalidJSON        = errors.New("invalid JSON input")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrNotLoggedIn        = errors.New("not logged in")
 
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
-const jwtExpirationHours = 24
+const jwtExpirationHours = 24 * 7
 
 type claims struct {
 	Email string `json:"Email"`
@@ -108,6 +109,17 @@ func (s *FileHiveServer) handlePOSTLogin(w http.ResponseWriter, r *http.Request)
 	}
 
 	s.loginUser(w, creds.Email)
+}
+
+func (s *FileHiveServer) handlePOSTTokenExtend(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+	s.loginUser(w, email)
 }
 
 func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) {
