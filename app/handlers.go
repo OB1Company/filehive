@@ -10,6 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -24,6 +26,8 @@ var (
 	ErrInvalidJSON        = errors.New("invalid JSON input")
 	ErrUserNotFound       = errors.New("user not found")
 	ErrNotLoggedIn        = errors.New("not logged in")
+	ErrInvalidImage       = errors.New("invalid base64 image")
+	ErrImageNotFound      = errors.New("image not found")
 
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
@@ -211,10 +215,12 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		Email   string
 		Name    string
 		Country string
+		Avatar  string
 	}{
 		Email:   email,
 		Name:    user.Name,
 		Country: user.Country,
+		Avatar:  user.AvatarFilename,
 	})
 }
 
@@ -246,6 +252,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		Name     string `json:"name"`
 		Password string `json:"password"`
 		Country  string `json:"country"`
+		Avatar   string `json:"avatar"`
 	}
 	var d data
 	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
@@ -257,6 +264,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		newPW = hashPassword([]byte(d.Password), user.Salt)
 	}
 
+	var emailChanged bool
 	err = s.db.Update(func(db *gorm.DB) error {
 		if d.Email != "" && d.Email != currentEmail {
 			if !isEmailValid(d.Email) {
@@ -269,10 +277,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 			}
 
 			user.Email = d.Email
-
-			if err := db.Where("email = ?", currentEmail).Delete(&models.User{}).Error; err != nil {
-				return err
-			}
+			emailChanged = true
 		}
 		if d.Name != "" {
 			user.Name = d.Name
@@ -283,10 +288,22 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		if newPW != nil {
 			user.HashedPassword = newPW
 		}
-		return db.Save(&user).Error
+
+		if d.Avatar != "" {
+			filename := fmt.Sprintf("avatar-%d.jpg", user.ID)
+			if err := saveAvatar(path.Join(s.staticFileDir, filename), d.Avatar); err != nil {
+				return err
+			}
+			user.AvatarFilename = filename
+		}
+
+		if err := db.Save(&user).Error; err != nil {
+			return err
+		}
+		return nil
 	})
 	if err != nil {
-		if errors.Is(err, ErrInvalidEmail) {
+		if errors.Is(err, ErrInvalidEmail) || errors.Is(err, ErrInvalidImage) {
 			http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
 			return
 		} else if errors.Is(err, ErrUserExists) {
@@ -296,4 +313,20 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		http.Error(w, wrapError(ErrInvalidJSON), http.StatusInternalServerError)
 		return
 	}
+	if emailChanged {
+		s.loginUser(w, d.Email)
+	}
+}
+
+func (s *FileHiveServer) handleGETImage(w http.ResponseWriter, r *http.Request) {
+	filename := mux.Vars(r)["filename"]
+
+	f, err := os.Open(path.Join(s.staticFileDir, filename))
+	if err != nil {
+		http.Error(w, wrapError(ErrImageNotFound), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	http.ServeContent(w, r, filename, time.Now(), f)
 }

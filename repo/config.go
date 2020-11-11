@@ -48,13 +48,14 @@ type Config struct {
 	LogDir      string `long:"logdir" description:"Directory to log output."`
 	LogLevel    string `long:"loglevel" description:"Set the logging level [debug, info, notice, warning, error, critical]." default:"info"`
 
-	Listen  string `short:"l" long:"listen" description:"The interface:port for the app server to bind to." default:"0.0.0.0:8080"`
-	Domain  string `short:"D" long:"domain" description:"Set the domain the server will run on"`
-	UseSSL  bool   `long:"usessl" description:"Set to true if you want to use SSL with the server."`
-	SSLCert string `long:"sslcert" description:"Path to the SSL certificate."`
-	SSLKey  string `long:"sslkey" description:"Path to the SSL key."`
+	Listen        string `short:"l" long:"listen" description:"The interface:port for the app server to bind to." default:"0.0.0.0:8080"`
+	StaticFileDir string `short:"s" long:"staticfiledir" description:"A path to a directory to use for holding static files such as user created images. Defaults to dataDir/static"`
+	Domain        string `short:"D" long:"domain" description:"Set the domain the server will run on"`
+	UseSSL        bool   `long:"usessl" description:"Set to true if you want to use SSL with the server."`
+	SSLCert       string `long:"sslcert" description:"Path to the SSL certificate."`
+	SSLKey        string `long:"sslkey" description:"Path to the SSL key."`
 
-	DBDialect string `long:"dbdialect" description:"The type of database to use [sqlite3, mysql, postgress]" default:"sqlite3"`
+	DBDialect string `long:"dbdialect" description:"The type of database to use [sqlite3, mysql, postgress, memory]" default:"sqlite3"`
 	DBHost    string `long:"dbhost" description:"The host:post location of the database."`
 	DBUser    string `long:"dbuser" description:"The database username"`
 	DBPass    string `long:"dbpass" description:"The database password"`
@@ -143,6 +144,13 @@ func LoadConfig() (*Config, error) {
 		cfg.LogDir = cleanAndExpandPath(path.Join(cfg.DataDir, "logs"))
 	}
 	setupLogging(cfg.LogDir, cfg.LogLevel)
+
+	if cfg.StaticFileDir == "" {
+		cfg.StaticFileDir = cleanAndExpandPath(path.Join(cfg.DataDir, "www", "images"))
+	}
+	if err := os.MkdirAll(cfg.StaticFileDir, os.ModePerm); err != nil {
+		return nil, err
+	}
 
 	return &cfg, nil
 }

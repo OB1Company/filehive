@@ -48,7 +48,7 @@ func NewDatabase(dataDir string, opts ...Option) (*Database, error) {
 	var dialector gorm.Dialector
 
 	switch strings.ToLower(options.Dialect) {
-	case "test":
+	case "memory":
 		dbPath = ":memory:"
 		dialector = sqlite.Open(dbPath)
 	case "mysql":

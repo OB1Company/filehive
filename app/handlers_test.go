@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/OB1Company/filehive/repo"
 	"github.com/OB1Company/filehive/repo/models"
 	"gorm.io/gorm"
@@ -60,6 +61,7 @@ func Test_Handlers(t *testing.T) {
 					Email   string
 					Name    string
 					Country string
+					Avatar  string
 				}{
 					Email:   "brian@ob1.io",
 					Name:    "Brian",
@@ -75,6 +77,7 @@ func Test_Handlers(t *testing.T) {
 					Email   string
 					Name    string
 					Country string
+					Avatar  string
 				}{
 					Email:   "brian@ob1.io",
 					Name:    "Brian",
@@ -105,6 +108,7 @@ func Test_Handlers(t *testing.T) {
 					Email   string
 					Name    string
 					Country string
+					Avatar  string
 				}{
 					Email:   "brian@ob1.io",
 					Name:    "Brian2",
@@ -128,6 +132,7 @@ func Test_Handlers(t *testing.T) {
 					Email   string
 					Name    string
 					Country string
+					Avatar  string
 				}{
 					Email:   "brian2@ob1.io",
 					Name:    "Brian2",
@@ -192,23 +197,10 @@ func Test_Handlers(t *testing.T) {
 				expectedResponse: errorReturn(ErrIncorrectPassword),
 			},
 			{
-				name:       "Post login valid",
-				path:       "/api/v1/login",
-				method:     http.MethodPost,
-				statusCode: http.StatusOK,
-				setup: func(db *repo.Database) error {
-					return db.Update(func(tx *gorm.DB) error {
-						salt := []byte("salt")
-						pw := hashPassword([]byte("asdf"), salt)
-						return tx.Save(&models.User{
-							Email:          "brian@ob1.io",
-							Country:        "United_States",
-							Name:           "Brian",
-							Salt:           salt,
-							HashedPassword: pw,
-						}).Error
-					})
-				},
+				name:             "Post login valid",
+				path:             "/api/v1/login",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
 				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"}`),
 				expectedResponse: nil,
 			},
@@ -221,6 +213,7 @@ func Test_Handlers(t *testing.T) {
 					Email   string
 					Name    string
 					Country string
+					Avatar  string
 				}{
 					Email:   "brian@ob1.io",
 					Name:    "Brian",
@@ -234,6 +227,34 @@ func Test_Handlers(t *testing.T) {
 				statusCode:       http.StatusOK,
 				body:             nil,
 				expectedResponse: nil,
+			},
+		})
+	})
+
+	t.Run("Image Tests", func(t *testing.T) {
+		runAPITests(t, apiTests{
+			{
+				name:             "Post user success",
+				path:             "/api/v1/user",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:             "Patch user with avatar",
+				path:             "/api/v1/user",
+				method:           http.MethodPatch,
+				statusCode:       http.StatusOK,
+				body:             []byte(fmt.Sprintf(`{"avatar": "%s"}`, jpgTestImage)),
+				expectedResponse: nil,
+			},
+			{
+				name:             "Get avatar",
+				path:             "/api/v1/image/avatar-1.jpg",
+				method:           http.MethodGet,
+				statusCode:       http.StatusOK,
+				expectedResponse: jpgImageBytes,
 			},
 		})
 	})

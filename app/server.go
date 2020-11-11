@@ -20,12 +20,13 @@ var log = logging.MustGetLogger("APP")
 
 // FileHiveServer is the web server used to serve the FileHive application.
 type FileHiveServer struct {
-	db       *repo.Database
-	listener net.Listener
-	handler  http.Handler
-	jwtKey   []byte
-	domain   string
-	shutdown chan struct{}
+	db            *repo.Database
+	staticFileDir string
+	listener      net.Listener
+	handler       http.Handler
+	jwtKey        []byte
+	domain        string
+	shutdown      chan struct{}
 
 	useSSL  bool
 	sslCert string
@@ -33,7 +34,7 @@ type FileHiveServer struct {
 }
 
 // NewServer instantiates a new FileHiveServer with the provided options.
-func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileHiveServer, error) {
+func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, opts ...Option) (*FileHiveServer, error) {
 	var options Options
 	if err := options.Apply(opts...); err != nil {
 		return nil, err
@@ -45,6 +46,9 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 		return nil, errors.New("database is nil")
 	}
 
+	if staticFileDir == "" {
+		return nil, errors.New("static file dir is empty string")
+	}
 	if options.JWTKey == nil {
 		jwtKey := make([]byte, 32)
 		rand.Read(jwtKey)
@@ -53,14 +57,15 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 
 	var (
 		s = &FileHiveServer{
-			db:       db,
-			listener: listener,
-			useSSL:   options.UseSSL,
-			sslCert:  options.SSLCert,
-			sslKey:   options.SSLKey,
-			jwtKey:   options.JWTKey,
-			domain:   options.Domain,
-			shutdown: make(chan struct{}),
+			db:            db,
+			listener:      listener,
+			staticFileDir: staticFileDir,
+			useSSL:        options.UseSSL,
+			sslCert:       options.SSLCert,
+			sslKey:        options.SSLKey,
+			jwtKey:        options.JWTKey,
+			domain:        options.Domain,
+			shutdown:      make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
 	)
@@ -113,6 +118,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
 	r.HandleFunc("/api/v1/user/{email}", s.handleGETUser).Methods("GET")
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
+	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
 
 	// Authenticated Routes
 	subRouter := r.PathPrefix("/api/v1").Subrouter()

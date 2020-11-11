@@ -60,7 +60,7 @@ func main() {
 		}...)
 	}
 
-	server, err := app.NewServer(listener, db, serverOpts...)
+	server, err := app.NewServer(listener, db, config.StaticFileDir, serverOpts...)
 	if err != nil {
 		log.Fatal(err)
 	}
