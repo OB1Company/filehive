@@ -67,9 +67,13 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		Domain:   s.domain,
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
 	})
 }
 

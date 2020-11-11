@@ -24,6 +24,7 @@ type FileHiveServer struct {
 	listener net.Listener
 	handler  http.Handler
 	jwtKey   []byte
+	domain   string
 	shutdown chan struct{}
 
 	useSSL  bool
@@ -55,6 +56,7 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 			sslCert:  options.SSLCert,
 			sslKey:   options.SSLKey,
 			jwtKey:   jwtKey,
+			domain:   options.Domain,
 			shutdown: make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
@@ -166,7 +168,7 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 
 // Options represents the filehive server options.
 type Options struct {
-	Domain string
+	Domain  string
 	UseSSL  bool
 	SSLCert string
 	SSLKey  string
