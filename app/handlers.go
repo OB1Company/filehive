@@ -49,7 +49,7 @@ func isEmailValid(e string) bool {
 	return emailRegex.MatchString(e)
 }
 
-func (s *FileHiveServer) loginUser(email string, w http.ResponseWriter) {
+func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 	expirationTime := time.Now().Add(jwtExpirationHours * time.Hour)
 
 	claims := &claims{
@@ -103,7 +103,7 @@ func (s *FileHiveServer) handlePOSTLogin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	s.loginUser(creds.Email, w)
+	s.loginUser(w, creds.Email)
 }
 
 func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +158,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	s.loginUser(user.Email, w)
+	s.loginUser(w, user.Email)
 }
 
 func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {

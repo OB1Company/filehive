@@ -65,10 +65,17 @@ func NewServer(listener net.Listener, db *repo.Database, opts ...Option) (*FileH
 	csrfKey := make([]byte, 32)
 	rand.Read(csrfKey)
 
-	csrfMiddleware := csrf.Protect(csrfKey)
+	csrfOpts := []csrf.Option{
+		csrf.SameSite(csrf.SameSiteLaxMode),
+	}
+	if options.Domain != "" {
+		csrfOpts = append(csrfOpts, csrf.Domain(options.Domain))
+	}
+	csrfMiddleware := csrf.Protect(csrfKey, csrfOpts...)
 	r.Use(
 		csrfMiddleware,
 		s.setCSRFHeaderMiddleware,
+		mux.CORSMethodMiddleware(r),
 	)
 
 	topMux.Handle("/api/v1/", r)
@@ -159,6 +166,7 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 
 // Options represents the filehive server options.
 type Options struct {
+	Domain string
 	UseSSL  bool
 	SSLCert string
 	SSLKey  string
@@ -176,6 +184,19 @@ func (o *Options) Apply(opts ...Option) error {
 
 // Option represents a db option.
 type Option func(*Options) error
+
+// Domain sets the domain the server is running on.  Defaults to the current domain of the request
+// only (recommended).
+//
+// This should be a hostname and not a URL. If set, the domain is treated as
+// being prefixed with a '.' - e.g. "example.com" becomes ".example.com" and
+// matches "www.example.com" and "secure.example.com".
+func Domain(domain string) Option {
+	return func(o *Options) error {
+		o.Domain = domain
+		return nil
+	}
+}
 
 // UseSSL option allows you to set SSL on the server.
 func UseSSL(useSSL bool) Option {

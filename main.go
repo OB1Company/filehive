@@ -40,7 +40,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var serverOpts []app.Option
+	serverOpts := []app.Option{
+		app.Domain(config.Domain),
+	}
 	if config.UseSSL {
 		serverOpts = append(serverOpts, []app.Option{
 			app.UseSSL(true),
