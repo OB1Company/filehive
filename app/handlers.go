@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo/models"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -28,6 +31,7 @@ var (
 	ErrNotLoggedIn        = errors.New("not logged in")
 	ErrInvalidImage       = errors.New("invalid base64 image")
 	ErrImageNotFound      = errors.New("image not found")
+	ErrInvalidOption      = errors.New("invalid option")
 
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
@@ -159,15 +163,22 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	newAddress, err := s.walletBackend.NewAddress()
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
 	salt := makeSalt()
 	hashedPW := hashPassword([]byte(d.Password), salt)
 
 	user := models.User{
-		Email:          d.Email,
-		Name:           d.Name,
-		Country:        d.Country,
-		Salt:           salt,
-		HashedPassword: hashedPW,
+		Email:           d.Email,
+		Name:            d.Name,
+		Country:         d.Country,
+		Salt:            salt,
+		HashedPassword:  hashedPW,
+		FilecoinAddress: newAddress.String(),
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
@@ -329,4 +340,181 @@ func (s *FileHiveServer) handleGETImage(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "image/jpeg")
 	http.ServeContent(w, r, filename, time.Now(), f)
+}
+
+func (s *FileHiveServer) handleGETWalletAddress(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Address string
+	}{
+		Address: user.FilecoinAddress,
+	})
+}
+
+func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	addr, err := address.NewFromString(user.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	balance, err := s.walletBackend.Balance(addr)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Balance float64
+	}{
+		Balance: fil.AttoFILToFIL(balance),
+	})
+}
+
+func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	type data struct {
+		Address string  `json:"address"`
+		Amount  float64 `json:"amount"`
+	}
+	var d data
+	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	from, err := address.NewFromString(user.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	to, err := address.NewFromString(d.Address)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	txid, err := s.walletBackend.Send(from, to, fil.FILtoAttoFIL(d.Amount))
+	if err != nil {
+		if errors.Is(err, fil.ErrInsuffientFunds) {
+			http.Error(w, wrapError(fil.ErrInsuffientFunds), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Txid string
+	}{
+		Txid: txid.String(),
+	})
+}
+
+func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	var limit, offset int
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	} else {
+		limit = -1
+	}
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	addr, err := address.NewFromString(user.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	txs, err := s.walletBackend.Transactions(addr, limit, offset)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, txs)
 }

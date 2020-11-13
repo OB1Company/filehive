@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo"
 	"io/ioutil"
 	"net/http"
@@ -30,7 +31,7 @@ type apiTest struct {
 	method           string
 	body             []byte
 	statusCode       int
-	setup            func(db *repo.Database) error
+	setup            func(db *repo.Database, wbe fil.WalletBackend) error
 	expectedResponse []byte
 }
 
@@ -52,6 +53,7 @@ func runAPITests(t *testing.T, tests apiTests) {
 
 	server := &FileHiveServer{
 		db:            db,
+		walletBackend: fil.NewMockWalletBackend(),
 		staticFileDir: staticDir,
 	}
 
@@ -62,7 +64,7 @@ func runAPITests(t *testing.T, tests apiTests) {
 	var cookies []*http.Cookie
 	for _, test := range tests {
 		if test.setup != nil {
-			if err := test.setup(db); err != nil {
+			if err := test.setup(db, server.walletBackend); err != nil {
 				t.Fatalf("%s: %s", test.name, err)
 			}
 		}

@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"github.com/OB1Company/filehive/app"
+	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo"
 	"github.com/jessevdk/go-flags"
 	"github.com/op/go-logging"
@@ -43,6 +44,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// TODO: this will need to be set by a config option when powergate gets wired up.
+	wbe := fil.NewMockWalletBackend()
+
 	key, err := loadJWTKey(config.DataDir)
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +64,7 @@ func main() {
 		}...)
 	}
 
-	server, err := app.NewServer(listener, db, config.StaticFileDir, serverOpts...)
+	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, serverOpts...)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"errors"
 	"fmt"
+	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/csrf"
@@ -23,6 +24,7 @@ var log = logging.MustGetLogger("APP")
 // FileHiveServer is the web server used to serve the FileHive application.
 type FileHiveServer struct {
 	db            *repo.Database
+	walletBackend fil.WalletBackend
 	staticFileDir string
 	listener      net.Listener
 	handler       http.Handler
@@ -36,7 +38,7 @@ type FileHiveServer struct {
 }
 
 // NewServer instantiates a new FileHiveServer with the provided options.
-func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, opts ...Option) (*FileHiveServer, error) {
+func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, walletBackend fil.WalletBackend, opts ...Option) (*FileHiveServer, error) {
 	var options Options
 	if err := options.Apply(opts...); err != nil {
 		return nil, err
@@ -64,6 +66,7 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, o
 	var (
 		s = &FileHiveServer{
 			db:            db,
+			walletBackend: walletBackend,
 			listener:      listener,
 			staticFileDir: staticFileDir,
 			useSSL:        options.UseSSL,
@@ -133,6 +136,10 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/token/extend", s.handlePOSTTokenExtend).Methods("POST")
 	subRouter.HandleFunc("/user", s.handleGETUser).Methods("GET")
 	subRouter.HandleFunc("/user", s.handlePATCHUser).Methods("PATCH")
+	subRouter.HandleFunc("/wallet/address", s.handleGETWalletAddress).Methods("GET")
+	subRouter.HandleFunc("/wallet/balance", s.handleGETWalletBalance).Methods("GET")
+	subRouter.HandleFunc("/wallet/send", s.handlePOSTWalletSend).Methods("POST")
+	subRouter.HandleFunc("/wallet/transactions", s.handleGETWalletTransactions).Methods("GET")
 
 	return r
 }

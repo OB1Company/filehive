@@ -49,7 +49,7 @@ type Config struct {
 	LogLevel    string `long:"loglevel" description:"Set the logging level [debug, info, notice, warning, error, critical]." default:"info"`
 
 	Listen        string `short:"l" long:"listen" description:"The interface:port for the app server to bind to." default:"0.0.0.0:8080"`
-	StaticFileDir string `short:"s" long:"staticfiledir" description:"A path to a directory to use for holding static files such as user created images. Defaults to dataDir/static"`
+	StaticFileDir string `short:"s" long:"staticfiledir" description:"A path to a directory to use for holding static files such as user created images. Defaults to dataDir/www"`
 	Domain        string `short:"D" long:"domain" description:"Set the domain the server will run on"`
 	UseSSL        bool   `long:"usessl" description:"Set to true if you want to use SSL with the server."`
 	SSLCert       string `long:"sslcert" description:"Path to the SSL certificate."`
