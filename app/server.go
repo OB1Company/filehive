@@ -32,9 +32,10 @@ type FileHiveServer struct {
 	domain        string
 	shutdown      chan struct{}
 
-	useSSL  bool
-	sslCert string
-	sslKey  string
+	testMode bool
+	useSSL   bool
+	sslCert  string
+	sslKey   string
 }
 
 // NewServer instantiates a new FileHiveServer with the provided options.
@@ -49,10 +50,16 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 	if db == nil {
 		return nil, errors.New("database is nil")
 	}
-
 	if staticFileDir == "" {
 		return nil, errors.New("static file dir is empty string")
 	}
+
+	if options.TestMode {
+		if _, ok := walletBackend.(*fil.MockWalletBackend); !ok {
+			return nil, errors.New("MockWalletBackend must be used in testmode")
+		}
+	}
+
 	if options.JWTKey == nil {
 		jwtKey := make([]byte, 32)
 		rand.Read(jwtKey)
@@ -129,6 +136,10 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
 
+	if s.testMode {
+		r.HandleFunc("/api/v1/generatecoins", s.handlePOSTGenerateCoins).Methods("POST")
+	}
+
 	// Authenticated Routes
 	subRouter := r.PathPrefix("/api/v1").Subrouter()
 	subRouter.Use(s.authenticationMiddleware)
@@ -192,11 +203,12 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 
 // Options represents the filehive server options.
 type Options struct {
-	JWTKey  []byte
-	Domain  string
-	UseSSL  bool
-	SSLCert string
-	SSLKey  string
+	JWTKey   []byte
+	Domain   string
+	UseSSL   bool
+	SSLCert  string
+	SSLKey   string
+	TestMode bool
 }
 
 // Apply sets the provided options in the main options struct.
@@ -231,6 +243,15 @@ func JWTKey(key []byte) Option {
 func Domain(domain string) Option {
 	return func(o *Options) error {
 		o.Domain = domain
+		return nil
+	}
+}
+
+// TestMode option allows exposes an additional API
+// to generate mock coins.
+func TestMode(testMode bool) Option {
+	return func(o *Options) error {
+		o.TestMode = testMode
 		return nil
 	}
 }

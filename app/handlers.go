@@ -518,3 +518,22 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 
 	sanitizedJSONResponse(w, txs)
 }
+
+func (s *FileHiveServer) handlePOSTGenerateCoins(w http.ResponseWriter, r *http.Request) {
+	type data struct {
+		Address string  `json:"address"`
+		Amount  float64 `json:"amount"`
+	}
+	var d data
+	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+	addr, err := address.NewFromString(d.Address)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(addr, fil.FILtoAttoFIL(d.Amount))
+}

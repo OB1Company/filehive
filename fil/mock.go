@@ -17,6 +17,7 @@ type MockWalletBackend struct {
 	transactions map[addr.Address][]Transaction
 	nextAddr     *addr.Address
 	nextTxid     *cid.Cid
+	nextTime     *time.Time
 	mtx          sync.RWMutex
 }
 
@@ -41,10 +42,15 @@ func (w *MockWalletBackend) GenerateToAddress(addr addr.Address, amount *big.Int
 		txid, _ = randTxid()
 	}
 
+	ts := time.Now()
+	if w.nextTime != nil {
+		ts = *w.nextTime
+	}
+
 	tx := Transaction{
 		ID:        txid,
 		To:        addr,
-		Timestamp: time.Time{},
+		Timestamp: ts,
 		Amount:    amount,
 	}
 
@@ -83,6 +89,13 @@ func (w *MockWalletBackend) SetNextTxid(id cid.Cid) {
 	w.nextTxid = &id
 }
 
+func (w *MockWalletBackend) SetNextTime(timestamp time.Time) {
+	w.mtx.Lock()
+	defer w.mtx.Unlock()
+
+	w.nextTime = &timestamp
+}
+
 // Send filecoin from one address to another. Returns the cid of the
 // transaction.
 func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Cid, error) {
@@ -109,11 +122,16 @@ func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Ci
 		}
 	}
 
+	ts := time.Now()
+	if w.nextTime != nil {
+		ts = *w.nextTime
+	}
+
 	tx := Transaction{
 		ID:        txid,
 		To:        to,
 		From:      from,
-		Timestamp: time.Time{},
+		Timestamp: ts,
 		Amount:    amount,
 	}
 

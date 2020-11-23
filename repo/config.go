@@ -47,6 +47,7 @@ type Config struct {
 	DataDir     string `short:"d" long:"datadir" description:"Directory to store data"`
 	LogDir      string `long:"logdir" description:"Directory to log output."`
 	LogLevel    string `long:"loglevel" description:"Set the logging level [debug, info, notice, warning, error, critical]." default:"info"`
+	TestMode    bool   `long:"testmode" description:"Run the server in test mode. This will use a mock filecoin backend."`
 
 	Listen        string `short:"l" long:"listen" description:"The interface:port for the app server to bind to." default:"0.0.0.0:8080"`
 	StaticFileDir string `short:"s" long:"staticfiledir" description:"A path to a directory to use for holding static files such as user created images. Defaults to dataDir/www"`

@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func Test_Handlers(t *testing.T) {
@@ -298,6 +299,7 @@ func Test_Handlers(t *testing.T) {
 				method:     http.MethodGet,
 				statusCode: http.StatusOK,
 				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					wbe.(*fil.MockWalletBackend).SetNextTime(time.Time{})
 					txid, err := cid.Decode("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
 					if err != nil {
 						return err
