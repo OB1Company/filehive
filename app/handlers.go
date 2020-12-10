@@ -11,6 +11,7 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -28,10 +29,13 @@ var (
 	ErrInvalidEmail       = errors.New("email address is invalid")
 	ErrInvalidJSON        = errors.New("invalid JSON input")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrDatasetNotFound    = errors.New("dataset not found")
 	ErrNotLoggedIn        = errors.New("not logged in")
 	ErrInvalidImage       = errors.New("invalid base64 image")
+	ErrInvalidAddress     = errors.New("invalid address")
 	ErrImageNotFound      = errors.New("image not found")
 	ErrInvalidOption      = errors.New("invalid option")
+	ErrMissingForm        = errors.New("missing form")
 
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
@@ -172,7 +176,14 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	salt := makeSalt()
 	hashedPW := hashPassword([]byte(d.Password), salt)
 
+	id, err := makeID()
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
 	user := models.User{
+		ID:              id,
 		Email:           d.Email,
 		Name:            d.Name,
 		Country:         d.Country,
@@ -254,7 +265,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
 			return
 		}
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -301,7 +312,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		}
 
 		if d.Avatar != "" {
-			filename := fmt.Sprintf("avatar-%d.jpg", user.ID)
+			filename := fmt.Sprintf("avatar-%s.jpg", user.ID)
 			if err := saveAvatar(path.Join(s.staticFileDir, "images", filename), d.Avatar); err != nil {
 				return err
 			}
@@ -315,7 +326,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 	})
 	if err != nil {
 		if errors.Is(err, ErrInvalidEmail) || errors.Is(err, ErrInvalidImage) {
-			http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+			http.Error(w, wrapError(err), http.StatusBadRequest)
 			return
 		} else if errors.Is(err, ErrUserExists) {
 			http.Error(w, wrapError(ErrInvalidJSON), http.StatusConflict)
@@ -347,7 +358,7 @@ func (s *FileHiveServer) handleGETWalletAddress(w http.ResponseWriter, r *http.R
 
 	email, ok := emailIface.(string)
 	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -357,7 +368,7 @@ func (s *FileHiveServer) handleGETWalletAddress(w http.ResponseWriter, r *http.R
 
 	})
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -373,7 +384,7 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 
 	email, ok := emailIface.(string)
 	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -383,19 +394,19 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 
 	})
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
 	addr, err := address.NewFromString(user.FilecoinAddress)
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
 
 	balance, err := s.walletBackend.Balance(addr)
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
 
@@ -411,7 +422,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 
 	email, ok := emailIface.(string)
 	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -421,7 +432,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 
 	})
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -437,13 +448,13 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 
 	from, err := address.NewFromString(user.FilecoinAddress)
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
 
 	to, err := address.NewFromString(d.Address)
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidAddress), http.StatusBadRequest)
 		return
 	}
 
@@ -453,7 +464,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 			http.Error(w, wrapError(fil.ErrInsuffientFunds), http.StatusBadRequest)
 			return
 		}
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
 
@@ -469,7 +480,7 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 
 	email, ok := emailIface.(string)
 	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -479,7 +490,7 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 
 	})
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 
@@ -536,4 +547,200 @@ func (s *FileHiveServer) handlePOSTGenerateCoins(w http.ResponseWriter, r *http.
 	}
 
 	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(addr, fil.FILtoAttoFIL(d.Amount))
+}
+
+func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	mr, err := r.MultipartReader()
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	id, err := makeID()
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	var (
+		containsFile, containsMetadata bool
+		dataset                        models.Dataset
+	)
+	for {
+		part, err := mr.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// FIXME: we are just saving this to file for now. In the future we will
+		// need to ingest this into powergate and also check to make sure the user
+		// has enough coins in his account in order to pay for the filecoin storage.
+		if part.FormName() == "file" {
+			outfile, err := os.Create(path.Join(s.staticFileDir, "files", id))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer outfile.Close()
+
+			_, err = io.Copy(outfile, part)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			containsFile = true
+		}
+
+		if part.FormName() == "metadata" {
+			type data struct {
+				Title            string  `json:"title"`
+				ShortDescription string  `json:"shortDescription"`
+				FullDescription  string  `json:"fullDescription"`
+				Image            string  `json:"image"`
+				FileType         string  `json:"fileType"`
+				Price            float64 `json:"price"`
+			}
+			var d data
+			if err := json.NewDecoder(part).Decode(&d); err != nil {
+				http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+				return
+			}
+
+			filename := fmt.Sprintf("%s.jpg", id)
+			if err := saveDatasetImage(path.Join(s.staticFileDir, "images", filename), d.Image); err != nil {
+				http.Error(w, wrapError(ErrInvalidImage), http.StatusBadRequest)
+				return
+			}
+
+			dataset = models.Dataset{
+				Title:            d.Title,
+				ShortDescription: d.ShortDescription,
+				FullDescription:  d.FullDescription,
+				FileType:         d.FileType,
+				Price:            d.Price,
+				UserID:           user.ID,
+				ID:               id,
+				ImageFilename:    filename,
+			}
+			containsMetadata = true
+		}
+	}
+
+	if !containsFile || !containsMetadata {
+		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
+		return
+	}
+	err = s.db.Update(func(db *gorm.DB) error {
+		return db.Save(&dataset).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type data struct {
+		ID               string  `json:"id"`
+		Title            string  `json:"title"`
+		ShortDescription string  `json:"shortDescription"`
+		FullDescription  string  `json:"fullDescription"`
+		Image            string  `json:"image"`
+		FileType         string  `json:"fileType"`
+		Price            float64 `json:"price"`
+	}
+	var d data
+	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	var dataset models.Dataset
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", d.ID).First(&dataset).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	if dataset.UserID != user.ID {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if d.Image != "" {
+		filename := fmt.Sprintf("%s.jpg", d.ID)
+		if err := saveDatasetImage(path.Join(s.staticFileDir, "images", filename), d.Image); err != nil {
+			http.Error(w, wrapError(ErrInvalidImage), http.StatusBadRequest)
+			return
+		}
+	}
+
+	if d.Title != "" {
+		dataset.Title = d.Title
+	}
+	if d.ShortDescription != "" {
+		dataset.ShortDescription = d.ShortDescription
+	}
+	if d.FullDescription != "" {
+		dataset.FullDescription = d.FullDescription
+	}
+	if d.Price != dataset.Price {
+		dataset.Price = d.Price
+	}
+	if d.FileType != "" {
+		dataset.FileType = d.FileType
+	}
+
+	err = s.db.Update(func(db *gorm.DB) error {
+		return db.Save(&dataset).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
+	"github.com/multiformats/go-multihash"
 	"github.com/op/go-logging"
 	"golang.org/x/crypto/pbkdf2"
 	"net"
@@ -151,6 +152,8 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/wallet/balance", s.handleGETWalletBalance).Methods("GET")
 	subRouter.HandleFunc("/wallet/send", s.handlePOSTWalletSend).Methods("POST")
 	subRouter.HandleFunc("/wallet/transactions", s.handleGETWalletTransactions).Methods("GET")
+	subRouter.HandleFunc("/dataset", s.handlePOSTDataset).Methods("POST")
+	subRouter.HandleFunc("/dataset", s.handlePATCHDataset).Methods("PATCH")
 
 	return r
 }
@@ -288,4 +291,18 @@ func makeSalt() []byte {
 	salt := make([]byte, 32)
 	rand.Read(salt)
 	return salt
+}
+
+func makeID() (string, error) {
+	idBytes := make([]byte, 32)
+	rand.Read(idBytes)
+	encoded, err := multihash.Encode(idBytes, multihash.IDENTITY)
+	if err != nil {
+		return "", err
+	}
+	id, err := multihash.Cast(encoded)
+	if err != nil {
+		return "", err
+	}
+	return id.B58String(), nil
 }

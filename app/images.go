@@ -9,12 +9,20 @@ import (
 )
 
 func saveAvatar(imagePath string, base64ImageData string) error {
+	return saveImage(imagePath, base64ImageData, 150, 150)
+}
+
+func saveDatasetImage(imagePath string, base64ImageData string) error {
+	return saveImage(imagePath, base64ImageData, 1200, 900)
+}
+
+func saveImage(imagePath string, base64ImageData string, targetWidth, targetHeight int) error {
 	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(base64ImageData))
 	img, err := imaging.Decode(reader, imaging.AutoOrientation(true))
 	if err != nil {
 		return ErrInvalidImage
 	}
-	width, height := getImageAttributes(150, 150, img.Bounds().Max.X, img.Bounds().Max.Y)
+	width, height := getImageAttributes(targetWidth, targetHeight, img.Bounds().Max.X, img.Bounds().Max.Y)
 	newImg := imaging.Resize(img, width, height, imaging.Lanczos)
 
 	f, err := os.Create(imagePath)

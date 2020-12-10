@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo"
@@ -17,6 +18,7 @@ import (
 var (
 	jpgTestImage  = "/9j/4AAQSkZJRgABAQAAAQABAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2NjIpLCBxdWFsaXR5ID0gNjUK/9sAQwALCAgKCAcLCgkKDQwLDREcEhEPDxEiGRoUHCkkKyooJCcnLTJANy0wPTAnJzhMOT1DRUhJSCs2T1VORlRAR0hF/9sAQwEMDQ0RDxEhEhIhRS4nLkVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVF/8AAEQgAMgAyAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A840awhv5zFKWDYyMHrVvWtE/szynj3GJ+MnsaoWFw1ndxTr1Rskeor0+70uPXNBYQ4JkQSRH36iiXw3CO9meWxxNJIqICWY4AHeu5g8C232aMztL5pUFtpGM/lUXgPw+13qD3lwhEdscAEdX/wDrVseNddl0l4bSxcLcN8zHAOB6c1UnyJLqxRTlJ9kY83guzQcNN/30P8KwNY0W206AvufceFBPWvRtMtrw6RHLqUm+dxvOVA2j04rzjxJqAv8AUXEZ/cxHavv71M20+UcbNc3Q5/bRUu2igCVRXpfw51MXFtJp0rfPD88ee6nr+R/nXmq13fw40xpL6TUXyEiGxfcnrVwV7kSdrHo7C10ixnn2rFEu6R8cZPU15r4espfFviua/uQTbxvvbPT/AGVrX+IetMyQ6PakmSUhpAv6Cuh0DT4PC/hsGbCsE82ZvfHSs4O160umiLmtFTW73/rzMjx7rC6Zp32WFgJ7gY4/hXua8nbmtTXtWk1rVZruQnDHCL/dXtWW1TBPd7suVl7q6EeKKKKsgkt42nlSNBlmIAr1rTZINA0MAkBYU3MfU15joEsEN5588irs+6GPetfX9cW8iis7eVSjHLsDxRJ+7yx3YRV5XeyNjwlbPrviCbWL0bkjbcoPQt2H4Vf+IOsTyxpplrHIyt80rKpwfQU3R9W0vS9PitkvIBtHzHeOT3q+3ibTiP8Aj9g/77FE+R2itkEXK7m92eXm2uB1gk/74NRPDKoOY3H1U16RceI7FgcXkJ/4GKwdT1q2lgkVJ0YlSOGoco20CzONzRUe6igBq1KtFFAD6KKKAGmo26UUUAR0UUUAf//Z"
 	jpgImageBytes []byte
+	testStaticDir = path.Join(os.TempDir(), "filehive_apiTests", "www")
 )
 
 func init() {
@@ -31,6 +33,7 @@ type apiTest struct {
 	method           string
 	body             []byte
 	statusCode       int
+	contentType      string
 	setup            func(db *repo.Database, wbe fil.WalletBackend) error
 	expectedResponse []byte
 }
@@ -45,16 +48,18 @@ func runAPITests(t *testing.T, tests apiTests) {
 		t.Fatal(err)
 	}
 
-	staticDir := path.Join(os.TempDir(), "filehive_apiTests", "www")
-	if err := os.MkdirAll(path.Join(staticDir, "images"), os.ModePerm); err != nil {
+	if err := os.MkdirAll(path.Join(testStaticDir, "images"), os.ModePerm); err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(staticDir)
+	if err := os.MkdirAll(path.Join(testStaticDir, "files"), os.ModePerm); err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(testStaticDir)
 
 	server := &FileHiveServer{
 		db:            db,
 		walletBackend: fil.NewMockWalletBackend(),
-		staticFileDir: staticDir,
+		staticFileDir: testStaticDir,
 	}
 
 	r := server.newV1Router()
@@ -75,6 +80,9 @@ func runAPITests(t *testing.T, tests apiTests) {
 		}
 		for _, cookie := range cookies {
 			req.AddCookie(cookie)
+		}
+		if test.contentType != "" {
+			req.Header.Set("Content-Type", test.contentType)
 		}
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -99,4 +107,12 @@ func runAPITests(t *testing.T, tests apiTests) {
 			continue
 		}
 	}
+}
+
+func mustHexToBytes(hexStr string) []byte {
+	b, err := hex.DecodeString(hexStr)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
