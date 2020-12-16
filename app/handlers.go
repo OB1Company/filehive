@@ -205,10 +205,14 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
-	var email string
-	emailFromPath := mux.Vars(r)["email"]
-	if emailFromPath != "" {
-		email = emailFromPath
+	var email, userID string
+	emailOrIDFromPath := mux.Vars(r)["emailOrID"]
+	if emailOrIDFromPath != "" {
+		if isEmailValid(emailOrIDFromPath) {
+			email = emailOrIDFromPath
+		} else {
+			userID = emailOrIDFromPath
+		}
 	} else {
 		emailIface := r.Context().Value("email")
 
@@ -222,7 +226,11 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		if email != "" {
+			return db.Where("email = ?", email).First(&user).Error
+		} else {
+			return db.Where("id = ?", userID).First(&user).Error
+		}
 
 	})
 	if err != nil {
@@ -761,4 +769,64 @@ func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request
 	}
 
 	sanitizedJSONResponse(w, dataset)
+}
+
+func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var page int
+	pageStr := mux.Vars(r)["page"]
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	var (
+		datasets []models.Dataset
+		count    int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Dataset{}).Where("user_id = ?", user.ID).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Where("user_id = ?", user.ID).Offset(page * 10).Limit(10).Find(&datasets).Error
+
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrDatasetNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages    int              `json:"pages"`
+		Page     int              `json:"page"`
+		Datasets []models.Dataset `json:"datasets"`
+	}{
+		Pages:    (int(count) / 10) + 1,
+		Page:     page,
+		Datasets: datasets,
+	})
 }

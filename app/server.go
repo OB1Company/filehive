@@ -134,7 +134,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r := mux.NewRouter()
 	// Unauthenticated Routes
 	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
-	r.HandleFunc("/api/v1/user/{email}", s.handleGETUser).Methods("GET")
+	r.HandleFunc("/api/v1/user/{emailOrID}", s.handleGETUser).Methods("GET")
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
 	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
@@ -156,6 +156,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/wallet/transactions", s.handleGETWalletTransactions).Methods("GET")
 	subRouter.HandleFunc("/dataset", s.handlePOSTDataset).Methods("POST")
 	subRouter.HandleFunc("/dataset", s.handlePATCHDataset).Methods("PATCH")
+	subRouter.HandleFunc("/datasets", s.handleGETDatasets).Methods("GET")
 
 	return r
 }

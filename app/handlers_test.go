@@ -596,6 +596,21 @@ Snowden Files
 				statusCode:       http.StatusNotFound,
 				expectedResponse: errorReturn(ErrDatasetNotFound),
 			},
+			{
+				name:       "Get datasets",
+				path:       "/api/v1/datasets",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Pages    int              `json:"pages"`
+					Page     int              `json:"page"`
+					Datasets []models.Dataset `json:"datasets"`
+				}{
+					Pages:    1,
+					Page:     0,
+					Datasets: []models.Dataset{},
+				}),
+			},
 		})
 	})
 }
