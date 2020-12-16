@@ -5,6 +5,7 @@ import (
 	"errors"
 	addr "github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
+	"io"
 	"math/big"
 	"time"
 )
@@ -18,6 +19,37 @@ func init() {
 var ErrInsuffientFunds = errors.New("insufficient funds")
 
 const attoFilPerFilecoin = 1000000000000000000
+
+// FilecoinBackend is an interface to a Filecoin backend that interacts with the
+// Filecoin network and handles storage deals and retrieval.
+type FilecoinBackend interface {
+	// Store will put a file to Filecoin and pay for it out of the provided
+	// address. A jobID is return or an error.
+	Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, err error)
+
+	// TODO
+	JobStatus(jobID cid.Cid) (string, error)
+
+	// TODO
+	Get(id cid.Cid) (io.Reader, error)
+}
+
+// WalletBackend is an interface for a Filecoin wallet that can hold the keys
+// for multiple addresses and can make transactions.
+type WalletBackend interface {
+	// NewAddress generates a new address and store the key in the backend.
+	NewAddress() (addr.Address, error)
+
+	// Send filecoin from one address to another. Returns the cid of the
+	// transaction.
+	Send(from, to addr.Address, amount *big.Int) (cid.Cid, error)
+
+	// Balance returns the balance for an address.
+	Balance(addr addr.Address) (*big.Int, error)
+
+	// Transactions returns the list of transactions for an address.
+	Transactions(addr addr.Address, limit, offset int) ([]Transaction, error)
+}
 
 // Transaction represents a Filecoin transaction.
 type Transaction struct {
@@ -43,23 +75,6 @@ func (t *Transaction) MarshalJSON() ([]byte, error) {
 		Amount:    AttoFILToFIL(t.Amount),
 		Timestamp: t.Timestamp,
 	})
-}
-
-// WalletBackend is an interface for a Filecoin wallet that can hold the keys
-// for multiple addresses and can make transactions.
-type WalletBackend interface {
-	// NewAddress generates a new address and store the key in the backend.
-	NewAddress() (addr.Address, error)
-
-	// Send filecoin from one address to another. Returns the cid of the
-	// transaction.
-	Send(from, to addr.Address, amount *big.Int) (cid.Cid, error)
-
-	// Balance returns the balance for an address.
-	Balance(addr addr.Address) (*big.Int, error)
-
-	// Transactions returns the list of transactions for an address.
-	Transactions(addr addr.Address, limit, offset int) ([]Transaction, error)
 }
 
 // FILtoAttoFIL converts a float containing an amount of Filecoin to

@@ -51,15 +51,22 @@ func runAPITests(t *testing.T, tests apiTests) {
 	if err := os.MkdirAll(path.Join(testStaticDir, "images"), os.ModePerm); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(path.Join(testStaticDir, "files"), os.ModePerm); err != nil {
+	filesDir := path.Join(testStaticDir, "files")
+	if err := os.MkdirAll(filesDir, os.ModePerm); err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(testStaticDir)
 
+	filBackend, err := fil.NewMockFilecoinBackend(path.Join(testStaticDir, "files"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	server := &FileHiveServer{
-		db:            db,
-		walletBackend: fil.NewMockWalletBackend(),
-		staticFileDir: testStaticDir,
+		db:              db,
+		filecoinBackend: filBackend,
+		walletBackend:   fil.NewMockWalletBackend(),
+		staticFileDir:   testStaticDir,
 	}
 
 	r := server.newV1Router()

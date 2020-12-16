@@ -10,6 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
+	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 	"io"
 	"net/http"
@@ -568,6 +569,12 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	addr, err := address.NewFromString(user.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
 	mr, err := r.MultipartReader()
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
@@ -583,6 +590,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 	var (
 		containsFile, containsMetadata bool
 		dataset                        models.Dataset
+		jobID                          cid.Cid
 	)
 	for {
 		part, err := mr.NextPart()
@@ -594,18 +602,8 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		// FIXME: we are just saving this to file for now. In the future we will
-		// need to ingest this into powergate and also check to make sure the user
-		// has enough coins in his account in order to pay for the filecoin storage.
 		if part.FormName() == "file" {
-			outfile, err := os.Create(path.Join(s.staticFileDir, "files", id))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			defer outfile.Close()
-
-			_, err = io.Copy(outfile, part)
+			_, jobID, err = s.filecoinBackend.Store(part, addr)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -652,9 +650,9 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
 		return
 	}
+	dataset.JobID = jobID.String()
 	err = s.db.Update(func(db *gorm.DB) error {
 		return db.Save(&dataset).Error
-
 	})
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
@@ -743,4 +741,24 @@ func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Reque
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	var dataset models.Dataset
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", id).First(&dataset).Error
+
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrDatasetNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, dataset)
 }

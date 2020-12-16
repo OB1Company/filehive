@@ -46,6 +46,13 @@ func main() {
 
 	// TODO: this will need to be set by a config option when powergate gets wired up.
 	wbe := fil.NewMockWalletBackend()
+	if err := os.MkdirAll(path.Join(config.DataDir, "files"), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+	fbe, err := fil.NewMockFilecoinBackend(path.Join(config.DataDir, "files"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	key, err := loadJWTKey(config.DataDir)
 	if err != nil {
@@ -64,7 +71,7 @@ func main() {
 		}...)
 	}
 
-	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, serverOpts...)
+	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, fbe, serverOpts...)
 	if err != nil {
 		log.Fatal(err)
 	}

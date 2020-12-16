@@ -17,9 +17,10 @@ type User struct {
 
 // Dataset holds metadata about a dataaset.
 type Dataset struct {
-	gorm.Model
+	gorm.Model       `json:"-"`
 	ID               string  `json:"id" gorm:"primary_key"`
 	UserID           string  `json:"userID"`
+	JobID            string  `json:"jobID"`
 	Title            string  `json:"title"`
 	ShortDescription string  `json:"shortDescription"`
 	FullDescription  string  `json:"fullDescription"`

@@ -24,14 +24,15 @@ var log = logging.MustGetLogger("APP")
 
 // FileHiveServer is the web server used to serve the FileHive application.
 type FileHiveServer struct {
-	db            *repo.Database
-	walletBackend fil.WalletBackend
-	staticFileDir string
-	listener      net.Listener
-	handler       http.Handler
-	jwtKey        []byte
-	domain        string
-	shutdown      chan struct{}
+	db              *repo.Database
+	walletBackend   fil.WalletBackend
+	filecoinBackend fil.FilecoinBackend
+	staticFileDir   string
+	listener        net.Listener
+	handler         http.Handler
+	jwtKey          []byte
+	domain          string
+	shutdown        chan struct{}
 
 	testMode bool
 	useSSL   bool
@@ -40,7 +41,7 @@ type FileHiveServer struct {
 }
 
 // NewServer instantiates a new FileHiveServer with the provided options.
-func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, walletBackend fil.WalletBackend, opts ...Option) (*FileHiveServer, error) {
+func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, walletBackend fil.WalletBackend, filecoinBackend fil.FilecoinBackend, opts ...Option) (*FileHiveServer, error) {
 	var options Options
 	if err := options.Apply(opts...); err != nil {
 		return nil, err
@@ -136,6 +137,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/user/{email}", s.handleGETUser).Methods("GET")
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
+	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
 
 	if s.testMode {
 		r.HandleFunc("/api/v1/generatecoins", s.handlePOSTGenerateCoins).Methods("POST")

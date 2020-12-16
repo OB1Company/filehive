@@ -552,6 +552,50 @@ Snowden Files
 				body:             []byte(`{"title": "Changed title", "id": "1234"}`),
 				expectedResponse: nil,
 			},
+			{
+				name:             "Patch dataset not found",
+				path:             "/api/v1/dataset",
+				method:           http.MethodPatch,
+				statusCode:       http.StatusBadRequest,
+				body:             []byte(`{"title": "Changed title", "id": "1111"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Get dataset",
+				path:       "/api/v1/dataset/1234",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					return db.Update(func(db *gorm.DB) error {
+						var dataset models.Dataset
+						err := db.Where("title=?", "Changed title").First(&dataset).Error
+						if err != nil {
+							return err
+						}
+						dataset.ImageFilename = "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg"
+						dataset.JobID = "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y"
+						return db.Save(&dataset).Error
+					})
+				},
+				expectedResponse: mustMarshalAndSanitizeJSON(models.Dataset{
+					JobID:            "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y",
+					Price:            0,
+					UserID:           "ABCD",
+					FileType:         ".txt",
+					Title:            "Changed title",
+					ShortDescription: "This is a short description",
+					FullDescription:  "This is a long description",
+					ImageFilename:    "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg",
+					ID:               "1234",
+				}),
+			},
+			{
+				name:             "Get dataset not found",
+				path:             "/api/v1/dataset/4567",
+				method:           http.MethodGet,
+				statusCode:       http.StatusNotFound,
+				expectedResponse: errorReturn(ErrDatasetNotFound),
+			},
 		})
 	})
 }

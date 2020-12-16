@@ -6,10 +6,71 @@ import (
 	"github.com/gcash/bchd/bchec"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
+	"io"
 	"math/big"
+	"os"
+	"path"
 	"sync"
 	"time"
 )
+
+// MockFilecoinBackend is a mock backend for a Filecoin service
+type MockFilecoinBackend struct {
+	dataDir string
+	jobs    map[cid.Cid]string
+
+	mtx sync.RWMutex
+}
+
+// NewMockFilecoinBackend instantiates a new FilecoinBackend
+func NewMockFilecoinBackend(dataDir string) (*MockFilecoinBackend, error) {
+	if err := os.MkdirAll(dataDir, os.ModePerm); err != nil {
+		return nil, err
+	}
+	return &MockFilecoinBackend{dataDir: dataDir, jobs: make(map[cid.Cid]string), mtx: sync.RWMutex{}}, nil
+}
+
+// Store will put a file to Filecoin and pay for it out of the provided
+// address. A jobID is return or an error.
+func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, err error) {
+	contentID, err = randCid()
+	if err != nil {
+		return
+	}
+	jobID, err = randCid()
+	if err != nil {
+		return
+	}
+
+	outfile, err := os.Create(path.Join(f.dataDir, contentID.String()))
+	if err != nil {
+		return
+	}
+	defer outfile.Close()
+
+	_, err = io.Copy(outfile, data)
+	if err != nil {
+		return
+	}
+
+	f.mtx.Lock()
+	defer f.mtx.Unlock()
+	f.jobs[jobID] = "finalized" // TODO: use correct status
+
+	// TODO: check address balance?
+
+	return contentID, jobID, nil
+}
+
+// TODO
+func (f *MockFilecoinBackend) JobStatus(jobID cid.Cid) (string, error) {
+	return "", nil
+}
+
+// TODO
+func (f *MockFilecoinBackend) Get(id cid.Cid) (io.Reader, error) {
+	return nil, nil
+}
 
 // MockWalletBackend is a mock backend for the wallet that allows
 // for making mock transactions and generating mock blocks.
@@ -39,7 +100,7 @@ func (w *MockWalletBackend) GenerateToAddress(addr addr.Address, amount *big.Int
 		txid = *w.nextTxid
 		w.nextTxid = nil
 	} else {
-		txid, _ = randTxid()
+		txid, _ = randCid()
 	}
 
 	ts := time.Now()
@@ -116,7 +177,7 @@ func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Ci
 		txid = *w.nextTxid
 		w.nextTxid = nil
 	} else {
-		txid, err = randTxid()
+		txid, err = randCid()
 		if err != nil {
 			return cid.Cid{}, err
 		}
@@ -186,7 +247,7 @@ func (w *MockWalletBackend) Transactions(addr addr.Address, limit, offset int) (
 	return txs[offset : offset+limit], nil
 }
 
-func randTxid() (cid.Cid, error) {
+func randCid() (cid.Cid, error) {
 	r := make([]byte, 32)
 	rand.Read(r)
 
