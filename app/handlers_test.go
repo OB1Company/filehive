@@ -743,6 +743,12 @@ Snowden Files
 				}),
 			},
 			{
+				name:       "Get purchases",
+				path:       "/api/v1/purchases",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+			},
+			{
 				name:             "Post login valid",
 				path:             "/api/v1/login",
 				method:           http.MethodPost,

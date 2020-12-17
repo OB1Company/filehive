@@ -916,6 +916,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	}
 
 	purchase := models.Purchase{
+		UserID:           user.ID,
 		Username:         datasetUser.Name,
 		ImageFilename:    dataset.ImageFilename,
 		ShortDescription: dataset.ShortDescription,
@@ -938,5 +939,61 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		Txid string `json:"txid"`
 	}{
 		Txid: txid.String(),
+	})
+}
+
+func (s *FileHiveServer) handleGETPurchases(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var page int
+	pageStr := mux.Vars(r)["page"]
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	var (
+		purchases []models.Purchase
+		count     int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Purchase{}).Where("user_id = ?", user.ID).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Where("user_id = ?", user.ID).Offset(page * 10).Limit(10).Find(&purchases).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages     int               `json:"pages"`
+		Page      int               `json:"page"`
+		Purchases []models.Purchase `json:"purchases"`
+	}{
+		Pages:     (int(count) / 10) + 1,
+		Page:      page,
+		Purchases: purchases,
 	})
 }

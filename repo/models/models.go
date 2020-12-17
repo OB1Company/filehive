@@ -35,8 +35,9 @@ type Dataset struct {
 
 // Purchase holds information about a user purchase.
 type Purchase struct {
-	gorm.Model
+	gorm.Model       `json:"-"`
 	ID               string `json:"id" gorm:"primary_key"`
+	UserID           string `json:"userID"`
 	DatasetID        string `json:"datasetID"`
 	Timestamp        time.Time
 	Title            string `json:"title"`
