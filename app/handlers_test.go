@@ -154,6 +154,37 @@ func Test_Handlers(t *testing.T) {
 				statusCode:       http.StatusNotFound,
 				expectedResponse: errorReturn(ErrUserNotFound),
 			},
+			{
+				name:       "Patch user update name in datasets",
+				path:       "/api/v1/user",
+				method:     http.MethodPatch,
+				statusCode: http.StatusOK,
+				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					return db.Update(func(tx *gorm.DB) error {
+						if err := tx.Model(&models.User{}).Where("email = ?", "brian2@ob1.io").Update("id", "1234").Error; err != nil {
+							return err
+						}
+						return tx.Save(&models.Dataset{
+							ID:       "abc",
+							UserID:   "1234",
+							Username: "Joe",
+						}).Error
+					})
+				},
+				body:             []byte(`{"name": "Brian2"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Check dataset name updated",
+				path:       "/api/v1/dataset/abc",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(&models.Dataset{
+					ID:       "abc",
+					Username: "Brian2",
+					UserID:   "1234",
+				}),
+			},
 		})
 	})
 
@@ -476,18 +507,10 @@ func Test_Handlers(t *testing.T) {
 	t.Run("Dataset Tests", func(t *testing.T) {
 		runAPITests(t, apiTests{
 			{
-				name:       "Post user success",
-				path:       "/api/v1/user",
-				method:     http.MethodPost,
-				statusCode: http.StatusOK,
-				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
-					addr, err := address.NewFromString("f1cu3c2dqsbyt7nq63x2yubyy6ofuini2nfvnnahi")
-					if err != nil {
-						return err
-					}
-					wbe.(*fil.MockWalletBackend).SetNextAddress(addr)
-					return nil
-				},
+				name:             "Post user success",
+				path:             "/api/v1/user",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
 				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
@@ -587,6 +610,7 @@ Snowden Files
 					FullDescription:  "This is a long description",
 					ImageFilename:    "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg",
 					ID:               "1234",
+					Username:         "Brian",
 				}),
 			},
 			{
@@ -609,6 +633,132 @@ Snowden Files
 					Pages:    1,
 					Page:     0,
 					Datasets: []models.Dataset{},
+				}),
+			},
+		})
+	})
+
+	t.Run("Purchase Tests", func(t *testing.T) {
+		runAPITests(t, apiTests{
+			{
+				name:             "Post user success",
+				path:             "/api/v1/user",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:        "Post dataset success",
+				path:        "/api/v1/dataset",
+				method:      http.MethodPost,
+				statusCode:  http.StatusOK,
+				contentType: "multipart/form-data; boundary=cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527",
+				body: []byte(`--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json
+
+{"title":"Snowden Leaks", "shortDescription": "This is a short description", "fullDescription": "This is a long description", "fileType": ".txt", "price": 1.234, "image": "/9j/4AAQSkZJRgABAQAAAQABAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2NjIpLCBxdWFsaXR5ID0gNjUK/9sAQwALCAgKCAcLCgkKDQwLDREcEhEPDxEiGRoUHCkkKyooJCcnLTJANy0wPTAnJzhMOT1DRUhJSCs2T1VORlRAR0hF/9sAQwEMDQ0RDxEhEhIhRS4nLkVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVF/8AAEQgAMgAyAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A840awhv5zFKWDYyMHrVvWtE/szynj3GJ+MnsaoWFw1ndxTr1Rskeor0+70uPXNBYQ4JkQSRH36iiXw3CO9meWxxNJIqICWY4AHeu5g8C232aMztL5pUFtpGM/lUXgPw+13qD3lwhEdscAEdX/wDrVseNddl0l4bSxcLcN8zHAOB6c1UnyJLqxRTlJ9kY83guzQcNN/30P8KwNY0W206AvufceFBPWvRtMtrw6RHLqUm+dxvOVA2j04rzjxJqAv8AUXEZ/cxHavv71M20+UcbNc3Q5/bRUu2igCVRXpfw51MXFtJp0rfPD88ee6nr+R/nXmq13fw40xpL6TUXyEiGxfcnrVwV7kSdrHo7C10ixnn2rFEu6R8cZPU15r4espfFviua/uQTbxvvbPT/AGVrX+IetMyQ6PakmSUhpAv6Cuh0DT4PC/hsGbCsE82ZvfHSs4O160umiLmtFTW73/rzMjx7rC6Zp32WFgJ7gY4/hXua8nbmtTXtWk1rVZruQnDHCL/dXtWW1TBPd7suVl7q6EeKKKKsgkt42nlSNBlmIAr1rTZINA0MAkBYU3MfU15joEsEN5588irs+6GPetfX9cW8iis7eVSjHLsDxRJ+7yx3YRV5XeyNjwlbPrviCbWL0bkjbcoPQt2H4Vf+IOsTyxpplrHIyt80rKpwfQU3R9W0vS9PitkvIBtHzHeOT3q+3ibTiP8Aj9g/77FE+R2itkEXK7m92eXm2uB1gk/74NRPDKoOY3H1U16RceI7FgcXkJ/4GKwdT1q2lgkVJ0YlSOGoco20CzONzRUe6igBq1KtFFAD6KKKAGmo26UUUAR0UUUAf//Z"}
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="file"; filename="snowden.txt"
+Content-Type: application/octet-stream
+
+Snowden Files
+
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527--`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Post second user to be buyer",
+				path:       "/api/v1/user",
+				method:     http.MethodPost,
+				statusCode: http.StatusOK,
+				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					return db.Update(func(db *gorm.DB) error {
+						return db.Model(&models.User{}).Where("email = ?", "brian@ob1.io").Update("filecoin_address", "f1c2qg3aj5pueqvgj3y6z56ek2pfdoelq2hberxqi").Error
+					})
+				},
+				body:             []byte(`{"email": "buyer@ob1.io", "password":"asdf", "name": "Buyer Bob", "country": "United_States"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Purchase dataset insufficient funds",
+				path:       "/api/v1/purchase/1234",
+				method:     http.MethodPost,
+				statusCode: http.StatusBadRequest,
+				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					return db.Update(func(db *gorm.DB) error {
+						var dataset models.Dataset
+						err := db.Where("title=?", "Snowden Leaks").First(&dataset).Error
+						if err != nil {
+							return err
+						}
+						if err := db.Delete(&dataset).Error; err != nil {
+							return err
+						}
+						dataset.ID = "1234"
+						return db.Save(&dataset).Error
+					})
+				},
+				expectedResponse: errorReturn(ErrInsuffientFunds),
+			},
+			{
+				name:             "Purchase dataset not found",
+				path:             "/api/v1/purchase/1111",
+				method:           http.MethodPost,
+				statusCode:       http.StatusBadRequest,
+				expectedResponse: errorReturn(ErrDatasetNotFound),
+			},
+			{
+				name:       "Purchase dataset success",
+				path:       "/api/v1/purchase/1234",
+				method:     http.MethodPost,
+				statusCode: http.StatusOK,
+				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
+					var user models.User
+					err := db.Update(func(db *gorm.DB) error {
+						return db.Where("email=?", "buyer@ob1.io").First(&user).Error
+					})
+					if err != nil {
+						return err
+					}
+					addr, err := address.NewFromString(user.FilecoinAddress)
+					if err != nil {
+						return err
+					}
+					amt, _ := new(big.Int).SetString("15500000000000000000", 10)
+					wbe.(*fil.MockWalletBackend).GenerateToAddress(addr, amt)
+					txid, err := cid.Decode("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
+					if err != nil {
+						return err
+					}
+
+					wbe.(*fil.MockWalletBackend).SetNextTxid(txid)
+					return nil
+				},
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Txid string `json:"txid"`
+				}{
+					Txid: "bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde",
+				}),
+			},
+			{
+				name:             "Post login valid",
+				path:             "/api/v1/login",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Check wallet balance",
+				path:       "/api/v1/wallet/balance",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Balance float64
+				}{
+					Balance: 1.234,
 				}),
 			},
 		})

@@ -37,6 +37,7 @@ var (
 	ErrImageNotFound      = errors.New("image not found")
 	ErrInvalidOption      = errors.New("invalid option")
 	ErrMissingForm        = errors.New("missing form")
+	ErrInsuffientFunds    = errors.New("insufficient funds")
 
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
@@ -312,6 +313,10 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 		}
 		if d.Name != "" {
 			user.Name = d.Name
+
+			if err := db.Model(&models.Dataset{}).Where("user_id = ?", user.ID).Update("username", d.Name).Error; err != nil {
+				return err
+			}
 		}
 		if d.Country != "" {
 			user.Country = d.Country
@@ -648,6 +653,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 				Price:            d.Price,
 				UserID:           user.ID,
 				ID:               id,
+				Username:         user.Name,
 				ImageFilename:    filename,
 			}
 			containsMetadata = true
@@ -828,5 +834,109 @@ func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Reques
 		Pages:    (int(count) / 10) + 1,
 		Page:     page,
 		Datasets: datasets,
+	})
+}
+
+func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var (
+		dataset     models.Dataset
+		datasetUser models.User
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Where("id = ?", id).First(&dataset).Error; err != nil {
+			return ErrDatasetNotFound
+		}
+
+		return db.Where("id = ?", dataset.UserID).First(&datasetUser).Error
+
+	})
+	if err != nil {
+		if errors.Is(err, ErrDatasetNotFound) {
+			http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+			return
+		} else {
+			http.Error(w, wrapError(err), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	purchaseID, err := makeID()
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	userAddr, err := address.NewFromString(user.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+	datasetUserAddr, err := address.NewFromString(datasetUser.FilecoinAddress)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	balance, err := s.walletBackend.Balance(userAddr)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	amt := fil.FILtoAttoFIL(dataset.Price)
+	if balance.Cmp(amt) < 0 {
+		http.Error(w, wrapError(ErrInsuffientFunds), http.StatusBadRequest)
+		return
+	}
+
+	txid, err := s.walletBackend.Send(userAddr, datasetUserAddr, amt)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	purchase := models.Purchase{
+		Username:         datasetUser.Name,
+		ImageFilename:    dataset.ImageFilename,
+		ShortDescription: dataset.ShortDescription,
+		FileType:         dataset.FileType,
+		DatasetID:        dataset.ID,
+		Title:            dataset.Title,
+		Timestamp:        time.Now(),
+		ID:               purchaseID,
+	}
+
+	err = s.db.Update(func(db *gorm.DB) error {
+		return db.Save(&purchase).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Txid string `json:"txid"`
+	}{
+		Txid: txid.String(),
 	})
 }

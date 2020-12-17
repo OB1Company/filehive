@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // User contains all information for each user.
 type User struct {
@@ -21,10 +24,24 @@ type Dataset struct {
 	ID               string  `json:"id" gorm:"primary_key"`
 	UserID           string  `json:"userID"`
 	JobID            string  `json:"jobID"`
+	Username         string  `json:"username"`
 	Title            string  `json:"title"`
 	ShortDescription string  `json:"shortDescription"`
 	FullDescription  string  `json:"fullDescription"`
 	ImageFilename    string  `json:"imageFilename"`
 	FileType         string  `json:"fileType"`
 	Price            float64 `json:"price"`
+}
+
+// Purchase holds information about a user purchase.
+type Purchase struct {
+	gorm.Model
+	ID               string `json:"id" gorm:"primary_key"`
+	DatasetID        string `json:"datasetID"`
+	Timestamp        time.Time
+	Title            string `json:"title"`
+	ShortDescription string `json:"shortDescription"`
+	ImageFilename    string `json:"imageFilename"`
+	FileType         string `json:"fileType"`
+	Username         string `json:"username"`
 }
