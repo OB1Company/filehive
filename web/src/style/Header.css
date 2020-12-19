@@ -98,11 +98,20 @@ h1 {
 }
 
 h2 {
-    font-family: Nunito Sans;
+    font-family: 'Nunito Sans';
     font-style: normal;
     font-weight: bold;
     font-size: 28px;
     line-height: 38px;
+    color: #000000;
+}
+
+h3 {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 27px;
     color: #000000;
 }
 
@@ -181,7 +190,7 @@ div.Login input[type=text] {
     height: 38px;
     min-width: 135px;
     margin-right: 18px;
-    margin-bottom: 16px;
+    cursor: pointer;
 }
 
 .ErrorBox {
@@ -191,4 +200,73 @@ div.Login input[type=text] {
     height: 44px;
     padding: 10px 13px;
     color: #D23330;
+}
+
+.CreateDataset {
+    margin-top: 36px;
+}
+
+.CreateDataset h2 {
+    margin-bottom: 8px;
+}
+
+.CreateDataset form {
+    display: flex;
+    flex-direction: column;
+}
+
+div.CreateDataset label {
+    margin-bottom: 16px;
+}
+
+div.CreateDataset input[type=text] {
+    width: 40%;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-sizing: border-box;
+    border-radius: 4px;
+    height: 38px;
+    padding: 7px 12px;
+    margin-right: 60px;
+}
+
+div.CreateDataset textarea {
+    width: 40%;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 7px 12px;
+    margin-right: 60px;
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 24px;
+    height: 131px;
+}
+
+div.CreateDataset input[type=file] {
+    width: 40%;
+    margin-right: 60px;
+}
+
+div.CreateDataset span {
+    width: 50%;
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-size: 14px;
+    line-height: 19px;
+    color: #8C8C8C;
+}
+
+div.CreateDataset div {
+    margin-top: 10px;
+    display: flex;
+}
+
+div.form-divider {
+    height: 1px;
+    border-top: 1px solid #E5E5E5;
+    margin: 30px 0;
 }

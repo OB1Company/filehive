@@ -1,12 +1,15 @@
 import React from 'react'
 import Header from '../Header'
 import Footer from '../Footer'
+import Create from '../components/Create.js'
 
 export default function LoginPage() {
   return (
     <div className="container">
       <Header/>
-      Login
+      <div className="subBody">
+        <Create/>
+      </div>
       <Footer/>
     </div>
   )
