@@ -1,5 +1,8 @@
 import React from 'react'
 import {Link} from "react-router-dom";
+import ErrorBox from './components/ErrorBox'
+
+
 
 function Login() {
   return (
@@ -18,7 +21,7 @@ function Login() {
           <input type="submit" value="Log in" class="orange-button" />
           <Link to='/passwordreset'>Forgot password?</Link>
         </div>
-
+        <ErrorBox message="Incorrect email/password. Try again."/>
       </form>
     </div>
   )

@@ -123,6 +123,7 @@ div.Footer {
 
 div.Footer a {
     text-decoration: none;
+    color: #000000;
 }
 
 div.Footer img { margin-right: 7px; }
@@ -180,4 +181,14 @@ div.Login input[type=text] {
     height: 38px;
     min-width: 135px;
     margin-right: 18px;
+    margin-bottom: 16px;
+}
+
+.ErrorBox {
+    background: #F2DEDE;
+    border: 1px solid #EBCCCC;
+    border-radius: 4px;
+    height: 44px;
+    padding: 10px 13px;
+    color: #D23330;
 }
