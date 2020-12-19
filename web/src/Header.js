@@ -10,8 +10,8 @@ function Header() {
         <input type="text"/>
       </div>
       <div class="Header-Right">
-        <Link to ='/'>Log in</Link>
-        <Link to ='/'>Sign up</Link>
+        <Link to ='/login'>Log in</Link>
+        <Link to ='/signup'>Sign up</Link>
         <Link to ='/create'><input type="button" value="Create dataset"/></Link>
       </div>
     </div>

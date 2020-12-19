@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <div className="container">
       <Header/>
-      Login
+      Sign Up
       <Footer/>
     </div>
   )
