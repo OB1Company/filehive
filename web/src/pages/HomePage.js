@@ -7,7 +7,14 @@ export default function HomePage() {
   return (
     <div className="container">
       <Header/>
-      awesome
+
+      <div class="subBody">
+
+        <Link to='/datasets/trending'>Trending</Link>
+        <Link to='/datasets/recent'>Recent</Link>
+
+      </div>
+
       <Footer/>
     </div>
   )

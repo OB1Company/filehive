@@ -14,10 +14,12 @@ html {
 body {
     font-family: "Nunito Sans";
     background-color: #FFF7EB;
+    font-size: 16px;
 }
 
 a {
-    color: #000000;
+    color: #8C8C8C;
+    text-decoration: none;
 }
 
 img {
@@ -89,13 +91,23 @@ div.Header a, div.Header a:hover, div.Header a:visited, div.Header a:link, div.H
 
 h1 {
     font-size:24px;
-    font-family: "Nunito Sans";
+    font-family: Nunito Sans;
     font-weight: bold;
     text-decoration: none;
     margin-right: 22px;
 }
 
+h2 {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 28px;
+    line-height: 38px;
+    color: #000000;
+}
+
 div.Footer {
+    border-top: 1px solid #F0F0F0;
     background-color: #ffffff;
     height: 44px;
     padding: 0 30px;
@@ -114,3 +126,58 @@ div.Footer a {
 }
 
 div.Footer img { margin-right: 7px; }
+
+div.subBody {
+    padding: 0px 30px;
+}
+
+div.Login {
+    width: 540px;
+    margin: 0 auto;
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+}
+
+div.Login form {
+    display: flex;
+    flex-direction: column;
+}
+
+div.Login h2 {
+    margin-bottom: 8px;
+}
+
+div.Login label {
+    margin-bottom: 16px;
+}
+
+div.Login input[type=text] {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-sizing: border-box;
+    border-radius: 4px;
+    height: 38px;
+    padding: 7px 12px;
+}
+
+.orange-button {
+    background: #F3A815;
+    border: 1px solid #F3A815;
+    box-sizing: border-box;
+    border-radius: 20px;
+
+    font-style: normal;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 21px;
+
+    text-align: center;
+
+    color: #FFFFFF;
+    padding: 0 10px;
+    height: 38px;
+    min-width: 135px;
+    margin-right: 18px;
+}
