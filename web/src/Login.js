@@ -6,7 +6,7 @@ import ErrorBox from './components/ErrorBox'
 
 function Login() {
   return (
-    <div class="Login">
+    <div class="Login form-540">
       <h2>Log in</h2>
       <form>
         <label>

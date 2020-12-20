@@ -141,7 +141,7 @@ div.subBody {
     padding: 0px 30px;
 }
 
-div.Login {
+.form-540 {
     width: 540px;
     margin: 0 auto;
     margin-top: 36px;
@@ -149,20 +149,20 @@ div.Login {
     flex-direction: column;
 }
 
-div.Login form {
+.form-540 form {
     display: flex;
     flex-direction: column;
 }
 
-div.Login h2 {
+.form-540 h2 {
     margin-bottom: 8px;
 }
 
-div.Login label {
+.form-540 label {
     margin-bottom: 16px;
 }
 
-div.Login input[type=text] {
+.form-540 input[type=text] {
     width: 100%;
     background: #FFFFFF;
     border: 1px solid #E5E5E5;
