@@ -3,7 +3,6 @@ package app
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"github.com/OB1Company/filehive/fil"
 	"github.com/OB1Company/filehive/repo"
@@ -114,12 +113,4 @@ func runAPITests(t *testing.T, tests apiTests) {
 			continue
 		}
 	}
-}
-
-func mustHexToBytes(hexStr string) []byte {
-	b, err := hex.DecodeString(hexStr)
-	if err != nil {
-		panic(err)
-	}
-	return b
 }
