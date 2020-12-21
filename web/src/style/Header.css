@@ -119,7 +119,7 @@ div.Footer {
     border-top: 1px solid #F0F0F0;
     background-color: #ffffff;
     height: 44px;
-    padding: 0 30px;
+    padding: 0 20px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -128,6 +128,9 @@ div.Footer {
     font-weight: normal;
     font-size: 14px;
     line-height: 19px;
+    position: fixed;
+    bottom: 0;
+    width: 1200px;
 }
 
 div.Footer a {
@@ -138,6 +141,7 @@ div.Footer a {
 div.Footer img { margin-right: 7px; }
 
 div.subBody {
+    min-height: 90vh;
     padding: 0px 30px;
 }
 
@@ -162,7 +166,8 @@ div.subBody {
     margin-bottom: 16px;
 }
 
-.form-540 input[type=text] {
+.form-540 input[type=text],
+.form-540 input[type=password] {
     width: 100%;
     background: #FFFFFF;
     border: 1px solid #E5E5E5;
@@ -198,6 +203,7 @@ div.subBody {
     border: 1px solid #EBCCCC;
     border-radius: 4px;
     height: 44px;
+    margin: 20px 0;
     padding: 10px 13px;
     color: #D23330;
 }

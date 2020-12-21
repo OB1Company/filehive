@@ -1,16 +1,11 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {Link} from "react-router-dom";
 import ErrorBox from './components/ErrorBox'
 import Select from 'react-select'
-
+import { Countries } from './constants/Countries'
 
 function Signup() {
-
-    const options = [
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' }
-    ]
+  const [error, setError] = useState(false)
 
   return (
     <div class="Signup form-540">
@@ -22,17 +17,20 @@ function Signup() {
         </label>
         <label>
           Password*
-          <input type="text" name="password" placeholder="Password" />
+          <input type="password" name="password" placeholder="Password" />
         </label>
         <label>
           Country*
-            <Select options={options} placeholder="--"/>
+            <Select options={Countries} placeholder="--"/>
         </label>
         <div>
           <input type="submit" value="Sign up" class="orange-button" />
           <Link to='/login'>Already registered?</Link>
         </div>
-        <ErrorBox message="An account is already registered with that email address."/>
+
+        {error &&
+          <ErrorBox message="An account is already registered with that email address."/>
+        }
       </form>
     </div>
   )
