@@ -276,3 +276,27 @@ div.form-divider {
     border-top: 1px solid #E5E5E5;
     margin: 30px 0;
 }
+
+.tabbed-links {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid #F0F0F0;
+    padding: 0 30px;
+}
+
+.tabbed-links li {
+    list-style: none;
+    padding: 12px 30px 12px 0;
+}
+
+.tabbed-links a {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 21px;
+}
+
+.tabbed-links li.active a {
+    color: #F3A815;
+}
