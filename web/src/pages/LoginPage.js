@@ -4,6 +4,7 @@ import Footer from '../Footer'
 import Login from '../Login'
 
 export default function LoginPage() {
+
   return (
     <div className="container">
       <Header/>
@@ -14,3 +15,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
