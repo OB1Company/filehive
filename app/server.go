@@ -97,7 +97,10 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 	rand.Read(csrfKey)
 
 	csrfOpts := []csrf.Option{
-		csrf.SameSite(csrf.SameSiteLaxMode),
+		csrf.SameSite(csrf.SameSiteNoneMode),
+		csrf.Secure(false),
+		csrf.HttpOnly(true),
+		csrf.Path("/"),
 	}
 	if options.Domain != "" {
 		csrfOpts = append(csrfOpts, csrf.Domain(options.Domain))
