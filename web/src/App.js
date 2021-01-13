@@ -13,15 +13,12 @@ export default function App() {
     const getCsrfToken = async () => {
         try {
             const token = localStorage.getItem("token");
-            console.log(token);
             if(token == null) {
                 const {data} = await axios.get('/api/v1/user', {withCredentials: true});
             }
         } catch(err) {
-            console.log(err.response);
             localStorage.setItem("token", err.response.headers['x-csrf-token']);
             axios.defaults.headers.post['x-csrf-token'] = err.response.headers['x-csrf-token'];
-            console.log(localStorage);
         }
     };
     getCsrfToken();
