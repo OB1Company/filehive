@@ -17,9 +17,7 @@ function Login() {
 
   const HandleFormSubmit = async (e) => {
     const env = config();
-
     e.preventDefault();
-
 
     try {
       const data = { email, password };
@@ -44,13 +42,12 @@ function Login() {
           history.push("/");
 
         } catch(err) {
+          localStorage.setItem('token', null);
           console.log(err);
         }
       };
       await getCsrfToken();
 
-
-      //history.push("/");
     } catch (error) {
 
       // Check for csrf issue
