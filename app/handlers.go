@@ -88,6 +88,7 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		Value:    tokenString,
 		Expires:  expirationTime,
 		Domain:   s.domain,
+		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 		Secure:   true,
