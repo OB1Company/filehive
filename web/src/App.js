@@ -15,7 +15,6 @@ export default function App() {
             const token = localStorage.getItem("token");
             console.log(token);
             if(token == null) {
-                axios.defaults.xsrfCookieName = '_gorilla_csrf';
                 const {data} = await axios.get('/api/v1/user', {withCredentials: true});
             }
         } catch(err) {
