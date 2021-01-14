@@ -52,6 +52,7 @@ type Purchase struct {
 
 // Click represents a view on a dataset.
 type Click struct {
+	gorm.Model
 	DatasetID string
 	Timestamp time.Time `gorm:"index"`
 }

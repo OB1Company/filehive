@@ -17,6 +17,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1049,5 +1050,80 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		Pages:    (int(count) / 10) + 1,
 		Page:     page,
 		Datasets: recent,
+	})
+}
+
+func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Request) {
+	var (
+		page int
+		err  error
+	)
+	pageStr := mux.Vars(r)["page"]
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	var (
+		trending []models.Dataset
+		count    int
+	)
+
+	err = s.db.Update(func(db *gorm.DB) error {
+		if err := db.Where("timestamp < ?", time.Now().Add(-time.Hour*24)).Delete(&models.Click{}).Error; err != nil {
+			return err
+		}
+
+		type result struct {
+			DatasetID string
+			Count     int64
+		}
+
+		var clicks []models.Click
+		if err := db.Distinct("dataset_ID").Find(&clicks).Error; err != nil {
+			return err
+		}
+
+		results := make([]result, 0, len(clicks))
+		for _, click := range clicks {
+			var count int64
+			if err := db.Model(&models.Click{}).Where("dataset_id = ?", click.DatasetID).Count(&count).Error; err != nil {
+				return err
+			}
+
+			results = append(results, result{DatasetID: click.DatasetID, Count: count})
+		}
+
+		sort.Slice(results, func(i, j int) bool { return results[i].Count > results[j].Count })
+		count = len(results)
+
+		for _, res := range results[page*10:] {
+			var ds models.Dataset
+			if err := db.Where("id = ?", res.DatasetID).First(&ds).Error; err != nil {
+				return err
+			}
+			trending = append(trending, ds)
+			if len(trending) >= 10 {
+				return nil
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages    int              `json:"pages"`
+		Page     int              `json:"page"`
+		Datasets []models.Dataset `json:"datasets"`
+	}{
+		Pages:    (count / 10) + 1,
+		Page:     page,
+		Datasets: trending,
 	})
 }
