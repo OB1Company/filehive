@@ -8,6 +8,7 @@
 _obj
 _test
 __pycache__
+node_modules
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -38,3 +39,4 @@ openbazaar-go*
 
 # macOS
 .DS_Store
+.eslintcache

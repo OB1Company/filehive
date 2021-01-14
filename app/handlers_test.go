@@ -635,6 +635,34 @@ Snowden Files
 					Datasets: []models.Dataset{},
 				}),
 			},
+			{
+				name:       "Get recent",
+				path:       "/api/v1/recent",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Pages    int              `json:"pages"`
+					Page     int              `json:"page"`
+					Datasets []models.Dataset `json:"datasets"`
+				}{
+					Pages:    1,
+					Page:     0,
+					Datasets: []models.Dataset{
+						{
+							FileType: ".txt",
+							FullDescription: "This is a long description",
+							ID: "1234",
+							ImageFilename: "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg",
+							JobID: "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y",
+							Price: 0,
+							ShortDescription: "This is a short description",
+							Title: "Changed title",
+							UserID: "ABCD",
+							Username: "Brian",
+						},
+					},
+				}),
+			},
 		})
 	})
 

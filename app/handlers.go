@@ -997,3 +997,44 @@ func (s *FileHiveServer) handleGETPurchases(w http.ResponseWriter, r *http.Reque
 		Purchases: purchases,
 	})
 }
+
+func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request) {
+	var (
+		page int
+		err  error
+	)
+	pageStr := mux.Vars(r)["page"]
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	var (
+		recent []models.Dataset
+		count  int64
+	)
+
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Dataset{}).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Order("created_at desc").Offset(page * 10).Limit(10).Find(&recent).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages    int              `json:"pages"`
+		Page     int              `json:"page"`
+		Datasets []models.Dataset `json:"datasets"`
+	}{
+		Pages:    (int(count) / 10) + 1,
+		Page:     page,
+		Datasets: recent,
+	})
+}

@@ -21,16 +21,19 @@ type User struct {
 // Dataset holds metadata about a dataaset.
 type Dataset struct {
 	gorm.Model       `json:"-"`
-	ID               string  `json:"id" gorm:"primary_key"`
-	UserID           string  `json:"userID"`
-	JobID            string  `json:"jobID"`
-	Username         string  `json:"username"`
-	Title            string  `json:"title"`
-	ShortDescription string  `json:"shortDescription"`
-	FullDescription  string  `json:"fullDescription"`
-	ImageFilename    string  `json:"imageFilename"`
-	FileType         string  `json:"fileType"`
-	Price            float64 `json:"price"`
+	ID               string    `json:"id" gorm:"primary_key"`
+	CreatedAt        time.Time `gorm:"index" json:"-"`
+	UserID           string    `json:"userID"`
+	JobID            string    `json:"jobID"`
+	Username         string    `json:"username"`
+	Title            string    `json:"title"`
+	ShortDescription string    `json:"shortDescription"`
+	FullDescription  string    `json:"fullDescription"`
+	ImageFilename    string    `json:"imageFilename"`
+	FileType         string    `json:"fileType"`
+	Price            float64   `json:"price"`
+	Views            int64     `json:"totalViews"`
+	Downloads        int64     `json:"totalDownloads"`
 }
 
 // Purchase holds information about a user purchase.
@@ -45,4 +48,10 @@ type Purchase struct {
 	ImageFilename    string `json:"imageFilename"`
 	FileType         string `json:"fileType"`
 	Username         string `json:"username"`
+}
+
+// Click represents a view on a dataset.
+type Click struct {
+	DatasetID string    `gorm:"primary_key"`
+	Timestamp time.Time `gorm:"index"`
 }

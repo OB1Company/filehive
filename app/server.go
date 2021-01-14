@@ -136,6 +136,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
 	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
+	r.HandleFunc("/api/v1/recent", s.handleGETRecent).Methods("GET")
 
 	if s.testMode {
 		r.HandleFunc("/api/v1/generatecoins", s.handlePOSTGenerateCoins).Methods("POST")
