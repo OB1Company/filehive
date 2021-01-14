@@ -58,6 +58,9 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 		if _, ok := walletBackend.(*fil.MockWalletBackend); !ok {
 			return nil, errors.New("MockWalletBackend must be used in testmode")
 		}
+		if _, ok := filecoinBackend.(*fil.MockFilecoinBackend); !ok {
+			return nil, errors.New("MockFilecoinBackend must be used in testmode")
+		}
 	}
 
 	if options.JWTKey == nil {
@@ -72,16 +75,17 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 
 	var (
 		s = &FileHiveServer{
-			db:            db,
-			walletBackend: walletBackend,
-			listener:      listener,
-			staticFileDir: staticFileDir,
-			useSSL:        options.UseSSL,
-			sslCert:       options.SSLCert,
-			sslKey:        options.SSLKey,
-			jwtKey:        options.JWTKey,
-			domain:        options.Domain,
-			shutdown:      make(chan struct{}),
+			db:              db,
+			walletBackend:   walletBackend,
+			filecoinBackend: filecoinBackend,
+			listener:        listener,
+			staticFileDir:   staticFileDir,
+			useSSL:          options.UseSSL,
+			sslCert:         options.SSLCert,
+			sslKey:          options.SSLKey,
+			jwtKey:          options.JWTKey,
+			domain:          options.Domain,
+			shutdown:        make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
 	)
@@ -130,6 +134,8 @@ func (s *FileHiveServer) Serve() error {
 
 func (s *FileHiveServer) newV1Router() *mux.Router {
 	r := mux.NewRouter()
+	r.Methods("OPTIONS")
+
 	// Unauthenticated Routes
 	r.HandleFunc("/api/v1/user", s.handlePOSTUser).Methods("POST")
 	r.HandleFunc("/api/v1/user/{emailOrID}", s.handleGETUser).Methods("GET")

@@ -33,7 +33,7 @@ type Dataset struct {
 	FileType         string    `json:"fileType"`
 	Price            float64   `json:"price"`
 	Views            int64     `json:"totalViews"`
-	Downloads        int64     `json:"totalDownloads"`
+	Purchases        int64     `json:"totalPurchases"`
 }
 
 // Purchase holds information about a user purchase.
@@ -52,6 +52,6 @@ type Purchase struct {
 
 // Click represents a view on a dataset.
 type Click struct {
-	DatasetID string    `gorm:"primary_key"`
+	DatasetID string
 	Timestamp time.Time `gorm:"index"`
 }

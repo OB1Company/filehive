@@ -761,8 +761,17 @@ func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request
 	id := mux.Vars(r)["id"]
 
 	var dataset models.Dataset
-	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("id = ?", id).First(&dataset).Error
+	err := s.db.Update(func(db *gorm.DB) error {
+		if err := db.Where("id = ?", id).First(&dataset).Error; err != nil {
+			return err
+		}
+
+		if err := db.Save(&models.Click{DatasetID: dataset.ID, Timestamp: time.Now()}).Error; err != nil {
+			return err
+		}
+
+		dataset.Views++
+		return db.Save(&dataset).Error
 
 	})
 	if err != nil {
@@ -928,6 +937,10 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
+		dataset.Purchases++
+		if err := db.Save(&dataset).Error; err != nil {
+			return err
+		}
 		return db.Save(&purchase).Error
 	})
 	if err != nil {

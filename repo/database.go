@@ -73,7 +73,7 @@ func NewDatabase(dataDir string, opts ...Option) (*Database, error) {
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&models.User{}, &models.Dataset{}, &models.Purchase{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Dataset{}, &models.Purchase{}, &models.Click{}); err != nil {
 		return nil, err
 	}
 
