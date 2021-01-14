@@ -91,7 +91,7 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	})
 }
 
