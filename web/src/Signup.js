@@ -1,11 +1,14 @@
 import React, {useState} from 'react'
 import {Link} from "react-router-dom";
 import ErrorBox from './components/ErrorBox'
+import { useHistory } from "react-router-dom";
 import Select from 'react-select'
 import { Countries } from './constants/Countries'
 import axios from "axios";
 
 function Signup() {
+
+  const history = useHistory();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +19,22 @@ function Signup() {
     e.preventDefault();
 
     const data = { email, password, country };
-    console.log(data);
+
+    const csrftoken = localStorage.getItem('token');
+    const instance = axios.create({
+      baseURL: "",
+      headers: { "x-csrf-token": csrftoken }
+    })
+
+    const loginUrl = "/api/v1/user";
+    const apiReq = await instance.post(
+        loginUrl,
+        data
+    );
+
+    // Successful login
+    console.log(apiReq);
+    history.push("/");
 
     return false;
   }

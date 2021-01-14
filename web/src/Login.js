@@ -13,7 +13,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isError, setIsError] = useState(false);
-  const [error, setError] = useState(false)
+  const [error, setError] = useState(false);
 
   const HandleFormSubmit = async (e) => {
     const env = config();
@@ -37,8 +37,8 @@ function Login() {
               data
           );
 
-          // Successful login
-          console.log(apiReq);
+
+
           history.push("/");
 
         } catch(err) {

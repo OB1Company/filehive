@@ -8,8 +8,7 @@ import SignupPage from './pages/SignupPage'
 import CreatePage from './pages/CreatePage'
 import axios from "axios";
 
-export default function App() {
-
+const VerifyCSRF = ({children}) => {
     const getCsrfToken = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -23,19 +22,36 @@ export default function App() {
     };
     getCsrfToken();
 
+    return children;
+}
+
+const VerifyAuthenticated = ({children}) => {
+    const token = localStorage.getItem('token');
+    if(token == null) {
+        return (
+            <Redirect to="/login" />
+        )
+    }
+
+    return children;
+}
+
+export default function App() {
   return (
-      <Switch>
-          <Route exact path="/">
-              {true ? <Redirect to="/datasets/trending" /> : <HomePage />}
-          </Route>
-          <Route path="/login" component={LoginPage} />
-          <Route path="/signup" component={SignupPage} />
-          <Route path="/datasets/trending" component={HomePage} />
-          <Route path="/datasets/latest" component={HomePage} />
-          <Route path="/user/:id" component={UserPage} />
-          {/*<VerifyAuthenticated>*/}
-              <Route path="/create" component={CreatePage} />
-          {/*</VerifyAuthenticated>*/}
-      </Switch>
+      <VerifyCSRF>
+          <Switch>
+              <Route exact path="/">
+                  {true ? <Redirect to="/datasets/trending" /> : <HomePage />}
+              </Route>
+              <Route path="/login" component={LoginPage} />
+              <Route path="/signup" component={SignupPage} />
+              <Route path="/datasets/trending" component={HomePage} />
+              <Route path="/datasets/latest" component={HomePage} />
+              <Route path="/user/:id" component={UserPage} />
+              <VerifyAuthenticated>
+                  <Route path="/create" component={CreatePage} />
+              </VerifyAuthenticated>
+          </Switch>
+      </VerifyCSRF>
   )
 }
