@@ -210,6 +210,7 @@ div.subBody {
 
 .CreateDataset {
     margin-top: 36px;
+    margin-bottom: 60px;
 }
 
 .CreateDataset h2 {
@@ -219,6 +220,7 @@ div.subBody {
 .CreateDataset form {
     display: flex;
     flex-direction: column;
+    padding-bottom: 40px;
 }
 
 div.CreateDataset label {
