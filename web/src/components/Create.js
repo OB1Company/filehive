@@ -44,8 +44,6 @@ function Create() {
       price: Number(price),
     };
 
-    console.log(data);
-
     const formData = new FormData();
     formData.append('metadata', JSON.stringify(data));
     formData.append('file', fileString);
@@ -60,11 +58,10 @@ function Create() {
     })
 
     const url = "/api/v1/dataset";
-    const apiReq = await instance.post(
+    await instance.post(
         url,
         formData
     );
-    console.log(apiReq);
 
     return false;
   };

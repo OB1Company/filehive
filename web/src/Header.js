@@ -1,8 +1,20 @@
 import React from 'react'
 import './style/Header.css';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
+import {VerifyAuthenticated} from './App'
+
+const IsNotLoggedIn = ({children}) => {
+    const token = localStorage.getItem('token');
+    if(token == null) {
+        return children;
+    }
+    return (null);
+}
 
 function Header() {
+
+
+
   return (
     <div class="Header">
       <div>
@@ -10,8 +22,13 @@ function Header() {
         <input type="text"/>
       </div>
       <div class="Header-Right">
-        <Link to ='/login'>Log in</Link>
-        <Link to ='/signup'>Sign up</Link>
+        <IsNotLoggedIn>
+          <Link to='/login'>Log in</Link>
+          <Link to ='/signup'>Sign up</Link>
+        </IsNotLoggedIn>
+        <VerifyAuthenticated>
+            <Link to='/user/1'>Username</Link>
+        </VerifyAuthenticated>
         <Link to ='/create'><input type="button" value="Create dataset"/></Link>
       </div>
     </div>

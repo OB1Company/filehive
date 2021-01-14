@@ -37,8 +37,6 @@ function Login() {
               data
           );
 
-
-
           history.push("/");
 
         } catch(err) {

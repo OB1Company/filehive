@@ -25,14 +25,13 @@ const VerifyCSRF = ({children}) => {
     return children;
 }
 
-const VerifyAuthenticated = ({children}) => {
+export const VerifyAuthenticated = ({children}) => {
     const token = localStorage.getItem('token');
     if(token == null) {
         return (
             <Redirect to="/login" />
         )
     }
-
     return children;
 }
 
@@ -43,7 +42,7 @@ export default function App() {
               <Route exact path="/">
                   {true ? <Redirect to="/datasets/trending" /> : <HomePage />}
               </Route>
-              <Route path="/login" component={LoginPage} />
+              <Route exact path="/login" component={LoginPage} />
               <Route path="/signup" component={SignupPage} />
               <Route path="/datasets/trending" component={HomePage} />
               <Route path="/datasets/latest" component={HomePage} />
