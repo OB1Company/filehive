@@ -4,15 +4,14 @@ import {Link} from 'react-router-dom';
 import {VerifyAuthenticated} from './App'
 
 const IsNotLoggedIn = ({children}) => {
-    const token = localStorage.getItem('token');
-    if(token == null) {
+    const token = localStorage.getItem('username');
+    if(token == null || token === "") {
         return children;
     }
     return (null);
 }
 
 function Header() {
-
 
 
   return (
@@ -27,7 +26,7 @@ function Header() {
           <Link to ='/signup'>Sign up</Link>
         </IsNotLoggedIn>
         <VerifyAuthenticated>
-            <Link to='/user/1'>Username</Link>
+            <Link to='/dashboard'>Username</Link>
         </VerifyAuthenticated>
         <Link to ='/create'><input type="button" value="Create dataset"/></Link>
       </div>

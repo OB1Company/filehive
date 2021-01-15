@@ -25,7 +25,7 @@ function Login() {
       const getCsrfToken = async () => {
         try {
 
-          const csrftoken = localStorage.getItem('token');
+          const csrftoken = localStorage.getItem('csrf_token');
           const instance = axios.create({
             baseURL: "",
             headers: { "x-csrf-token": csrftoken }
@@ -37,10 +37,11 @@ function Login() {
               data
           );
 
-          history.push("/");
+          localStorage.setItem("username", email);
+          history.push("/dashboard");
 
         } catch(err) {
-          localStorage.setItem('token', null);
+          localStorage.setItem('csrf_token', null);
           console.log(err);
         }
       };

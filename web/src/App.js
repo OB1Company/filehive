@@ -6,17 +6,18 @@ import UserPage from './pages/UserPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import CreatePage from './pages/CreatePage'
+import DashboardPage from './pages/DashboardPage'
 import axios from "axios";
 
 const VerifyCSRF = ({children}) => {
     const getCsrfToken = async () => {
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("csrf_token");
             if(token == null) {
                 const {data} = await axios.get('/api/v1/user', {withCredentials: true});
             }
         } catch(err) {
-            localStorage.setItem("token", err.response.headers['x-csrf-token']);
+            localStorage.setItem("csrf_token", err.response.headers['x-csrf-token']);
             axios.defaults.headers.post['x-csrf-token'] = err.response.headers['x-csrf-token'];
         }
     };
@@ -26,8 +27,8 @@ const VerifyCSRF = ({children}) => {
 }
 
 export const VerifyAuthenticated = ({children}) => {
-    const token = localStorage.getItem('token');
-    if(token == null) {
+    const token = localStorage.getItem("username");
+    if(token == null || token === "") {
         return (
             <Redirect to="/login" />
         )
@@ -49,7 +50,15 @@ export default function App() {
               <Route path="/user/:id" component={UserPage} />
               <VerifyAuthenticated>
                   <Route path="/create" component={CreatePage} />
+                  <Route exact path="/dashboard">
+                      <Redirect to="/dashboard/datasets"/>
+                  </Route>
+                  <Route path="/dashboard/datasets" component={DashboardPage} />
+                  <Route path="/dashboard/purchases" component={DashboardPage} />
+                  <Route path="/dashboard/wallet" component={DashboardPage} />
+                  <Route path="/dashboard/settings" component={DashboardPage} />
               </VerifyAuthenticated>
+              <Route component={HomePage} />
           </Switch>
       </VerifyCSRF>
   )
