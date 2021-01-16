@@ -12,15 +12,16 @@ function Signup() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [error, setError] = useState(false)
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const data = { email, password, country };
+    const data = { email, password, country, name };
 
-    const csrftoken = localStorage.getItem('token');
+    const csrftoken = localStorage.getItem('csrf_token');
     const instance = axios.create({
       baseURL: "",
       headers: { "x-csrf-token": csrftoken }
@@ -34,6 +35,9 @@ function Signup() {
 
     // Successful login
     console.log(apiReq);
+    localStorage.setItem("username", name);
+    localStorage.setItem("email", email);
+
     history.push("/");
 
     return false;
@@ -54,6 +58,10 @@ function Signup() {
         <label>
           Password*
           <input type="password" name="password" placeholder="Password" onChange={e => setPassword(e.target.value)}/>
+        </label>
+        <label>
+          Name*
+          <input type="text" name="name" placeholder="Your name (shown publicly)" onChange={e => setName(e.target.value)}/>
         </label>
         <label>
           Country*

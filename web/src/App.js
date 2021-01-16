@@ -9,6 +9,8 @@ import CreatePage from './pages/CreatePage'
 import DashboardPage from './pages/DashboardPage'
 import axios from "axios";
 
+const token = localStorage.getItem("username");
+
 const VerifyCSRF = ({children}) => {
     const getCsrfToken = async () => {
         try {
@@ -17,6 +19,7 @@ const VerifyCSRF = ({children}) => {
                 const {data} = await axios.get('/api/v1/user', {withCredentials: true});
             }
         } catch(err) {
+            console.log(err.response);
             localStorage.setItem("csrf_token", err.response.headers['x-csrf-token']);
             axios.defaults.headers.post['x-csrf-token'] = err.response.headers['x-csrf-token'];
         }
@@ -36,6 +39,15 @@ export const VerifyAuthenticated = ({children}) => {
     return children;
 }
 
+const PrivateRoute = ({ component: Component, ...rest }) => (
+    <Route {...rest} render={(props) => (
+        localStorage.getItem("username") == null || localStorage.getItem("username") === ""
+            ? <Redirect to='/login' />
+            : <Component {...props} />
+    )
+    } />
+)
+
 export default function App() {
   return (
       <VerifyCSRF>
@@ -44,12 +56,12 @@ export default function App() {
                   {true ? <Redirect to="/datasets/trending" /> : <HomePage />}
               </Route>
               <Route exact path="/login" component={LoginPage} />
-              <Route path="/signup" component={SignupPage} />
+              <Route exact path="/signup" component={SignupPage} />
               <Route path="/datasets/trending" component={HomePage} />
               <Route path="/datasets/latest" component={HomePage} />
               <Route path="/user/:id" component={UserPage} />
-              <VerifyAuthenticated>
-                  <Route path="/create" component={CreatePage} />
+
+                  <PrivateRoute path="/create" component={CreatePage} />
                   <Route exact path="/dashboard">
                       <Redirect to="/dashboard/datasets"/>
                   </Route>
@@ -57,7 +69,7 @@ export default function App() {
                   <Route path="/dashboard/purchases" component={DashboardPage} />
                   <Route path="/dashboard/wallet" component={DashboardPage} />
                   <Route path="/dashboard/settings" component={DashboardPage} />
-              </VerifyAuthenticated>
+
               <Route component={HomePage} />
           </Switch>
       </VerifyCSRF>

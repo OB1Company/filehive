@@ -1,18 +1,23 @@
 import React from 'react'
 import './style/Header.css';
-import {Link} from 'react-router-dom';
-import {VerifyAuthenticated} from './App'
-
-const IsNotLoggedIn = ({children}) => {
-    const token = localStorage.getItem('username');
-    if(token == null || token === "") {
-        return children;
-    }
-    return (null);
-}
+import {Link, useHistory} from 'react-router-dom';
+import { useCookies } from "react-cookie";
 
 function Header() {
 
+    const history = useHistory();
+    const username = localStorage.getItem('username');
+    const loggedIn = (!(username == null || username === ""));
+    const [token, getToken, removeToken] = useCookies(['token']);
+
+    const HandleLogout = (e) => {
+
+        localStorage.removeItem("username");
+        localStorage.removeItem("email");
+        removeToken("token");
+
+        history.push("/login");
+    }
 
   return (
     <div class="Header">
@@ -21,13 +26,11 @@ function Header() {
         <input type="text"/>
       </div>
       <div class="Header-Right">
-        <IsNotLoggedIn>
-          <Link to='/login'>Log in</Link>
-          <Link to ='/signup'>Sign up</Link>
-        </IsNotLoggedIn>
-        <VerifyAuthenticated>
-            <Link to='/dashboard'>Username</Link>
-        </VerifyAuthenticated>
+          { !loggedIn ? <Link to='/login'>Log in</Link> : ""}
+          { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
+          { loggedIn ? <Link to='/dashboard'>{username}</Link> : ""}
+          { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
+
         <Link to ='/create'><input type="button" value="Create dataset"/></Link>
       </div>
     </div>

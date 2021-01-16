@@ -3,13 +3,13 @@ import {Link} from "react-router-dom";
 import DataSetsRow from "../components/DataSetsRow";
 
 function DataSetsRows(props) {
-    // let links = props.linkNames.map((link)=> {
-    //     return <li class="active"><Link to={link.link}>{link.name}</Link></li>;
-    // });
+    let rows = props.datasets.map((dataset)=> {
+        return <DataSetsRow metadata={dataset}/>;
+    });
 
     return (
         <div class="datasets-rows">
-            <DataSetsRow sortby={props.sortby}/>
+            {rows}
         </div>
     )
 }

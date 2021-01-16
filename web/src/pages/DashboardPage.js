@@ -3,7 +3,10 @@ import { useLocation } from 'react-router-dom'
 import Header from '../Header'
 import Footer from '../Footer'
 import TabbedLinks from "../components/TabbedLinks";
-import DataSetsRows from "../components/DataSetsRows";
+import Datasets from "../components/dashboard/Datasets";
+import Purchases from "../components/dashboard/Purchases";
+import Wallet from "../components/dashboard/Wallet";
+import Settings from "../components/dashboard/Settings";
 
 export default function DashboardPage() {
 
@@ -16,11 +19,29 @@ export default function DashboardPage() {
 
     const location = useLocation();
 
+    const DashboardPage = () => {
+        const tab = location.pathname.substring(location.pathname.lastIndexOf('/')+1);
+
+        switch(tab) {
+            case "datasets":
+                return <Datasets/>;
+            case "purchases":
+                return <Purchases/>;
+            case "wallet":
+                return <Wallet/>;
+            case "settings":
+                return <Settings/>;
+        }
+
+        return <h2>{tab}</h2>
+
+    }
+
     return (
         <div className="container">
             <Header/>
             <TabbedLinks linkNames={linkNames} activeLink={location.pathname} />
-            <DataSetsRows sortby="trending"/>
+                <DashboardPage/>
             <Footer/>
         </div>
     )
