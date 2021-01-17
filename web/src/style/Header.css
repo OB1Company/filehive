@@ -380,3 +380,17 @@ div.form-divider {
 div.datasets-details {
     flex: 0 0 120px;
 }
+
+.normal-button {
+    height: 38px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    box-sizing: border-box;
+    border-radius: 20px;
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 21px;
+    padding: 9px 34px;
+}

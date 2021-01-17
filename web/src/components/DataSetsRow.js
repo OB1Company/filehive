@@ -30,7 +30,7 @@ function DataSetsRow(props) {
                 <div className="mini-light-description">{fileType} {fileSize} {timestamp} {username}</div>
             </div>
             <div className="datasets-details">
-                <div><button>Details</button></div>
+                <div><button className="normal-button">Details</button></div>
                 <div>{price} FIL</div>
             </div>
         </div>
