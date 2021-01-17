@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 )
 
 var log = logging.MustGetLogger("APP")
@@ -144,6 +145,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
 	r.HandleFunc("/api/v1/recent", s.handleGETRecent).Methods("GET")
 	r.HandleFunc("/api/v1/trending", s.handleGETTrending).Methods("GET")
+	r.HandleFunc("/api/v1/search", s.handleGETSerch).Methods("GET")
 
 	if s.testMode {
 		r.HandleFunc("/api/v1/generatecoins", s.handlePOSTGenerateCoins).Methods("POST")
@@ -270,4 +272,27 @@ func makeID() (string, error) {
 		return "", err
 	}
 	return id.B58String(), nil
+}
+
+func passwordScore(pw string) (score int) {
+	matchLower := regexp.MustCompile(`[a-z]`)
+	matchUpper := regexp.MustCompile(`[A-Z]`)
+	matchNumber := regexp.MustCompile(`[0-9]`)
+	matchSpecial := regexp.MustCompile(`[\!\@\#\$\%\^\&\*\(\\\)\-_\=\+\,\.\?\/\:\;\{\}\[\]~]`)
+	if len(pw) < 8 {
+		return 0
+	}
+	if matchLower.MatchString(pw) {
+		score++
+	}
+	if matchUpper.MatchString(pw) {
+		score++
+	}
+	if matchNumber.MatchString(pw) {
+		score++
+	}
+	if matchSpecial.MatchString(pw) {
+		score++
+	}
+	return score
 }

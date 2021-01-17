@@ -32,7 +32,7 @@ func NewMockFilecoinBackend(dataDir string) (*MockFilecoinBackend, error) {
 
 // Store will put a file to Filecoin and pay for it out of the provided
 // address. A jobID is return or an error.
-func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, err error) {
+func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error) {
 	contentID, err = randCid()
 	if err != nil {
 		return
@@ -48,7 +48,7 @@ func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, c
 	}
 	defer outfile.Close()
 
-	_, err = io.Copy(outfile, data)
+	size, err = io.Copy(outfile, data)
 	if err != nil {
 		return
 	}
@@ -59,7 +59,7 @@ func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, c
 
 	// TODO: check address balance?
 
-	return contentID, jobID, nil
+	return contentID, jobID, size, nil
 }
 
 // TODO

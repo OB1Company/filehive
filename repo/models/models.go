@@ -22,7 +22,7 @@ type User struct {
 type Dataset struct {
 	gorm.Model       `json:"-"`
 	ID               string    `json:"id" gorm:"primary_key"`
-	CreatedAt        time.Time `gorm:"index" json:"-"`
+	CreatedAt        time.Time `gorm:"index" json:"createdAt"`
 	UserID           string    `json:"userID"`
 	JobID            string    `json:"jobID"`
 	Username         string    `json:"username"`
@@ -31,6 +31,7 @@ type Dataset struct {
 	FullDescription  string    `json:"fullDescription"`
 	ImageFilename    string    `json:"imageFilename"`
 	FileType         string    `json:"fileType"`
+	FileSize         int64     `json:"fileSize"`
 	Price            float64   `json:"price"`
 	Views            int64     `json:"totalViews"`
 	Purchases        int64     `json:"totalPurchases"`

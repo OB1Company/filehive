@@ -27,6 +27,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrUserExists         = errors.New("user already exists")
 	ErrBadPassword        = errors.New("password is too short")
+	ErrWeakPassword       = errors.New("password is too weak")
 	ErrIncorrectPassword  = errors.New("password is incorrect")
 	ErrInvalidEmail       = errors.New("email address is invalid")
 	ErrInvalidJSON        = errors.New("invalid JSON input")
@@ -165,8 +166,8 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if len(d.Password) == 0 {
-		http.Error(w, wrapError(ErrBadPassword), http.StatusBadRequest)
+	if passwordScore(d.Password) < 3 {
+		http.Error(w, wrapError(ErrWeakPassword), http.StatusBadRequest)
 		return
 	}
 
@@ -605,6 +606,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		containsFile, containsMetadata bool
 		dataset                        models.Dataset
 		jobID                          cid.Cid
+		size                           int64
 	)
 	for {
 		part, err := mr.NextPart()
@@ -617,7 +619,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 
 		if part.FormName() == "file" {
-			_, jobID, err = s.filecoinBackend.Store(part, addr)
+			_, jobID, size, err = s.filecoinBackend.Store(part, addr)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -660,6 +662,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 			containsMetadata = true
 		}
 	}
+	dataset.FileSize = size
 
 	if !containsFile || !containsMetadata {
 		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
@@ -1017,7 +1020,7 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		page int
 		err  error
 	)
-	pageStr := mux.Vars(r)["page"]
+	pageStr := r.URL.Query().Get("page")
 	if pageStr != "" {
 		page, err = strconv.Atoi(pageStr)
 		if err != nil {
@@ -1058,7 +1061,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		page int
 		err  error
 	)
-	pageStr := mux.Vars(r)["page"]
+	pageStr := r.URL.Query().Get("page")
 	if pageStr != "" {
 		page, err = strconv.Atoi(pageStr)
 		if err != nil {
@@ -1100,6 +1103,10 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		sort.Slice(results, func(i, j int) bool { return results[i].Count > results[j].Count })
 		count = len(results)
 
+		if page*10 > int(count-1) {
+			page = int(count - 1)
+		}
+
 		for _, res := range results[page*10:] {
 			var ds models.Dataset
 			if err := db.Where("id = ?", res.DatasetID).First(&ds).Error; err != nil {
@@ -1125,5 +1132,57 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		Pages:    (count / 10) + 1,
 		Page:     page,
 		Datasets: trending,
+	})
+}
+
+func (s *FileHiveServer) handleGETSerch(w http.ResponseWriter, r *http.Request) {
+	var (
+		page int
+		err  error
+	)
+	pageStr := r.URL.Query().Get("page")
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	searchTerm := r.URL.Query().Get("query")
+
+	var (
+		results []models.Dataset
+		count   int64
+	)
+
+	err = s.db.View(func(db *gorm.DB) error {
+		query := "SELECT * FROM datasets WHERE MATCH(title, short_description, full_description) AGAINST(? IN NATURAL LANGUAGE MODE)"
+		if err := db.Raw(query, searchTerm).Count(&count).Error; err != nil {
+			return err
+		}
+		if err := db.Raw(query, searchTerm).Scan(&results).Offset(page * 10).Limit(10).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusInternalServerError)
+		return
+	}
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages    int              `json:"pages"`
+		Page     int              `json:"page"`
+		Datasets []models.Dataset `json:"datasets"`
+	}{
+		Pages:    (int(count) / 10) + 1,
+		Page:     page,
+		Datasets: results[page*10:],
 	})
 }

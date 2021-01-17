@@ -25,7 +25,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -33,7 +33,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusBadRequest,
-				body:             []byte(`{"email": "brian@ob1.io "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: errorReturn(ErrInvalidJSON),
 			},
 			{
@@ -42,7 +42,7 @@ func Test_Handlers(t *testing.T) {
 				method:           http.MethodPost,
 				statusCode:       http.StatusBadRequest,
 				body:             []byte(`{"email": "brian2@ob1.io", "password":"", "name": "Brian", "country": "United_States"}`),
-				expectedResponse: errorReturn(ErrBadPassword),
+				expectedResponse: errorReturn(ErrWeakPassword),
 			},
 			{
 				name:             "Post user invalid email",
@@ -165,9 +165,10 @@ func Test_Handlers(t *testing.T) {
 							return err
 						}
 						return tx.Save(&models.Dataset{
-							ID:       "abc",
-							UserID:   "1234",
-							Username: "Joe",
+							ID:        "abc",
+							UserID:    "1234",
+							Username:  "Joe",
+							CreatedAt: time.Unix(0, 0),
 						}).Error
 					})
 				},
@@ -180,10 +181,11 @@ func Test_Handlers(t *testing.T) {
 				method:     http.MethodGet,
 				statusCode: http.StatusOK,
 				expectedResponse: mustMarshalAndSanitizeJSON(&models.Dataset{
-					ID:       "abc",
-					Username: "Brian2",
-					UserID:   "1234",
-					Views:    1,
+					ID:        "abc",
+					Username:  "Brian2",
+					UserID:    "1234",
+					Views:     1,
+					CreatedAt: time.Unix(0, 0),
 				}),
 			},
 		})
@@ -204,7 +206,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/login",
 				method:           http.MethodPost,
 				statusCode:       http.StatusUnauthorized,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99"}`),
 				expectedResponse: errorReturn(ErrIncorrectPassword),
 			},
 			{
@@ -212,7 +214,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/login",
 				method:           http.MethodPost,
 				statusCode:       http.StatusBadRequest,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99"`),
 				expectedResponse: errorReturn(ErrInvalidJSON),
 			},
 			{
@@ -223,7 +225,7 @@ func Test_Handlers(t *testing.T) {
 				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
 					return db.Update(func(tx *gorm.DB) error {
 						salt := []byte("salt")
-						pw := hashPassword([]byte("asdf"), salt)
+						pw := hashPassword([]byte("letMeIn99"), salt)
 						return tx.Save(&models.User{
 							Email:          "brian@ob1.io",
 							Country:        "United_States",
@@ -241,7 +243,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/login",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -278,7 +280,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -339,7 +341,7 @@ func Test_Handlers(t *testing.T) {
 					wbe.(*fil.MockWalletBackend).SetNextAddress(addr)
 					return nil
 				},
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -512,7 +514,7 @@ func Test_Handlers(t *testing.T) {
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -598,6 +600,7 @@ Snowden Files
 						}
 						dataset.ImageFilename = "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg"
 						dataset.JobID = "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y"
+						dataset.CreatedAt = time.Unix(0, 0)
 						return db.Save(&dataset).Error
 					})
 				},
@@ -613,6 +616,8 @@ Snowden Files
 					ID:               "1234",
 					Username:         "Brian",
 					Views:            1,
+					FileSize:         14,
+					CreatedAt:        time.Unix(0, 0),
 				}),
 			},
 			{
@@ -662,6 +667,8 @@ Snowden Files
 							UserID:           "ABCD",
 							Username:         "Brian",
 							Views:            1,
+							FileSize:         14,
+							CreatedAt:        time.Unix(0, 0),
 						},
 					},
 				}),
@@ -676,7 +683,7 @@ Snowden Files
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -709,7 +716,7 @@ Snowden Files
 						return db.Model(&models.User{}).Where("email = ?", "brian@ob1.io").Update("filecoin_address", "f1c2qg3aj5pueqvgj3y6z56ek2pfdoelq2hberxqi").Error
 					})
 				},
-				body:             []byte(`{"email": "buyer@ob1.io", "password":"asdf", "name": "Buyer Bob", "country": "United_States"}`),
+				body:             []byte(`{"email": "buyer@ob1.io", "password":"letMeIn99", "name": "Buyer Bob", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -784,7 +791,7 @@ Snowden Files
 				path:             "/api/v1/login",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -808,7 +815,7 @@ Snowden Files
 				path:             "/api/v1/user",
 				method:           http.MethodPost,
 				statusCode:       http.StatusOK,
-				body:             []byte(`{"email": "brian@ob1.io", "password":"asdf", "name": "Brian", "country": "United_States"}`),
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
 				expectedResponse: nil,
 			},
 			{
@@ -870,6 +877,7 @@ Snowden Files 2
 						dataset.UserID = "ABCD"
 						dataset.ImageFilename = "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg"
 						dataset.JobID = "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y"
+						dataset.CreatedAt = time.Unix(0, 0)
 						if err := db.Save(&dataset).Error; err != nil {
 							return err
 						}
@@ -886,6 +894,7 @@ Snowden Files 2
 						dataset2.UserID = "ABCD"
 						dataset2.ImageFilename = "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg"
 						dataset2.JobID = "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y"
+						dataset2.CreatedAt = time.Unix(0, 0)
 						return db.Save(&dataset2).Error
 					})
 				},
@@ -908,6 +917,107 @@ Snowden Files 2
 			{
 				name:       "Get trending",
 				path:       "/api/v1/trending",
+				method:     http.MethodGet,
+				statusCode: http.StatusOK,
+				expectedResponse: mustMarshalAndSanitizeJSON(struct {
+					Pages    int              `json:"pages"`
+					Page     int              `json:"page"`
+					Datasets []models.Dataset `json:"datasets"`
+				}{
+					Pages: 1,
+					Page:  0,
+					Datasets: []models.Dataset{
+						{
+							FileType:         ".txt",
+							FullDescription:  "This is a long description",
+							ID:               "5678",
+							ImageFilename:    "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg",
+							JobID:            "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y",
+							Price:            1.234,
+							ShortDescription: "This is a short description",
+							Title:            "Snowden Leaks 2",
+							UserID:           "ABCD",
+							Username:         "Brian",
+							Purchases:        0,
+							Views:            2,
+							CreatedAt:        time.Unix(0, 0),
+							FileSize:         16,
+						},
+						{
+							FileType:         ".txt",
+							FullDescription:  "This is a long description",
+							ID:               "1234",
+							ImageFilename:    "1AYAVn7Jq2UXcpMnHFqE4YMoLY1S2oUjyrkbPGHU88ndZg.jpg",
+							JobID:            "bafkreibsth7fjp4n45bvrrcn7edtx6jz7b6ghasce4stxg3u4olhqsfb7y",
+							Price:            1.234,
+							ShortDescription: "This is a short description",
+							Title:            "Snowden Leaks",
+							UserID:           "ABCD",
+							Username:         "Brian",
+							Views:            1,
+							Purchases:        0,
+							CreatedAt:        time.Unix(0, 0),
+							FileSize:         14,
+						},
+					},
+				}),
+			},
+		})
+	})
+
+	t.Run("Search Tests", func(t *testing.T) {
+		runAPITests(t, apiTests{
+			{
+				name:             "Post user success",
+				path:             "/api/v1/user",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             []byte(`{"email": "brian@ob1.io", "password":"letMeIn99", "name": "Brian", "country": "United_States"}`),
+				expectedResponse: nil,
+			},
+			{
+				name:        "Post dataset success",
+				path:        "/api/v1/dataset",
+				method:      http.MethodPost,
+				statusCode:  http.StatusOK,
+				contentType: "multipart/form-data; boundary=cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527",
+				body: []byte(`--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json
+
+{"title":"Snowden Leaks", "shortDescription": "This is a short description", "fullDescription": "This is a long description", "fileType": ".txt", "price": 1.234, "image": "/9j/4AAQSkZJRgABAQAAAQABAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2NjIpLCBxdWFsaXR5ID0gNjUK/9sAQwALCAgKCAcLCgkKDQwLDREcEhEPDxEiGRoUHCkkKyooJCcnLTJANy0wPTAnJzhMOT1DRUhJSCs2T1VORlRAR0hF/9sAQwEMDQ0RDxEhEhIhRS4nLkVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVF/8AAEQgAMgAyAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A840awhv5zFKWDYyMHrVvWtE/szynj3GJ+MnsaoWFw1ndxTr1Rskeor0+70uPXNBYQ4JkQSRH36iiXw3CO9meWxxNJIqICWY4AHeu5g8C232aMztL5pUFtpGM/lUXgPw+13qD3lwhEdscAEdX/wDrVseNddl0l4bSxcLcN8zHAOB6c1UnyJLqxRTlJ9kY83guzQcNN/30P8KwNY0W206AvufceFBPWvRtMtrw6RHLqUm+dxvOVA2j04rzjxJqAv8AUXEZ/cxHavv71M20+UcbNc3Q5/bRUu2igCVRXpfw51MXFtJp0rfPD88ee6nr+R/nXmq13fw40xpL6TUXyEiGxfcnrVwV7kSdrHo7C10ixnn2rFEu6R8cZPU15r4espfFviua/uQTbxvvbPT/AGVrX+IetMyQ6PakmSUhpAv6Cuh0DT4PC/hsGbCsE82ZvfHSs4O160umiLmtFTW73/rzMjx7rC6Zp32WFgJ7gY4/hXua8nbmtTXtWk1rVZruQnDHCL/dXtWW1TBPd7suVl7q6EeKKKKsgkt42nlSNBlmIAr1rTZINA0MAkBYU3MfU15joEsEN5588irs+6GPetfX9cW8iis7eVSjHLsDxRJ+7yx3YRV5XeyNjwlbPrviCbWL0bkjbcoPQt2H4Vf+IOsTyxpplrHIyt80rKpwfQU3R9W0vS9PitkvIBtHzHeOT3q+3ibTiP8Aj9g/77FE+R2itkEXK7m92eXm2uB1gk/74NRPDKoOY3H1U16RceI7FgcXkJ/4GKwdT1q2lgkVJ0YlSOGoco20CzONzRUe6igBq1KtFFAD6KKKAGmo26UUUAR0UUUAf//Z"}
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="file"; filename="snowden.txt"
+Content-Type: application/octet-stream
+
+Snowden Files
+
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527--`),
+				expectedResponse: nil,
+			},
+			{
+				name:        "Post second dataset success",
+				path:        "/api/v1/dataset",
+				method:      http.MethodPost,
+				statusCode:  http.StatusOK,
+				contentType: "multipart/form-data; boundary=cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527",
+				body: []byte(`--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json
+
+{"title":"Snowden Leaks 2", "shortDescription": "This is a short description", "fullDescription": "This is a long description", "fileType": ".txt", "price": 1.234, "image": "/9j/4AAQSkZJRgABAQAAAQABAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2NjIpLCBxdWFsaXR5ID0gNjUK/9sAQwALCAgKCAcLCgkKDQwLDREcEhEPDxEiGRoUHCkkKyooJCcnLTJANy0wPTAnJzhMOT1DRUhJSCs2T1VORlRAR0hF/9sAQwEMDQ0RDxEhEhIhRS4nLkVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVF/8AAEQgAMgAyAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A840awhv5zFKWDYyMHrVvWtE/szynj3GJ+MnsaoWFw1ndxTr1Rskeor0+70uPXNBYQ4JkQSRH36iiXw3CO9meWxxNJIqICWY4AHeu5g8C232aMztL5pUFtpGM/lUXgPw+13qD3lwhEdscAEdX/wDrVseNddl0l4bSxcLcN8zHAOB6c1UnyJLqxRTlJ9kY83guzQcNN/30P8KwNY0W206AvufceFBPWvRtMtrw6RHLqUm+dxvOVA2j04rzjxJqAv8AUXEZ/cxHavv71M20+UcbNc3Q5/bRUu2igCVRXpfw51MXFtJp0rfPD88ee6nr+R/nXmq13fw40xpL6TUXyEiGxfcnrVwV7kSdrHo7C10ixnn2rFEu6R8cZPU15r4espfFviua/uQTbxvvbPT/AGVrX+IetMyQ6PakmSUhpAv6Cuh0DT4PC/hsGbCsE82ZvfHSs4O160umiLmtFTW73/rzMjx7rC6Zp32WFgJ7gY4/hXua8nbmtTXtWk1rVZruQnDHCL/dXtWW1TBPd7suVl7q6EeKKKKsgkt42nlSNBlmIAr1rTZINA0MAkBYU3MfU15joEsEN5588irs+6GPetfX9cW8iis7eVSjHLsDxRJ+7yx3YRV5XeyNjwlbPrviCbWL0bkjbcoPQt2H4Vf+IOsTyxpplrHIyt80rKpwfQU3R9W0vS9PitkvIBtHzHeOT3q+3ibTiP8Aj9g/77FE+R2itkEXK7m92eXm2uB1gk/74NRPDKoOY3H1U16RceI7FgcXkJ/4GKwdT1q2lgkVJ0YlSOGoco20CzONzRUe6igBq1KtFFAD6KKKAGmo26UUUAR0UUUAf//Z"}
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527
+Content-Disposition: form-data; name="file"; filename="snowden.txt"
+Content-Type: application/octet-stream
+
+Snowden Files 2
+
+--cc0ce5746707c1948657e8d0a2ca5570c2ddfd90ae6b7d5b49eac967c527--`),
+				expectedResponse: nil,
+			},
+			{
+				name:       "Get search",
+				path:       "/api/v1/search?query=snowden",
 				method:     http.MethodGet,
 				statusCode: http.StatusOK,
 				expectedResponse: mustMarshalAndSanitizeJSON(struct {

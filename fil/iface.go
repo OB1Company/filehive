@@ -25,7 +25,7 @@ const attoFilPerFilecoin = 1000000000000000000
 type FilecoinBackend interface {
 	// Store will put a file to Filecoin and pay for it out of the provided
 	// address. A jobID is return or an error.
-	Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, err error)
+	Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error)
 
 	// TODO
 	JobStatus(jobID cid.Cid) (string, error)
