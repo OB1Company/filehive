@@ -324,19 +324,57 @@ div.form-divider {
 .datasets-row {
     display: flex;
     margin: 10px 20px 10px 30px;
-    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
 }
 
 .datasets-row div {
-    flex: 1;
+
+}
+
+.datasets-row-image {
+    width: 190px;
 }
 
 .datasets-image {
     width: 190px;
     height: 130px;
-
+    min-width: 190px;
     background-color: #EAEAEA;
     border-radius: 18px;
+}
+
+.datasets-row-info {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    flex: 1 1 auto;
+    padding: 0 20px;
+}
+
+.mini-bold-title {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 25px;
+    margin-bottom: 3px;
+}
+.mini-description {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 15px;
+    line-height: 20px;
+}
+.mini-light-description {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-size: 14px;
+    line-height: 19px;
+    color: #8C8C8C;
+    margin-bottom: 3px;
 }
 
 div.datasets-details {
