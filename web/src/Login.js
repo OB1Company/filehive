@@ -1,10 +1,8 @@
 import React, {useState} from 'react'
 import axios from "axios";
-import { SET_TOKEN } from "./components/Store";
 import { useHistory } from "react-router-dom";
 import {Link} from "react-router-dom";
 import ErrorBox from './components/ErrorBox'
-import { config } from 'dotenv'
 
 function Login() {
 
@@ -16,48 +14,56 @@ function Login() {
   const [error, setError] = useState(false);
 
   const HandleFormSubmit = async (e) => {
-    const env = config();
     e.preventDefault();
 
-    try {
-      const data = { email, password };
+    const data = { email, password };
 
-      const getCsrfToken = async () => {
-        try {
+    const login = async () => {
 
-          const csrftoken = localStorage.getItem('csrf_token');
-          const instance = axios.create({
-            baseURL: "",
-            headers: { "x-csrf-token": csrftoken }
-          })
+      const csrftoken = localStorage.getItem('csrf_token');
+      const instance = axios.create({
+        baseURL: "",
+        headers: { "x-csrf-token": csrftoken }
+      })
+      const loginUrl = "/api/v1/login";
 
-          const loginUrl = "/api/v1/login";
-          const apiReq = await instance.post(
-              loginUrl,
-              data
-          );
-
+      try {
+        await instance.post(
+            loginUrl,
+            data
+        ).then((data)=>{
+          console.log(data);
           localStorage.setItem("username", email);
           history.push("/dashboard");
+        }).catch(error => {
+          console.log("Login Failure", error.response);
+          setIsError(true);
+          setError(error.response.data.error);
+        });
 
-        } catch(err) {
-          localStorage.setItem('csrf_token', null);
-          console.log(err);
+        return false;
+
+      } catch(err) {
+        if(err.response.data === "Forbidden - CSRF token invalid\n") {
+          localStorage.removeItem('csrf_token');
+          history.push('/login');
         }
-      };
-      await getCsrfToken();
-
-    } catch (error) {
-
-      // Check for csrf issue
-      console.log(error.response);
-      if(error.response.data === "Forbidden - CSRF token invalid\n") {
-        console.log("NO CSRF");
-
       }
+    };
 
-      setIsError(true);
-      setError(error.response.data.message);
+    try {
+      await login();
+    } catch (error) {
+      // Check for csrf issue
+      console.log(error);
+      // if(error.response.data === "Forbidden - CSRF token invalid\n") {
+      //   console.log("NO CSRF");
+      //
+      // }
+      //
+      // setIsError(true);
+      // setError(error.response.data.message);
+      // console.log(error.response);
     }
     return false;
   }
@@ -80,7 +86,7 @@ function Login() {
         </div>
         
         {error &&
-          <ErrorBox message="Incorrect email/password. Try again."/>
+          <ErrorBox message={error}/>
         }
       </form>
     </div>

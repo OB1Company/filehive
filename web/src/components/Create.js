@@ -1,5 +1,5 @@
 import React, {useState}  from 'react'
-import {Link} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import ErrorBox from './ErrorBox'
 import axios from "axios";
 
@@ -14,6 +14,8 @@ function Create() {
   const [dataset, setDataset] = useState("");
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState(false);
+
+  const history = useHistory();
 
   const convertBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -48,7 +50,7 @@ function Create() {
     formData.append('metadata', JSON.stringify(data));
     formData.append('file', fileString);
 
-    const csrftoken = localStorage.getItem('token');
+    const csrftoken = localStorage.getItem('csrf_token');
     const instance = axios.create({
       baseURL: "",
       headers: {
@@ -58,12 +60,19 @@ function Create() {
     })
 
     const url = "/api/v1/dataset";
-    await instance.post(
-        url,
-        formData
-    );
+    try {
+      await instance.post(
+          url,
+          formData
+      );
 
-    return false;
+      history.push('/');
+    } catch(e) {
+
+      setError(e);
+      return false;
+    }
+
   };
 
   const HandleDatasetImage = (e) => {
