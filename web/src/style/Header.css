@@ -7,6 +7,10 @@
     font-size: 1em;
 }
 
+html, body {
+    height: 100%;
+}
+
 html {
     font-size: 62.5%;
 }
@@ -31,6 +35,14 @@ img {
     width: 1200px;
     margin: 0 auto;
     background-color: #ffffff;
+    height: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+div#root {
+    height: 100%;
 }
 
 div.Header {
@@ -128,8 +140,6 @@ div.Footer {
     font-weight: normal;
     font-size: 14px;
     line-height: 19px;
-    position: fixed;
-    bottom: 0;
     width: 1200px;
 }
 
@@ -303,6 +313,29 @@ div.form-divider {
     color: #F3A815;
 }
 
-.datasets-row {
+.datasets-rows {
+    margin-bottom: 50px;
+    flex-grow: 1;
+}
 
+.datasets-row {
+    display: flex;
+    margin: 10px 20px 10px 30px;
+    flex: 1;
+}
+
+.datasets-row div {
+    flex: 1;
+}
+
+.datasets-image {
+    width: 190px;
+    height: 130px;
+
+    background-color: #EAEAEA;
+    border-radius: 18px;
+}
+
+div.datasets-details {
+    flex: 0 0 120px;
 }
