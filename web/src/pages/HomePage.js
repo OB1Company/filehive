@@ -49,7 +49,9 @@ export default function HomePage() {
     <div className="container">
       <Header/>
       <TabbedLinks linkNames={linkNames} activeLink={location.pathname}/>
-      <DataSetsRows sortby="trending" datasets={datasets}/>
+      <div className="maincontent">
+        <DataSetsRows sortby="trending" datasets={datasets}/>
+      </div>
       <Footer/>
     </div>
   )

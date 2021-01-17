@@ -52,7 +52,6 @@ div.Header {
     background-color: #F3A815;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 div.Header > div {
@@ -131,10 +130,9 @@ div.Footer {
     border-top: 1px solid #F0F0F0;
     background-color: #ffffff;
     height: 44px;
-    padding: 0 20px;
+    padding: 10px 20px;
     display: flex;
     justify-content: flex-start;
-    align-items: center;
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: normal;
@@ -153,6 +151,8 @@ div.Footer img { margin-right: 7px; }
 div.subBody {
     min-height: 90vh;
     padding: 0px 30px;
+    flex: 1;
+    background-color: white;
 }
 
 .form-540 {
@@ -219,8 +219,7 @@ div.subBody {
 }
 
 .CreateDataset {
-    margin-top: 36px;
-    margin-bottom: 60px;
+    padding: 36px 20px 60px 20px;
 }
 
 .CreateDataset h2 {
@@ -286,7 +285,7 @@ div.CreateDataset div {
 div.form-divider {
     height: 1px;
     border-top: 1px solid #E5E5E5;
-    margin: 30px 0;
+
 }
 
 .tabbed-links {
@@ -313,9 +312,13 @@ div.form-divider {
     color: #F3A815;
 }
 
+.maincontent {
+    flex-grow: 1;
+    background-color: white;
+}
+
 .datasets-rows {
     margin-bottom: 50px;
-    flex-grow: 1;
 }
 
 .datasets-row {

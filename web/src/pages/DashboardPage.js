@@ -40,8 +40,10 @@ export default function DashboardPage() {
     return (
         <div className="container">
             <Header/>
-            <TabbedLinks linkNames={linkNames} activeLink={location.pathname} />
+            <div className="maincontent">
+                <TabbedLinks linkNames={linkNames} activeLink={location.pathname} />
                 <DashboardPage/>
+            </div>
             <Footer/>
         </div>
     )
