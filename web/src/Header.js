@@ -14,7 +14,6 @@ function Header() {
 
         localStorage.removeItem("username");
         localStorage.removeItem("email");
-        removeToken("token");
 
         history.push("/login");
     }

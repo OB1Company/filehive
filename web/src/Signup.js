@@ -21,6 +21,15 @@ function Signup() {
 
     const data = { email, password, country, name };
 
+    if(name === "") {
+      setError("Name is required");
+      return false;
+    }
+    if(country === "") {
+      setError("Country is required")
+      return false;
+    }
+
     const instance = getAxiosInstance();
 
     const createUserUrl = "/api/v1/user";
@@ -33,7 +42,7 @@ function Signup() {
       localStorage.setItem("username", name);
       localStorage.setItem("email", email);
 
-      history.push("/");
+      history.push("/dashboard");
     }).catch((error) => {
       setError(error.response.data.error);
       return false;

@@ -23,17 +23,23 @@ export default function App() {
 
     const checkCsrfToken = async () => {
         let token = localStorage.getItem("csrf_token");
-        try {
-            if(token == null) {
-                await axios.get('/api/v1/user', {withCredentials: true});
-            }
-        } catch(err) {
-            console.log('GET User call failed', err.response);
-            token = err.response.headers['x-csrf-token'];
+        await axios.get('/api/v1/user', {withCredentials: true})
+            .then((data)=>{
 
-            localStorage.setItem("csrf_token", token);
-            axios.defaults.headers.post['x-csrf-token'] = token;
-        }
+            })
+            .catch((err) => {
+                console.log('GET User call failed', err.response);
+
+                if(err.response.status === 400) {
+                    localStorage.removeItem("username");
+                    localStorage.removeItem("email");
+                }
+
+                token = err.response.headers['x-csrf-token'];
+
+                localStorage.setItem("csrf_token", token);
+                axios.defaults.headers.post['x-csrf-token'] = token;
+            });
     };
     checkCsrfToken();
 
