@@ -1,12 +1,11 @@
-import React, { createContext, useContext } from "react";
-import { Redirect } from "react-router-dom";
+import React from "react";
+import axios from "axios";
 
-export const AuthContext = createContext();
 
-const AuthProvider = ({ children }) => {
-    const[token, setToken] = useState({});
-
-    return {};
+export const getAxiosInstance = () => {
+    const csrftoken = localStorage.getItem('csrf_token');
+    return axios.create({
+        baseURL: "",
+        headers: {"x-csrf-token": csrftoken}
+    })
 }
-
-

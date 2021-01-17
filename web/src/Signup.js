@@ -4,7 +4,7 @@ import ErrorBox from './components/ErrorBox'
 import { useHistory } from "react-router-dom";
 import Select from 'react-select'
 import { Countries } from './constants/Countries'
-import axios from "axios";
+import { getAxiosInstance } from "./components/Auth";
 
 function Signup() {
 
@@ -14,33 +14,31 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
-  const [error, setError] = useState(false)
+  const [error, setError] = useState("")
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
 
     const data = { email, password, country, name };
 
-    const csrftoken = localStorage.getItem('csrf_token');
-    const instance = axios.create({
-      baseURL: "",
-      headers: { "x-csrf-token": csrftoken }
-    })
+    const instance = getAxiosInstance();
 
-    const loginUrl = "/api/v1/user";
-    const apiReq = await instance.post(
-        loginUrl,
+    const createUserUrl = "/api/v1/user";
+    await instance.post(
+        createUserUrl,
         data
-    );
+    ).then((data) => {
+      // Successful login
+      console.log(data);
+      localStorage.setItem("username", name);
+      localStorage.setItem("email", email);
 
-    // Successful login
-    console.log(apiReq);
-    localStorage.setItem("username", name);
-    localStorage.setItem("email", email);
+      history.push("/");
+    }).catch((error) => {
+      setError(error.response.data.error);
+      return false;
+    });
 
-    history.push("/");
-
-    return false;
   }
 
   const handleCountry = (e) => {
@@ -73,7 +71,7 @@ function Signup() {
         </div>
 
         {error &&
-          <ErrorBox message="An account is already registered with that email address."/>
+          <ErrorBox message={error}/>
         }
       </form>
     </div>
