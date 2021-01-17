@@ -354,7 +354,6 @@ div.form-divider {
 }
 
 .mini-bold-title {
-    font-family: Nunito Sans;
     font-style: normal;
     font-weight: bold;
     font-size: 18px;
@@ -362,14 +361,13 @@ div.form-divider {
     margin-bottom: 3px;
 }
 .mini-description {
-    font-family: Nunito Sans;
     font-style: normal;
     font-weight: normal;
     font-size: 15px;
     line-height: 20px;
+    margin-bottom: 3px;
 }
 .mini-light-description {
-    font-family: Nunito Sans;
     font-style: normal;
     font-size: 14px;
     line-height: 19px;
@@ -379,6 +377,14 @@ div.form-divider {
 
 div.datasets-details {
     flex: 0 0 120px;
+    justify-content: center;
+}
+div.datasets-details div {
+    text-align: center;
+}
+
+div.datasets-details:first-child {
+    margin-bottom: 13px;
 }
 
 .normal-button {
@@ -387,10 +393,20 @@ div.datasets-details {
     border: 1px solid #E5E5E5;
     box-sizing: border-box;
     border-radius: 20px;
-    font-family: Nunito Sans;
     font-style: normal;
     font-weight: bold;
     font-size: 15px;
     line-height: 21px;
     padding: 9px 34px;
+    margin-bottom: 13px;
+}
+
+.small-orange-text {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 19px;
+
+    color: #F3A815;
 }

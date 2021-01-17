@@ -7,7 +7,7 @@ function DataSetsRow(props) {
     const imageFilename = props.metadata.imageFilename;
     const title = props.metadata.title;
     const shortDescription = props.metadata.shortDescription;
-    const price = props.metadata.price;
+    const price = Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
     const fileType = props.metadata.fileType;
     const fileSize = "3"; //props.metadata.price;
     const username = props.metadata.username;
@@ -31,7 +31,7 @@ function DataSetsRow(props) {
             </div>
             <div className="datasets-details">
                 <div><button className="normal-button">Details</button></div>
-                <div>{price} FIL</div>
+                <div className="small-orange-text">{price} FIL</div>
             </div>
         </div>
     )
