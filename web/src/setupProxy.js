@@ -10,7 +10,6 @@ module.exports = function(app) {
             cookiePathRewrite: "/",
             debug: true,
             onProxyRes: function (proxyRes, req, res) {
-                console.log(proxyRes);
             },
         })
     );

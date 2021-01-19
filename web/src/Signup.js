@@ -38,12 +38,13 @@ function Signup() {
         data
     ).then((data) => {
       // Successful login
-      console.log(data);
       localStorage.setItem("username", name);
       localStorage.setItem("email", email);
+      localStorage.setItem("name", name);
 
       history.push("/dashboard");
     }).catch((error) => {
+      console.log(error);
       setError(error.response.data.error);
       return false;
     });

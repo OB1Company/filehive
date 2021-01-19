@@ -32,9 +32,15 @@ function Login() {
             loginUrl,
             data
         ).then((data)=>{
-          console.log(data);
           localStorage.setItem("username", email);
-          history.push("/dashboard");
+
+          instance.get("/api/v1/user/" + email)
+              .then((data) => {
+                localStorage.setItem("name", data.data.Name);
+                history.push("/dashboard");
+              })
+
+
         }).catch(error => {
           console.log("Login Failure", error.response);
           setIsError(true);

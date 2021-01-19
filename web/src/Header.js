@@ -7,6 +7,7 @@ function Header() {
 
     const history = useHistory();
     const username = localStorage.getItem('username');
+    const name = localStorage.getItem('name');
     const loggedIn = (!(username == null || username === ""));
     const [token, getToken, removeToken] = useCookies(['token']);
 
@@ -14,6 +15,7 @@ function Header() {
 
         localStorage.removeItem("username");
         localStorage.removeItem("email");
+        localStorage.removeItem("name");
 
         history.push("/login");
     }
@@ -27,7 +29,7 @@ function Header() {
       <div class="Header-Right">
           { !loggedIn ? <Link to='/login'>Log in</Link> : ""}
           { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
-          { loggedIn ? <Link to='/dashboard'>{username}</Link> : ""}
+          { loggedIn ? <Link to='/dashboard'>{name}</Link> : ""}
           { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
 
         <Link to ='/create'><input type="button" value="Create dataset"/></Link>

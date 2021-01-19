@@ -34,6 +34,7 @@ export default function App() {
                 if(err.response.status === 400) {
                     localStorage.removeItem("username");
                     localStorage.removeItem("email");
+                    localStorage.removeItem("name");
                 }
 
                 token = err.response.headers['x-csrf-token'];
