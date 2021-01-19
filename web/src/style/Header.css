@@ -461,3 +461,16 @@ div.datasets-details:first-child {
     line-height: 23px;
     margin-bottom: 3px;
 }
+
+.dataset-purchase-modal {
+    position: absolute;
+    margin: auto;
+    top: 0; left: 0; bottom: 0; right: 0;
+    border: none;
+    background: #FFFFFF;
+    border-radius: 20px;
+    width: 493px;
+    height: 376px;
+    padding: 28px 20px 30px 30px;
+    outline: none;
+}

@@ -3,12 +3,34 @@ import Header from '../Header'
 import Footer from '../Footer'
 import { useParams } from 'react-router-dom'
 import {getAxiosInstance} from "../components/Auth";
+import Modal from "react-modal";
+import { ModalProvider, ModalConsumer } from '../components/modals/ModalContext';
+import ModalRoot from '../components/modals/ModalRoot';
+
+
+const DatasetPurchaseModal = (props) => {
+    console.log(props.datasetId);
+    return (
+        <div>
+            <h2>Purchase</h2>
+            {props.datasetId}
+        </div>
+    )
+}
+
+const Modal1 = ({ onRequestClose, ...otherProps }) => (
+    <Modal isOpen onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
+        <DatasetPurchaseModal datasetId={otherProps.datasetId}/>
+    </Modal>
+);
 
 export default function DatasetPage() {
     const [datasetImageUrl, setDatasetImageUrl] = useState("/api/v1/image/");
     let { id } = useParams();
     const [dataset, setDataset] = useState({});
     const [publisher, setPublisher] = useState({});
+
+    Modal.setAppElement('#root');
 
     const pullDataset = async (datasetId) => {
         const instance = getAxiosInstance();
@@ -46,40 +68,48 @@ export default function DatasetPage() {
     }, []);
 
     return (
-        <div className="container">
-            <Header/>
-            <div className="maincontent">
-                <div className="dataset-container-header">
-                    <div>
-                        <div className="dataset-header">
-                            <div><h2>{dataset.title}</h2></div>
-                            <div className="dataset-description">{dataset.shortDescription}</div>
-                            <div className="mini-light-description">{dataset.fileType} 2.4GB 7d ago</div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="dataset-publisher">
-                            <div>
-                                <div className="dataset-publisher-name">{publisher.Name}</div>
-                                <div className="dataset-publisher-location">{publisher.Country}</div>
-                            </div>
-                            <div className="dataset-publisher-avatar"><img src={publisher.Avatar}/></div>
-                        </div>
-                    </div>
-                </div>
-                <div className="dataset-container-body">
-                    <div>
+        <ModalProvider>
+            <ModalRoot />
+            <div className="container">
+                <Header/>
+                <div className="maincontent">
+                    <div className="dataset-container-header">
                         <div>
-                            <img src={datasetImageUrl} alt="" className="dataset-hero-image"/>
+                            <div className="dataset-header">
+                                <div><h2>{dataset.title}</h2></div>
+                                <div className="dataset-description">{dataset.shortDescription}</div>
+                                <div className="mini-light-description">{dataset.fileType} 2.4GB 7d ago</div>
+                            </div>
                         </div>
-                        <div className="dataset-maintext">{dataset.fullDescription}</div>
+                        <div>
+                            <div className="dataset-publisher">
+                                <div>
+                                    <div className="dataset-publisher-name">{publisher.Name}</div>
+                                    <div className="dataset-publisher-location">{publisher.Country}</div>
+                                </div>
+                                <div className="dataset-publisher-avatar"><img src={publisher.Avatar}/></div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        test
+                    <div className="dataset-container-body">
+                        <div>
+                            <div>
+                                <img src={datasetImageUrl} alt="" className="dataset-hero-image"/>
+                            </div>
+                            <div className="dataset-maintext">{dataset.fullDescription}</div>
+                        </div>
+                        <div>
+                            <ModalConsumer>
+                            {({ showModal }) => (
+                            <button onClick={() => showModal(Modal1, { datasetId: dataset.id })}>Open Modal</button>
+                            )}
+                            </ModalConsumer>
+                        </div>
                     </div>
                 </div>
+                <Footer/>
             </div>
-            <Footer/>
-        </div>
+
+        </ModalProvider>
     )
 }
