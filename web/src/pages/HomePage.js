@@ -49,7 +49,7 @@ export default function HomePage() {
     <div className="container">
       <Header/>
       <TabbedLinks linkNames={linkNames} activeLink={location.pathname}/>
-      <div className="maincontent">
+      <div className="maincontent margins-30">
         <DataSetsRows sortby="trending" datasets={datasets}/>
       </div>
       <Footer/>

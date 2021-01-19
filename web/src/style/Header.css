@@ -317,13 +317,17 @@ div.form-divider {
     background-color: white;
 }
 
+.margins-30 {
+    padding: 0 30px 0 30px;
+}
+
 .datasets-rows {
     margin-bottom: 50px;
 }
 
 .datasets-row {
     display: flex;
-    margin: 10px 20px 10px 30px;
+    margin: 10px 20px 10px 0px;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
