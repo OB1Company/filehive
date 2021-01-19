@@ -1130,7 +1130,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		sort.Slice(results, func(i, j int) bool { return results[i].Count > results[j].Count })
 		count = len(results)
 
-		if page*10 > int(count-1) {
+		if page > 0 && page*10 > int(count-1) {
 			page = int(count - 1)
 		}
 
