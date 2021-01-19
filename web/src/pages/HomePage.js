@@ -15,13 +15,15 @@ const getDatasets = async () => {
         headers: { "x-csrf-token": csrftoken }
     })
 
-    const loginUrl = "/api/v1/datasets";
+    const loginUrl = "/api/v1/trending";
     const apiReq = await instance.get(
         loginUrl
     );
     console.log(apiReq);
 
-    return apiReq.data.datasets;
+    const datasets = (apiReq.data.hasOwnProperty("datasets")) ? apiReq.data.datasets : [];
+
+    return datasets;
 }
 
 
