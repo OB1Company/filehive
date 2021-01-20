@@ -45,6 +45,7 @@ export default function DatasetPage() {
                 const getPublisher = async () => {
                     instance.get("/api/v1/user/" + dataset.userID)
                         .then((publish) => {
+                            publish.data.avatarFilename = "/api/v1/image/"+publish.data.Avatar;
                             setPublisher(publish.data);
                             console.log(publisher);
                         })
@@ -88,7 +89,7 @@ export default function DatasetPage() {
                                     <div className="dataset-publisher-name">{publisher.Name}</div>
                                     <div className="dataset-publisher-location">{publisher.Country}</div>
                                 </div>
-                                <div className="dataset-publisher-avatar"><img src={publisher.Avatar}/></div>
+                                <div className="dataset-publisher-avatar"><img src={publisher.avatarFilename} className="dataset-metadata-avatar"/></div>
                             </div>
                         </div>
                     </div>

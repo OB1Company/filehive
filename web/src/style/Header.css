@@ -511,3 +511,41 @@ div.datasets-details:first-child {
 .dataset-metadata-button {
     margin-bottom: 15px;
 }
+
+.dataset-metadata-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: top center;
+}
+
+.dataset-publisher {
+    display: flex;
+    align-items: center;
+}
+
+.dataset-publisher > :first-child {
+    justify-content: right;
+    text-align: right;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.dataset-publisher-name {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 30px;
+    text-align: right;
+    color: #000000;
+}
+
+.dataset-publisher-location {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 20px;
+    text-align: right;
+    color: #848484;
+}
