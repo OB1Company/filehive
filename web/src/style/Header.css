@@ -482,3 +482,32 @@ div.datasets-details:first-child {
     border-radius: 10px;
     padding: 20px;
 }
+
+.dataset-metadata-price {
+    font-style: normal;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 30px;
+    color: #F3A815;
+}
+
+.dataset-metadata-description {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 24px;
+    color: #000000;
+    margin: 12px 0;
+}
+
+.dataset-metadata-warning {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: #8C8C8C;
+}
+
+.dataset-metadata-button {
+    margin-bottom: 15px;
+}

@@ -101,14 +101,16 @@ export default function DatasetPage() {
                         </div>
                         <div>
                             <div className="dataset-metadata-container">
-                                <div>{dataset.price} FIL</div>
-                                <div className="mini-description">Your payment helps support the dataset creator and Filecoin miners.</div>
+                                <div className="dataset-metadata-price">{dataset.price} FIL</div>
+                                <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
+                                <div className="dataset-metadata-button">
                                 <ModalConsumer>
                                     {({ showModal }) => (
-                                        <button onClick={() => showModal(Modal1, { datasetId: dataset.id })}>Open Modal</button>
+                                        <button className="orange-button" onClick={() => showModal(Modal1, { datasetId: dataset.id })}>Buy Now</button>
                                     )}
                                 </ModalConsumer>
-                                <div className="mini-light-description">The price includes the miner fee.</div>
+                                </div>
+                                <div className="dataset-metadata-warning">The price includes the miner fee.</div>
                             </div>
                         </div>
                     </div>
