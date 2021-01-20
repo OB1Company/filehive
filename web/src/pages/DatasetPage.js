@@ -6,7 +6,7 @@ import {getAxiosInstance} from "../components/Auth";
 import Modal from "react-modal";
 import { ModalProvider, ModalConsumer } from '../components/modals/ModalContext';
 import ModalRoot from '../components/modals/ModalRoot';
-
+import { Countries } from '../constants/Countries'
 
 const DatasetPurchaseModal = (props) => {
     console.log(props.datasetId);
@@ -46,6 +46,10 @@ export default function DatasetPage() {
                     instance.get("/api/v1/user/" + dataset.userID)
                         .then((publish) => {
                             publish.data.avatarFilename = "/api/v1/image/"+publish.data.Avatar;
+
+                            // Convert country code to name
+                            const countryObject = Countries.find(c => c.value === publish.data.Country);
+                            publish.data.countryName = countryObject.label;
                             setPublisher(publish.data);
                             console.log(publisher);
                         })
@@ -87,7 +91,7 @@ export default function DatasetPage() {
                             <div className="dataset-publisher">
                                 <div>
                                     <div className="dataset-publisher-name">{publisher.Name}</div>
-                                    <div className="dataset-publisher-location">{publisher.Country}</div>
+                                    <div className="dataset-publisher-location">{publisher.countryName}</div>
                                 </div>
                                 <div className="dataset-publisher-avatar"><img src={publisher.avatarFilename} className="dataset-metadata-avatar"/></div>
                             </div>
