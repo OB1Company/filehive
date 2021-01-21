@@ -47,7 +47,7 @@ export default function Datasets() {
 
         <div className="maincontent margins-30">
             <h2>My datasets</h2>
-            <DataSetsRows sortby="trending" datasets={datasets}/>
+            <DataSetsRows sortby="trending" datasets={datasets} rowType="edit"/>
         </div>
 
     );

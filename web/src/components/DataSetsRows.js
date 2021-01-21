@@ -4,7 +4,7 @@ import DataSetsRow from "../components/DataSetsRow";
 
 function DataSetsRows(props) {
     let rows = props.datasets.map((dataset)=> {
-        return <DataSetsRow metadata={dataset}/>;
+        return <DataSetsRow metadata={dataset} rowType={props.rowType}/>;
     });
 
     return (

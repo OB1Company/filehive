@@ -50,9 +50,11 @@ function Create() {
       await instance.post(
           url,
           formData
-      );
+      )
+          .then((data) => {
+            history.push('/');
+          });
 
-      history.push('/');
     } catch(e) {
 
       setError(e);

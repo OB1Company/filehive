@@ -57,13 +57,13 @@ export default function App() {
           <Route path="/user/:id" component={UserPage} />
 
               <PrivateRoute path="/create" component={CreatePage} />
-              <Route exact path="/dashboard">
+              <PrivateRoute exact path="/dashboard">
                   <Redirect to="/dashboard/datasets"/>
-              </Route>
-              <Route path="/dashboard/datasets" component={DashboardPage} />
-              <Route path="/dashboard/purchases" component={DashboardPage} />
-              <Route path="/dashboard/wallet" component={DashboardPage} />
-              <Route path="/dashboard/settings" component={DashboardPage} />
+              </PrivateRoute>
+              <PrivateRoute path="/dashboard/datasets" component={DashboardPage} />
+              <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
+              <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
+              <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
 
           <Route component={HomePage} />
       </Switch>

@@ -13,10 +13,13 @@ function DataSetsRow(props) {
     const username = props.metadata.username;
     const timestamp = "BOBBY"; //props.metadata.timestamp;
 
+    const buttonText = (props.rowType === "edit") ? "Edit" : "Details";
+    const gotoPage = (props.rowType === "edit") ? '/dataset/'+props.metadata.id+'/edit' : '/dataset/'+props.metadata.id;
+
     const datasetImage = "/api/v1/image/" + imageFilename;
 
     const handleClickDatasetRow = (e) => {
-        history.push('/dataset/'+props.metadata.id);
+        history.push(gotoPage);
     }
 
     return (
@@ -30,7 +33,7 @@ function DataSetsRow(props) {
                 <div className="mini-light-description">{fileType} {fileSize} {timestamp} {username}</div>
             </div>
             <div className="datasets-details">
-                <div><button className="normal-button">Details</button></div>
+                <div><button className="normal-button">{buttonText}</button></div>
                 <div className="small-orange-text">{price} FIL</div>
             </div>
         </div>

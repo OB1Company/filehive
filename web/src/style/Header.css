@@ -603,3 +603,32 @@ div.datasets-details:first-child {
     margin-top: 0px;
     padding-left: 30px;
 }
+
+.h2-subtitle {
+    font-size: 20px;
+    line-height: 27px;
+    color: #707070;
+}
+
+.withdrawal-deposit-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+.wd-container {
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid #EAEAEA;
+    box-sizing: border-box;
+    border-radius: 20px;
+    width: 496px;
+    margin:0 15px 0 15px;
+    padding: 20px;
+}
+
+.transaction-ledger {
+    margin-top: 40px;
+}
