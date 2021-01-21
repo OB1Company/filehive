@@ -127,12 +127,32 @@ func (s *FileHiveServer) handlePOSTLogin(w http.ResponseWriter, r *http.Request)
 	s.loginUser(w, creds.Email)
 }
 
+func (s *FileHiveServer) handlePOSTLogout(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	_, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "expired",
+		Expires:  time.Time{},
+		Domain:   s.domain,
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
+	})
+}
+
 func (s *FileHiveServer) handlePOSTTokenExtend(w http.ResponseWriter, r *http.Request) {
 	emailIface := r.Context().Value("email")
 
 	email, ok := emailIface.(string)
 	if !ok {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
 		return
 	}
 	s.loginUser(w, email)
@@ -676,6 +696,11 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
+	sanitizedJSONResponse(w, struct {
+		DatasetID string `json:"datasetID"`
+	}{
+		DatasetID: dataset.ID,
+	})
 }
 
 func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Request) {
@@ -1072,6 +1097,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 
 	var (
 		trending []models.Dataset
+		recent   []models.Dataset
 		count    int
 	)
 
@@ -1117,6 +1143,22 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 				return nil
 			}
 		}
+
+		var recentCount int64
+		if err := db.Model(&models.Dataset{}).Count(&recentCount).Error; err != nil {
+			return err
+		}
+
+		if len(trending) < 10 {
+			if err := db.Order("created_at desc").Limit(10 - len(trending)).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+
+			trending = append(trending, recent...)
+		}
+
+		count += int(recentCount)
+
 		return nil
 	})
 	if err != nil {
@@ -1135,7 +1177,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func (s *FileHiveServer) handleGETSerch(w http.ResponseWriter, r *http.Request) {
+func (s *FileHiveServer) handleGETSearch(w http.ResponseWriter, r *http.Request) {
 	var (
 		page int
 		err  error
@@ -1171,7 +1213,6 @@ func (s *FileHiveServer) handleGETSerch(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}

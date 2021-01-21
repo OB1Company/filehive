@@ -31,6 +31,11 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 		tknStr := c.Value
 		claims := &claims{}
 
+		if c.Value == "expired" {
+			http.Error(w, wrapError(ErrNotLoggedIn), http.StatusUnauthorized)
+			return
+		}
+
 		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
 			return s.jwtKey, nil
 		})

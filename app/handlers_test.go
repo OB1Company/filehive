@@ -270,6 +270,22 @@ func Test_Handlers(t *testing.T) {
 				body:             nil,
 				expectedResponse: nil,
 			},
+			{
+				name:             "Post logout",
+				path:             "/api/v1/logout",
+				method:           http.MethodPost,
+				statusCode:       http.StatusOK,
+				body:             nil,
+				expectedResponse: nil,
+			},
+			{
+				name:             "Post extend token not logged in 2",
+				path:             "/api/v1/token/extend",
+				method:           http.MethodPost,
+				statusCode:       http.StatusUnauthorized,
+				body:             nil,
+				expectedResponse: errorReturn(ErrNotLoggedIn),
+			},
 		})
 	})
 

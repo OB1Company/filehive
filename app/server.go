@@ -145,7 +145,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
 	r.HandleFunc("/api/v1/recent", s.handleGETRecent).Methods("GET")
 	r.HandleFunc("/api/v1/trending", s.handleGETTrending).Methods("GET")
-	r.HandleFunc("/api/v1/search", s.handleGETSerch).Methods("GET")
+	r.HandleFunc("/api/v1/search", s.handleGETSearch).Methods("GET")
 
 	if s.testMode {
 		r.HandleFunc("/api/v1/generatecoins", s.handlePOSTGenerateCoins).Methods("POST")
@@ -155,6 +155,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter := r.PathPrefix("/api/v1").Subrouter()
 	subRouter.Use(s.authenticationMiddleware)
 
+	subRouter.HandleFunc("/logout", s.handlePOSTLogout).Methods("POST")
 	subRouter.HandleFunc("/token/extend", s.handlePOSTTokenExtend).Methods("POST")
 	subRouter.HandleFunc("/user", s.handleGETUser).Methods("GET")
 	subRouter.HandleFunc("/user", s.handlePATCHUser).Methods("PATCH")
