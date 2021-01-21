@@ -38,7 +38,6 @@ function Signup() {
         data
     ).then((data) => {
       // Successful login
-      localStorage.setItem("username", name);
       localStorage.setItem("email", email);
       localStorage.setItem("name", name);
 
@@ -56,7 +55,7 @@ function Signup() {
   }
 
   return (
-    <div class="Signup form-540">
+    <div class="Signup form-540 form-center">
       <h2>Sign up</h2>
       <form onSubmit={HandleFormSubmit}>
         <label>
