@@ -1150,7 +1150,13 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		}
 
 		if len(trending) < 10 {
-			if err := db.Order("created_at desc").Limit(10 - len(trending)).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+			trendingPages := (count / 10) + 1
+			recentPage := 0
+			if page-trendingPages > 0 {
+				recentPage = page - trendingPages
+			}
+
+			if err := db.Order("created_at desc").Limit((recentPage * 10) + (10 - len(trending))).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 
