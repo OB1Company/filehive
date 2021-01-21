@@ -1,7 +1,7 @@
-import React, {useState}  from 'react'
-import {Link, useHistory} from "react-router-dom";
-import ErrorBox from './ErrorBox'
+import React, { useState }  from 'react'
+import { useHistory } from "react-router-dom";
 import axios from "axios";
+import { ConvertImageToString } from "./utilities/images";
 
 function Create() {
 
@@ -17,25 +17,11 @@ function Create() {
 
   const history = useHistory();
 
-  const convertBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsBinaryString(file)
-      fileReader.onload = () => {
-        resolve(fileReader.result);
-      }
-      fileReader.onerror = (error) => {
-        reject(error);
-      }
-    })
-  }
-
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
 
     // Convert image file to base64 string
-    const blobString = await convertBase64(imageFile);
-    const fileString = btoa(blobString);
+    const fileString = await ConvertImageToString(imageFile);
 
     const data = {
       title: title,

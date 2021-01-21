@@ -6,14 +6,13 @@ import { useCookies } from "react-cookie";
 function Header() {
 
     const history = useHistory();
-    const username = localStorage.getItem('username');
+    const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
-    const loggedIn = (!(username == null || username === ""));
+    const loggedIn = (!(email == null || email === ""));
     const [token, getToken, removeToken] = useCookies(['token']);
 
     const HandleLogout = (e) => {
 
-        localStorage.removeItem("username");
         localStorage.removeItem("email");
         localStorage.removeItem("name");
 

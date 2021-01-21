@@ -155,9 +155,12 @@ div.subBody {
     background-color: white;
 }
 
+.form-center {
+    margin: 0 auto;
+}
+
 .form-540 {
     width: 540px;
-    margin: 0 auto;
     margin-top: 36px;
     display: flex;
     flex-direction: column;
@@ -517,6 +520,7 @@ div.datasets-details:first-child {
     height: 72px;
     border-radius: 50%;
     background-size: cover;
+    object-fit: cover;
     background-position: top center;
 }
 
@@ -548,4 +552,54 @@ div.datasets-details:first-child {
     line-height: 20px;
     text-align: right;
     color: #848484;
+}
+
+.modal-title {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 22px;
+    line-height: 17px;
+    margin-bottom: 10px;
+}
+
+.modal-text {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 22px;
+}
+
+.modal-center-text-bold {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 17px;
+    text-align: center;
+    margin: 40px 0 32px 0;
+}
+
+.modal-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.modal-button-container {
+    text-align: center;
+}
+
+.modal-button-container > .orange-button {
+    margin-right: 0;
+}
+
+.text-center { text-align: center; }
+.top-32 { margin-top: 32px; }
+
+.dashboard-container {
+    padding-top: 20px;
+}
+
+.settings-form {
+    margin-top: 0px;
+    padding-left: 30px;
 }

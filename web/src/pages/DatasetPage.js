@@ -8,20 +8,29 @@ import { ModalProvider, ModalConsumer } from '../components/modals/ModalContext'
 import ModalRoot from '../components/modals/ModalRoot';
 import { Countries } from '../constants/Countries'
 
+const instance = getAxiosInstance();
+
 const DatasetPurchaseModal = (props) => {
-    console.log(props.datasetId);
+    console.log(props);
+
+
+
     return (
-        <div>
-            <h2>Purchase</h2>
-            You’re almost finished. Please confirm the order details below to purchase the dataset.
-            {props.datasetId}
+        <div className="modal-container">
+            <div className="modal-title">Purchase</div>
+            <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
+            <div className="modal-center-text-bold">Pay {props.price} FIL</div>
+            {/*<div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>*/}
+            <div className="modal-button-container"><button className="orange-button">Confirm Order</button></div>
+            {/*<div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet. Please add at least 5.1834 FIL to your wallet.</div>*/}
+            <div className="mini-light-description text-center top-32">The funds will automatically be deducted from your wallet once you proceed.</div>
         </div>
     )
 }
 
 const Modal1 = ({ onRequestClose, ...otherProps }) => (
     <Modal isOpen onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
-        <DatasetPurchaseModal datasetId={otherProps.datasetId}/>
+        <DatasetPurchaseModal datasetId={otherProps.datasetId} price={otherProps.price}/>
     </Modal>
 );
 
@@ -34,7 +43,6 @@ export default function DatasetPage() {
     Modal.setAppElement('#root');
 
     const pullDataset = async (datasetId) => {
-        const instance = getAxiosInstance();
         const datasetUrl = "/api/v1/dataset/" + datasetId;
         await instance.get(datasetUrl, {withCredentials: true})
             .then((data)=>{
@@ -111,7 +119,7 @@ export default function DatasetPage() {
                                 <div className="dataset-metadata-button">
                                 <ModalConsumer>
                                     {({ showModal }) => (
-                                        <button className="orange-button" onClick={() => showModal(Modal1, { datasetId: dataset.id })}>Buy Now</button>
+                                        <button className="orange-button" onClick={() => showModal(Modal1, { datasetId: dataset.id, price: dataset.price })}>Buy Now</button>
                                     )}
                                 </ModalConsumer>
                                 </div>

@@ -32,7 +32,7 @@ function Login() {
             loginUrl,
             data
         ).then((data)=>{
-          localStorage.setItem("username", email);
+          localStorage.setItem("email", email);
 
           instance.get("/api/v1/user/" + email)
               .then((data) => {

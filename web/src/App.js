@@ -13,7 +13,7 @@ import axios from "axios";
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route {...rest} render={(props) => (
-        localStorage.getItem("username") == null || localStorage.getItem("username") === ""
+        localStorage.getItem("email") == null || localStorage.getItem("username") === ""
             ? <Redirect to='/login' />
             : <Component {...props} />
     )
@@ -32,7 +32,6 @@ export default function App() {
                 console.log('GET User call failed', err.response);
 
                 if(err.response.status === 400) {
-                    localStorage.removeItem("username");
                     localStorage.removeItem("email");
                     localStorage.removeItem("name");
                 }

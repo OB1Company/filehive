@@ -42,7 +42,9 @@ export default function DashboardPage() {
             <Header/>
             <div className="maincontent">
                 <TabbedLinks linkNames={linkNames} activeLink={location.pathname} />
-                <DashboardPage/>
+                <div className="dashboard-container">
+                    <DashboardPage/>
+                </div>
             </div>
             <Footer/>
         </div>
