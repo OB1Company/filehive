@@ -1,25 +1,143 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, {useEffect, useState} from 'react';
+import { Link } from 'react-router-dom';
+import axios from "axios";
+import QRCode from 'qrcode.react';
+import ErrorBox, {SuccessBox} from "../ErrorBox";
+import {getAxiosInstance} from "../Auth";
+
+export const GetWalletBalance = async () => {
+
+    const csrftoken = localStorage.getItem('csrf_token');
+    const instance = axios.create({
+        baseURL: "",
+        headers: { "x-csrf-token": csrftoken }
+    })
+
+    const loginUrl = "/api/v1/wallet/balance";
+    const apiReq = await instance.get(
+        loginUrl
+    );
+    console.log(apiReq);
+
+    return apiReq.data.Balance;
+}
+
+export const GetWalletAddress = async () => {
+
+    const csrftoken = localStorage.getItem('csrf_token');
+    const instance = axios.create({
+        baseURL: "",
+        headers: { "x-csrf-token": csrftoken }
+    })
+
+    const loginUrl = "/api/v1/wallet/address";
+    const apiReq = await instance.get(
+        loginUrl
+    );
+    console.log(apiReq);
+
+    return apiReq.data.Address;
+}
 
 export default function Wallet() {
+
+    const [balance, setBalance] = useState(0);
+    const [address, setAddress] = useState("");
+    const [filecoinAddress, setFilecoinAddress] = useState("");
+    const [amount, setAmount] = useState(0);
+    const [recipient, setRecipient] = useState("");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("Funds sent successfully");
+
+    const qrSettings = {
+        width: 188,
+        height: 188
+    }
+
+    useEffect(() => {
+        const fetchData = async() => {
+            const balance = await GetWalletBalance();
+            setBalance(balance);
+            const address = await GetWalletAddress();
+            setAddress(address);
+            setFilecoinAddress(address)
+        };
+        fetchData();
+    }, []);
+
+    const HandleSendSubmit = async (e) => {
+        e.preventDefault();
+
+        const data = { amount: amount, address: recipient };
+
+        const sendCoins = async () => {
+
+            const sendUrl = "/api/v1/wallet/send";
+
+            try {
+
+                const instance = getAxiosInstance();
+
+                await instance.post(
+                    sendUrl,
+                    data
+                ).then((data)=>{
+
+                }).catch(error => {
+                    console.log("Send Failure", error.response);
+                    setSuccess("");
+                    setError(error.response.data.error);
+                });
+
+                return false;
+
+            } catch(err) {
+
+            }
+        };
+        sendCoins();
+
+    }
 
     return (
 
         <div className="maincontent margins-30">
-            <h2>Wallet <span className="h2-subtitle">(2.349 FIL)</span></h2>
+            <h2>Wallet <span className="h2-subtitle">({balance} FIL)</span></h2>
 
             <div className="withdrawal-deposit-container">
                 <div className="wd-container">
                     <h3>Deposit</h3>
-                    <p>Send FIL to the address below to add funds to your wallet.</p>
-                    <div className="qr-code-deposit"></div>
-                    <p className="center"></p>
-                    <Link onClick=""/>
+                    <div className="wd-description">Send FIL to the address below to add funds to your wallet.</div>
+                    <div className="qr-code-deposit">
+                        <QRCode value={filecoinAddress} size="99" imageSettings={qrSettings} />
+                    </div>
+                    <div className="center">{address}</div>
+                    <div className="center"><a href="#" className="orange-link" onClick={() =>  navigator.clipboard.writeText(address)}>copy</a></div>
                 </div>
-                <div className="wd-container">
+                <div className="wd-container form-540">
                     <h3>Withdrawal</h3>
                     <p>Specify a FIL address below to send your funds to.</p>
-                    <form>
+                    <form onSubmit={HandleSendSubmit}>
+                        <label>
+                            Amount*
+                            <input type="text" name="amount" placeholder="5"
+                                   onChange={e => setAmount(parseFloat(e.target.value))}/>
+                        </label>
+                        <label>
+                            To (FIL address)*
+                            <input type="text" name="recipient" placeholder="e.g. t1cadxk4yywa7hfaiz3rs23t3wmyn7cjcdy5rtm4q"
+                                   onChange={e => setRecipient(e.target.value)}/>
+                        </label>
+                        <div>
+                            <input type="submit" value="Send" className="orange-button"/>
+                        </div>
+
+                        {error &&
+                        <ErrorBox message={error}/>
+                        }
+                        {success &&
+                        <SuccessBox message={success}/>
+                        }
 
                     </form>
                 </div>

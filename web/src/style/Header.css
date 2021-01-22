@@ -159,6 +159,8 @@ div.subBody {
     margin: 0 auto;
 }
 
+
+
 .form-540 {
     width: 540px;
     margin-top: 36px;
@@ -219,6 +221,19 @@ div.subBody {
     margin: 20px 0;
     padding: 10px 13px;
     color: #D23330;
+}
+
+.SuccessBox {
+    background: #DFF0D8;
+    border: 1px solid #D0E9C6;
+    border-radius: 4px;
+    font-size: 16px;
+    line-height: 24px;
+    display: flex;
+    align-items: flex-end;
+    color: #3C763D;
+    padding: 10px;
+    margin-top: 16px;
 }
 
 .CreateDataset {
@@ -358,6 +373,10 @@ div.form-divider {
     align-content: center;
     flex: 1 1 auto;
     padding: 0 20px;
+}
+
+.wd-description {
+    margin-bottom: 16px;
 }
 
 .mini-bold-title {
@@ -620,7 +639,6 @@ div.datasets-details:first-child {
 .wd-container {
     display: flex;
     flex-direction: column;
-
     border: 1px solid #EAEAEA;
     box-sizing: border-box;
     border-radius: 20px;
@@ -629,6 +647,25 @@ div.datasets-details:first-child {
     padding: 20px;
 }
 
+.wd-container form {
+    margin-top: 16px;
+}
+
 .transaction-ledger {
     margin-top: 40px;
+}
+
+.qr-code-deposit {
+    padding: 32px 0 10px 0;
+    text-align: center;
+}
+
+.center {
+    text-align: center;
+}
+
+.orange-link {
+    font-size: 16px;
+    line-height: 24px;
+    color: #F3A815;
 }

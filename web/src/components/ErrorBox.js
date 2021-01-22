@@ -8,4 +8,12 @@ function ErrorBox(props) {
   )
 }
 
+export function SuccessBox(props) {
+  return (
+      <div class="SuccessBox">
+        {props.message}
+      </div>
+  )
+}
+
 export default ErrorBox
