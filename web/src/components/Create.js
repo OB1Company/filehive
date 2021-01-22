@@ -34,7 +34,7 @@ function Create() {
 
     const formData = new FormData();
     formData.append('metadata', JSON.stringify(data));
-    formData.append('file', fileString);
+    formData.append('file', dataset);
 
     const csrftoken = localStorage.getItem('csrf_token');
     const instance = axios.create({
@@ -52,7 +52,7 @@ function Create() {
           formData
       )
           .then((data) => {
-            history.push('/');
+            history.push('/dataset/'+data.data.datasetID);
           });
 
     } catch(e) {

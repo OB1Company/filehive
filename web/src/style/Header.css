@@ -404,7 +404,7 @@ div.form-divider {
     font-weight: normal;
     font-size: 15px;
     line-height: 20px;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
 }
 .mini-light-description {
     font-style: normal;
@@ -494,7 +494,7 @@ div.datasets-details:first-child {
     font-weight: normal;
     font-size: 17px;
     line-height: 23px;
-    margin-bottom: 3px;
+    margin-bottom: 7px;
 }
 
 .dataset-purchase-modal {
@@ -681,4 +681,11 @@ div.datasets-details:first-child {
     font-size: 16px;
     line-height: 24px;
     color: #F3A815;
+}
+
+.tag-container {
+    display: flex;
+}
+.tag-container > div {
+    margin-right: 16px;
 }

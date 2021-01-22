@@ -4,6 +4,7 @@ import { Route, Switch, Redirect } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import UserPage from './pages/UserPage'
 import LoginPage from './pages/LoginPage'
+import Logout from './Logout'
 import SignupPage from './pages/SignupPage'
 import CreatePage from './pages/CreatePage'
 import DashboardPage from './pages/DashboardPage'
@@ -50,6 +51,7 @@ export default function App() {
               {true ? <Redirect to="/datasets/trending" /> : <HomePage />}
           </Route>
           <Route exact path="/login" component={LoginPage} />
+          <Route exact path="/logout" component={Logout} />
           <Route exact path="/signup" component={SignupPage} />
           <Route path="/datasets/trending" component={HomePage} />
           <Route path="/datasets/latest" component={HomePage} />

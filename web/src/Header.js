@@ -2,6 +2,7 @@ import React from 'react'
 import './style/Header.css';
 import {Link, useHistory} from 'react-router-dom';
 import { useCookies } from "react-cookie";
+import {getAxiosInstance} from "./components/Auth";
 
 function Header() {
 
@@ -15,6 +16,12 @@ function Header() {
 
         localStorage.removeItem("email");
         localStorage.removeItem("name");
+
+        const instance = getAxiosInstance();
+        instance.post('/api/v1/logout')
+            .then((result) => {
+                console.log(result);
+            })
 
         history.push("/login");
     }

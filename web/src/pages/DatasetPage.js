@@ -7,13 +7,14 @@ import Modal from "react-modal";
 import { ModalProvider, ModalConsumer } from '../components/modals/ModalContext';
 import ModalRoot from '../components/modals/ModalRoot';
 import { Countries } from '../constants/Countries'
+import {HumanFileSize} from "../components/utilities/images";
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en'
 
 const instance = getAxiosInstance();
 
 const DatasetPurchaseModal = (props) => {
     console.log(props);
-
-
 
     return (
         <div className="modal-container">
@@ -35,9 +36,17 @@ const Modal1 = ({ onRequestClose, ...otherProps }) => (
 );
 
 export default function DatasetPage() {
+
+    const timeAgo = new TimeAgo('en-US')
+
     const [datasetImageUrl, setDatasetImageUrl] = useState("/api/v1/image/");
     let { id } = useParams();
     const [dataset, setDataset] = useState({});
+    const [price, setPrice] = useState("");
+    const [fileType, setFileType] = useState("");
+    const [fileSize, setFileSize] = useState("");
+    const [username, setUsername] = useState("");
+    const [timestamp, setTimestamp] = useState("");
     const [publisher, setPublisher] = useState({});
 
     Modal.setAppElement('#root');
@@ -49,6 +58,12 @@ export default function DatasetPage() {
                 const dataset = data.data;
                 setDataset(data.data);
                 setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
+
+                setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
+                setFileType(dataset.fileType);
+                setFileSize(HumanFileSize(dataset.fileSize, true));
+                setUsername(dataset.username);
+                setTimestamp(timeAgo.format(Date.parse(dataset.createdAt)));
 
                 const getPublisher = async () => {
                     instance.get("/api/v1/user/" + dataset.userID)
@@ -92,7 +107,12 @@ export default function DatasetPage() {
                             <div className="dataset-header">
                                 <div><h2>{dataset.title}</h2></div>
                                 <div className="dataset-description">{dataset.shortDescription}</div>
-                                <div className="mini-light-description">{dataset.fileType} 2.4GB 7d ago</div>
+                                <div className="mini-light-description tag-container">
+                                    <div>{fileType}</div>
+                                    <div>{fileSize}</div>
+                                    <div>{timestamp}</div>
+                                    <div>{username}</div>
+                                </div>
                             </div>
                         </div>
                         <div>

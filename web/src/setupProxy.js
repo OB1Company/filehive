@@ -9,7 +9,11 @@ module.exports = function(app) {
             cookieDomainRewrite: "localhost",
             cookiePathRewrite: "/",
             debug: true,
+            onProxyReq: function (proxyReq, req, res) {
+                // console.log(req.headers.cookie);
+            },
             onProxyRes: function (proxyRes, req, res) {
+                // console.log(req.headers.cookie);
             },
         })
     );
