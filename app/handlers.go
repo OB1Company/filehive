@@ -88,6 +88,7 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		Value:    tokenString,
 		Expires:  expirationTime,
 		Domain:   s.domain,
+		MaxAge: 0,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
@@ -142,9 +143,10 @@ func (s *FileHiveServer) handlePOSTLogout(w http.ResponseWriter, r *http.Request
 		Value:    "expired",
 		Expires:  time.Time{},
 		Domain:   s.domain,
+		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	})
 }
 
