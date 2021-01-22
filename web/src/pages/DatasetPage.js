@@ -1,39 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import Header from '../Header'
 import Footer from '../Footer'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import {getAxiosInstance} from "../components/Auth";
 import Modal from "react-modal";
-import { ModalProvider, ModalConsumer } from '../components/modals/ModalContext';
-import ModalRoot from '../components/modals/ModalRoot';
 import { Countries } from '../constants/Countries'
 import {HumanFileSize} from "../components/utilities/images";
 import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en'
 
 const instance = getAxiosInstance();
-
-const DatasetPurchaseModal = (props) => {
-    console.log(props);
-
-    return (
-        <div className="modal-container">
-            <div className="modal-title">Purchase</div>
-            <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
-            <div className="modal-center-text-bold">Pay {props.price} FIL</div>
-            {/*<div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>*/}
-            <div className="modal-button-container"><button className="orange-button">Confirm Order</button></div>
-            {/*<div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet. Please add at least 5.1834 FIL to your wallet.</div>*/}
-            <div className="mini-light-description text-center top-32">The funds will automatically be deducted from your wallet once you proceed.</div>
-        </div>
-    )
-}
-
-const Modal1 = ({ onRequestClose, ...otherProps }) => (
-    <Modal isOpen onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
-        <DatasetPurchaseModal datasetId={otherProps.datasetId} price={otherProps.price}/>
-    </Modal>
-);
 
 export default function DatasetPage() {
 
@@ -48,48 +23,101 @@ export default function DatasetPage() {
     const [username, setUsername] = useState("");
     const [timestamp, setTimestamp] = useState("");
     const [publisher, setPublisher] = useState({});
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [openModal, setOpenModal] = useState("purchase");
 
     Modal.setAppElement('#root');
 
-    const pullDataset = async (datasetId) => {
-        const datasetUrl = "/api/v1/dataset/" + datasetId;
-        await instance.get(datasetUrl, {withCredentials: true})
-            .then((data)=>{
-                const dataset = data.data;
-                setDataset(data.data);
-                setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
+    const DatasetSuccessModal = (props) => {
 
-                setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
-                setFileType(dataset.fileType);
-                setFileSize(HumanFileSize(dataset.fileSize, true));
-                setUsername(dataset.username);
-                setTimestamp(timeAgo.format(Date.parse(dataset.createdAt)));
+        const HandleClickDownload = (e) => {
+            console.log('Clicked', e);
+            setOpenModal("purchase");
+            setModalIsOpen(false);
+        }
 
-                const getPublisher = async () => {
-                    instance.get("/api/v1/user/" + dataset.userID)
-                        .then((publish) => {
-                            publish.data.avatarFilename = "/api/v1/image/"+publish.data.Avatar;
+        return (
+                <div className="modal-container-success">
+                    <div className="modal-title">✅ Success</div>
+                    <div>It may take a few hours to retrieve your dataset from the Filecoin network.</div>
+                    <div className="modal-button-container"><button className="orange-button" onClick={HandleClickDownload}>Download</button></div>
+                    <div className="mini-light-description text-center top-32">If download is not available yet, please try again in <Link to="/dashboard/datasets">your account</Link>.</div>
+                </div>
+        )
+    }
 
-                            // Convert country code to name
-                            const countryObject = Countries.find(c => c.value === publish.data.Country);
-                            publish.data.countryName = countryObject.label;
-                            setPublisher(publish.data);
-                            console.log(publisher);
-                        })
+    const DatasetPurchaseModal = (props) => {
+        const HandleClickPurchase = (e) => {
+            setOpenModal("success");
+        }
 
-                }
-                getPublisher();
+        console.log(props);
+        return (
+            <div className="modal-container">
+                <div className="modal-title">Purchase</div>
+                <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
+                <div className="modal-center-text-bold">Pay {price} FIL</div>
+                {/*<div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>*/}
+                <div className="modal-button-container">
+                    <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
+                </div>
+                    {/*<div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet. Please add at least 5.1834 FIL to your wallet.</div>*/}
+                        <div className="mini-light-description text-center top-32">The funds will automatically be deducted from your wallet once you proceed.</div>
+                        </div>
+                        )
+    }
 
-            })
+    const Modal1 = ({ onRequestClose, ...otherProps }) => (
+        <Modal isOpen={modalIsOpen} onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
+            {openModal === "purchase" &&
+            <DatasetPurchaseModal datasetId={otherProps.datasetId} price={otherProps.price}/>
+            }
+            {openModal === "success" &&
+            <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
+            }
+        </Modal>
+    );
+
+
+
+    useEffect(() => {
+        const pullDataset = async (datasetId) => {
+            const datasetUrl = "/api/v1/dataset/" + datasetId;
+            await instance.get(datasetUrl, {withCredentials: true})
+                .then((data)=>{
+                    const dataset = data.data;
+                    setDataset(data.data);
+                    setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
+
+                    setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
+                    setFileType(dataset.fileType);
+                    setFileSize(HumanFileSize(dataset.fileSize, true));
+                    setUsername(dataset.username);
+                    setTimestamp(timeAgo.format(Date.parse(dataset.createdAt)));
+
+                    const getPublisher = async () => {
+                        instance.get("/api/v1/user/" + dataset.userID)
+                            .then((publish) => {
+                                publish.data.avatarFilename = "/api/v1/image/"+publish.data.Avatar;
+
+                                // Convert country code to name
+                                const countryObject = Countries.find(c => c.value === publish.data.Country);
+                                publish.data.countryName = countryObject.label;
+                                setPublisher(publish.data);
+                            })
+
+                    }
+                    getPublisher();
+
+                })
             //     // setDataset(data.data);
             //     // setDatasetImageUrl(datasetImageUrl+data.data.imageFilename);
             // })
             // .catch((err) => {
             //     //console.error(err);
             // })
-    }
+        }
 
-    useEffect(() => {
         const fetchData = async() => {
             const ds = await pullDataset(id);
         };
@@ -97,9 +125,8 @@ export default function DatasetPage() {
     }, []);
 
     return (
-        <ModalProvider>
-            <ModalRoot />
             <div className="container">
+                <Modal1/>
                 <Header/>
                 <div className="maincontent">
                     <div className="dataset-container-header">
@@ -137,11 +164,7 @@ export default function DatasetPage() {
                                 <div className="dataset-metadata-price">{dataset.price} FIL</div>
                                 <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                 <div className="dataset-metadata-button">
-                                <ModalConsumer>
-                                    {({ showModal }) => (
-                                        <button className="orange-button" onClick={() => showModal(Modal1, { datasetId: dataset.id, price: dataset.price })}>Buy Now</button>
-                                    )}
-                                </ModalConsumer>
+                                        <button className="orange-button" onClick={() => setModalIsOpen(true)}>Buy Now</button>
                                 </div>
                                 <div className="dataset-metadata-warning">The price includes the miner fee.</div>
                             </div>
@@ -150,7 +173,5 @@ export default function DatasetPage() {
                 </div>
                 <Footer/>
             </div>
-
-        </ModalProvider>
     )
 }

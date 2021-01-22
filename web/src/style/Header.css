@@ -616,6 +616,10 @@ div.datasets-details:first-child {
     justify-content: center;
 }
 
+.modal-container-succss {
+    width: 200px;
+}
+
 .modal-button-container {
     text-align: center;
 }
