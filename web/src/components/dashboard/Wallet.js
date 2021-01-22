@@ -47,7 +47,7 @@ export default function Wallet() {
     const [amount, setAmount] = useState(0);
     const [recipient, setRecipient] = useState("");
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState("Funds sent successfully");
+    const [success, setSuccess] = useState("");
 
     const qrSettings = {
         width: 188,
@@ -82,7 +82,7 @@ export default function Wallet() {
                     sendUrl,
                     data
                 ).then((data)=>{
-
+                    setSuccess("Funds sent successfully");
                 }).catch(error => {
                     console.log("Send Failure", error.response);
                     setSuccess("");
@@ -112,7 +112,7 @@ export default function Wallet() {
                         <QRCode value={filecoinAddress} size="99" imageSettings={qrSettings} />
                     </div>
                     <div className="center">{address}</div>
-                    <div className="center"><a href="#" className="orange-link" onClick={() =>  navigator.clipboard.writeText(address)}>copy</a></div>
+                    <div className="center"><a href="javascript:void(0);" className="orange-link" onClick={() =>  navigator.clipboard.writeText(address)}>copy</a></div>
                 </div>
                 <div className="wd-container form-540">
                     <h3>Withdrawal</h3>
@@ -120,7 +120,7 @@ export default function Wallet() {
                     <form onSubmit={HandleSendSubmit}>
                         <label>
                             Amount*
-                            <input type="text" name="amount" placeholder="5"
+                            <input type="text" name="amount" placeholder="0"
                                    onChange={e => setAmount(parseFloat(e.target.value))}/>
                         </label>
                         <label>
