@@ -67,6 +67,12 @@ func main() {
 	}
 	log.Debugf("New Address: %s", address)
 
+	balance, err := wbe.Balance(address, token)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Debugf("Balance: %s", balance)
+
 	key, err := loadJWTKey(config.DataDir)
 	if err != nil {
 		log.Fatal(err)

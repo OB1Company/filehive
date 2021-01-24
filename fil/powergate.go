@@ -212,9 +212,6 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 
 // Balance returns the balance for an address.
 func (w *PowergateWalletBackend) Balance(address string, userToken string) (*big.Int, error) {
-	w.mtx.RLock()
-	defer w.mtx.RUnlock()
-
 	return w.balance(address, userToken)
 }
 
@@ -223,7 +220,6 @@ func (w *PowergateWalletBackend) balance(address string, userToken string) (*big
 	defer w.mtx.Unlock()
 
 	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
-	log.Debug(ctx.Value(pow.AuthKey))
 
 	balance, err := w.powClient.Wallet.Balance(ctx, address)
 	if err != nil {
