@@ -54,6 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Testing API
 	id, token, err := fbe.CreateUser()
 	if err != nil {
 		log.Fatal(err)
