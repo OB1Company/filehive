@@ -480,6 +480,7 @@ div.datasets-details:first-child {
     width: 653px;
     height: 447px;
     margin-bottom: 23px;
+    object-fit: cover;
 }
 
 .dataset-maintext {
