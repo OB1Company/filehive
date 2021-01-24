@@ -378,6 +378,7 @@ div.form-divider {
     min-width: 190px;
     background-color: #EAEAEA;
     border-radius: 18px;
+    object-fit: cover;
 }
 
 .datasets-row-info {
