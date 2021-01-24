@@ -56,10 +56,10 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 	}
 
 	if options.TestMode {
-		if _, ok := walletBackend.(*fil.MockWalletBackend); !ok {
+		if _, ok := walletBackend.(*fil.PowergateWalletBackend); !ok {
 			return nil, errors.New("MockWalletBackend must be used in testmode")
 		}
-		if _, ok := filecoinBackend.(*fil.MockFilecoinBackend); !ok {
+		if _, ok := filecoinBackend.(*fil.PowergateBackend); !ok {
 			return nil, errors.New("MockFilecoinBackend must be used in testmode")
 		}
 	}

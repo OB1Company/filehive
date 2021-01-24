@@ -6,6 +6,7 @@ import (
 	"github.com/gcash/bchd/bchec"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
+	pow "github.com/textileio/powergate/api/client"
 	"io"
 	"math/big"
 	"os"
@@ -16,18 +17,19 @@ import (
 
 // MockFilecoinBackend is a mock backend for a Filecoin service
 type MockFilecoinBackend struct {
-	dataDir string
-	jobs    map[cid.Cid]string
+	dataDir    string
+	jobs       map[cid.Cid]string
+	adminToken string
 
 	mtx sync.RWMutex
 }
 
 // NewMockFilecoinBackend instantiates a new FilecoinBackend
-func NewMockFilecoinBackend(dataDir string) (*MockFilecoinBackend, error) {
+func NewMockFilecoinBackend(dataDir string, adminToken string) (*MockFilecoinBackend, error) {
 	if err := os.MkdirAll(dataDir, os.ModePerm); err != nil {
 		return nil, err
 	}
-	return &MockFilecoinBackend{dataDir: dataDir, jobs: make(map[cid.Cid]string), mtx: sync.RWMutex{}}, nil
+	return &MockFilecoinBackend{dataDir: dataDir, jobs: make(map[cid.Cid]string), mtx: sync.RWMutex{}, adminToken: ""}, nil
 }
 
 // Store will put a file to Filecoin and pay for it out of the provided
@@ -72,26 +74,31 @@ func (f *MockFilecoinBackend) Get(id cid.Cid) (io.Reader, error) {
 	return nil, nil
 }
 
+func (f *MockFilecoinBackend) CreateUser() (string, string, error) {
+	return "", "", nil
+}
+
 // MockWalletBackend is a mock backend for the wallet that allows
 // for making mock transactions and generating mock blocks.
 type MockWalletBackend struct {
-	transactions map[addr.Address][]Transaction
+	transactions map[string][]Transaction
 	nextAddr     *addr.Address
 	nextTxid     *cid.Cid
 	nextTime     *time.Time
+	powClient    *pow.Client
 	mtx          sync.RWMutex
 }
 
 // NewMockWalletBackend instantiates a new WalletBackend.
 func NewMockWalletBackend() *MockWalletBackend {
 	return &MockWalletBackend{
-		transactions: make(map[addr.Address][]Transaction),
+		transactions: make(map[string][]Transaction),
 		mtx:          sync.RWMutex{},
 	}
 }
 
 // GenerateToAddress creates mock coins and sends them to the address.
-func (w *MockWalletBackend) GenerateToAddress(addr addr.Address, amount *big.Int) {
+func (w *MockWalletBackend) GenerateToAddress(addr string, amount *big.Int) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
@@ -119,21 +126,27 @@ func (w *MockWalletBackend) GenerateToAddress(addr addr.Address, amount *big.Int
 }
 
 // NewAddress generates a new address and store the key in the backend.
-func (w *MockWalletBackend) NewAddress() (addr.Address, error) {
+func (w *MockWalletBackend) NewAddress(userToken string) (string, error) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
 	if w.nextAddr != nil {
 		ret := *w.nextAddr
 		w.nextAddr = nil
-		return ret, nil
+		return ret.String(), nil
 	}
 
 	priv, err := bchec.NewPrivateKey(bchec.S256())
 	if err != nil {
-		return addr.Address{}, err
+		return "", err
 	}
-	return addr.NewSecp256k1Address(priv.PubKey().SerializeCompressed())
+
+	secp256Address, err := addr.NewSecp256k1Address(priv.PubKey().SerializeCompressed())
+	if err != nil {
+		return "", nil
+	}
+
+	return secp256Address.String(), nil
 }
 
 func (w *MockWalletBackend) SetNextAddress(addr addr.Address) {
@@ -159,11 +172,11 @@ func (w *MockWalletBackend) SetNextTime(timestamp time.Time) {
 
 // Send filecoin from one address to another. Returns the cid of the
 // transaction.
-func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Cid, error) {
+func (w *MockWalletBackend) Send(from, to string, amount *big.Int, userToken string) (cid.Cid, error) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
-	balance, err := w.balance(from)
+	balance, err := w.balance(from, userToken)
 	if err != nil {
 		return cid.Cid{}, err
 	}
@@ -197,7 +210,7 @@ func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Ci
 	}
 
 	w.transactions[to] = append(w.transactions[to], tx)
-	if to.String() != from.String() {
+	if to != from {
 		w.transactions[from] = append(w.transactions[from], tx)
 	}
 
@@ -205,21 +218,21 @@ func (w *MockWalletBackend) Send(from, to addr.Address, amount *big.Int) (cid.Ci
 }
 
 // Balance returns the balance for an address.
-func (w *MockWalletBackend) Balance(addr addr.Address) (*big.Int, error) {
+func (w *MockWalletBackend) Balance(addr string, userToken string) (*big.Int, error) {
 	w.mtx.RLock()
 	defer w.mtx.RUnlock()
 
-	return w.balance(addr)
+	return w.balance(addr, userToken)
 }
 
-func (w *MockWalletBackend) balance(addr addr.Address) (*big.Int, error) {
+func (w *MockWalletBackend) balance(addr string, userToken string) (*big.Int, error) {
 	incoming, outgoing := big.NewInt(0), big.NewInt(0)
 
 	txs := w.transactions[addr]
 	for _, tx := range txs {
-		if tx.To.String() == addr.String() {
+		if tx.To == addr {
 			incoming.Add(incoming, tx.Amount)
-		} else if tx.From.String() == addr.String() {
+		} else if tx.From == addr {
 			outgoing.Add(outgoing, tx.Amount)
 		}
 	}
@@ -228,7 +241,7 @@ func (w *MockWalletBackend) balance(addr addr.Address) (*big.Int, error) {
 }
 
 // Transactions returns the list of transactions for an address.
-func (w *MockWalletBackend) Transactions(addr addr.Address, limit, offset int) ([]Transaction, error) {
+func (w *MockWalletBackend) Transactions(addr string, limit, offset int) ([]Transaction, error) {
 	w.mtx.RLock()
 	defer w.mtx.RUnlock()
 

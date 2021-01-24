@@ -45,14 +45,26 @@ func main() {
 	}
 
 	// TODO: this will need to be set by a config option when powergate gets wired up.
-	wbe := fil.NewMockWalletBackend()
+	wbe := fil.NewPowergateWalletBackend()
 	if err := os.MkdirAll(path.Join(config.DataDir, "files"), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	fbe, err := fil.NewMockFilecoinBackend(path.Join(config.DataDir, "files"))
+	fbe, err := fil.NewPowergateBackend(path.Join(config.DataDir, "files"), "")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	id, token, err := fbe.CreateUser()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debugf("Create User, ID: %s, Token: %s", id, token)
+
+	address, err := wbe.NewAddress(token)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Debugf("New Address: %s", address)
 
 	key, err := loadJWTKey(config.DataDir)
 	if err != nil {

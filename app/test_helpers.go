@@ -56,7 +56,7 @@ func runAPITests(t *testing.T, tests apiTests) {
 	}
 	defer os.RemoveAll(testStaticDir)
 
-	filBackend, err := fil.NewMockFilecoinBackend(path.Join(testStaticDir, "files"))
+	filBackend, err := fil.NewMockFilecoinBackend(path.Join(testStaticDir, "files"), "")
 	if err != nil {
 		t.Fatal(err)
 	}

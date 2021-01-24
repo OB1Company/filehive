@@ -88,7 +88,7 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		Value:    tokenString,
 		Expires:  expirationTime,
 		Domain:   s.domain,
-		MaxAge: 0,
+		MaxAge:   0,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
@@ -194,7 +194,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newAddress, err := s.walletBackend.NewAddress()
+	newAddress, err := s.walletBackend.NewAddress("")
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -216,7 +216,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		Country:         d.Country,
 		Salt:            salt,
 		HashedPassword:  hashedPW,
-		FilecoinAddress: newAddress.String(),
+		FilecoinAddress: newAddress,
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
@@ -437,13 +437,7 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	addr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	balance, err := s.walletBackend.Balance(addr)
+	balance, err := s.walletBackend.Balance(user.FilecoinAddress, "")
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -485,19 +479,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	from, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	to, err := address.NewFromString(d.Address)
-	if err != nil {
-		http.Error(w, wrapError(ErrInvalidAddress), http.StatusBadRequest)
-		return
-	}
-
-	txid, err := s.walletBackend.Send(from, to, fil.FILtoAttoFIL(d.Amount))
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, d.Address, fil.FILtoAttoFIL(d.Amount), "")
 	if err != nil {
 		if errors.Is(err, fil.ErrInsuffientFunds) {
 			http.Error(w, wrapError(fil.ErrInsuffientFunds), http.StatusBadRequest)
@@ -554,13 +536,7 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 		}
 	}
 
-	addr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	txs, err := s.walletBackend.Transactions(addr, limit, offset)
+	txs, err := s.walletBackend.Transactions(user.FilecoinAddress, limit, offset)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -579,13 +555,8 @@ func (s *FileHiveServer) handlePOSTGenerateCoins(w http.ResponseWriter, r *http.
 		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
 		return
 	}
-	addr, err := address.NewFromString(d.Address)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
 
-	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(addr, fil.FILtoAttoFIL(d.Amount))
+	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(d.Address, fil.FILtoAttoFIL(d.Amount))
 }
 
 func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Request) {
@@ -927,18 +898,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userAddr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-	datasetUserAddr, err := address.NewFromString(datasetUser.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	balance, err := s.walletBackend.Balance(userAddr)
+	balance, err := s.walletBackend.Balance(user.FilecoinAddress, "")
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -950,7 +910,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	txid, err := s.walletBackend.Send(userAddr, datasetUserAddr, amt)
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, datasetUser.FilecoinAddress, amt, "")
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
