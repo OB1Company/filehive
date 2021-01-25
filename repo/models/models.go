@@ -16,6 +16,8 @@ type User struct {
 	Country         string
 	AvatarFilename  string
 	FilecoinAddress string
+	PowergateToken  string
+	PowergateID     string
 }
 
 // Dataset holds metadata about a dataaset.

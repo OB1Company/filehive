@@ -134,7 +134,8 @@ func (w *PowergateWalletBackend) NewAddress(userToken string) (string, error) {
 	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
 	log.Debug(ctx.Value(pow.AuthKey))
 
-	address, err := w.powClient.Wallet.NewAddress(ctx, "")
+	a := pow.WithAddressType("secp256k1")
+	address, err := w.powClient.Wallet.NewAddress(ctx, "", a)
 	if err != nil {
 		return "", err
 	}
@@ -213,7 +214,7 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 	//	w.transactions[from] = append(w.transactions[from], tx)
 	//}
 
-	return txid, nil
+	return cid.Cid{}, nil
 }
 
 // Balance returns the balance for an address.

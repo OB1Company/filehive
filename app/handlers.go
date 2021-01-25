@@ -194,7 +194,12 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newAddress, err := s.walletBackend.NewAddress("")
+	userId, token, err := s.filecoinBackend.CreateUser()
+	if err != nil {
+		http.Error(w, wrapError(ErrWeakPassword), http.StatusBadRequest)
+	}
+
+	newAddress, err := s.walletBackend.NewAddress(token)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -217,6 +222,8 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		Salt:            salt,
 		HashedPassword:  hashedPW,
 		FilecoinAddress: newAddress,
+		PowergateToken:  token,
+		PowergateID:     userId,
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
@@ -437,7 +444,7 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	balance, err := s.walletBackend.Balance(user.FilecoinAddress, "")
+	balance, err := s.walletBackend.Balance(user.FilecoinAddress, user.PowergateToken)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -479,7 +486,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	txid, err := s.walletBackend.Send(user.FilecoinAddress, d.Address, fil.FILtoAttoFIL(d.Amount), "")
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, d.Address, fil.FILtoAttoFIL(d.Amount), user.PowergateToken)
 	if err != nil {
 		if errors.Is(err, fil.ErrInsuffientFunds) {
 			http.Error(w, wrapError(fil.ErrInsuffientFunds), http.StatusBadRequest)
