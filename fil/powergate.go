@@ -166,9 +166,6 @@ func (w *PowergateWalletBackend) SetNextTime(timestamp time.Time) {
 // Send filecoin from one address to another. Returns the cid of the
 // transaction.
 func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToken string) (cid.Cid, error) {
-	w.mtx.Lock()
-	defer w.mtx.Unlock()
-
 	balance, err := w.balance(from, userToken)
 	if err != nil {
 		return cid.Cid{}, err
@@ -178,34 +175,43 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 		return cid.Cid{}, ErrInsuffientFunds
 	}
 
-	var txid cid.Cid
-	if w.nextTxid != nil {
-		txid = *w.nextTxid
-		w.nextTxid = nil
-	} else {
-		txid, err = randCid()
-		if err != nil {
-			return cid.Cid{}, err
-		}
+	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
+
+	resp, err := w.powClient.Wallet.SendFil(ctx, from, to, amount)
+	if err != nil {
+		return cid.Cid{}, err
 	}
 
-	ts := time.Now()
-	if w.nextTime != nil {
-		ts = *w.nextTime
-	}
+	log.Debug(resp.ProtoMessage)
 
-	tx := Transaction{
-		ID:        txid,
-		To:        to,
-		From:      from,
-		Timestamp: ts,
-		Amount:    amount,
-	}
-
-	w.transactions[to] = append(w.transactions[to], tx)
-	if to != from {
-		w.transactions[from] = append(w.transactions[from], tx)
-	}
+	//var txid cid.Cid
+	//if w.nextTxid != nil {
+	//	txid = *w.nextTxid
+	//	w.nextTxid = nil
+	//} else {
+	//	txid, err = randCid()
+	//	if err != nil {
+	//		return cid.Cid{}, err
+	//	}
+	//}
+	//
+	//ts := time.Now()
+	//if w.nextTime != nil {
+	//	ts = *w.nextTime
+	//}
+	//
+	//tx := Transaction{
+	//	ID:        txid,
+	//	To:        to,
+	//	From:      from,
+	//	Timestamp: ts,
+	//	Amount:    amount,
+	//}
+	//
+	//w.transactions[to] = append(w.transactions[to], tx)
+	//if to != from {
+	//	w.transactions[from] = append(w.transactions[from], tx)
+	//}
 
 	return txid, nil
 }
