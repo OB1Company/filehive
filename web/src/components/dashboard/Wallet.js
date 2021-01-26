@@ -44,7 +44,8 @@ export default function Wallet() {
     const [balance, setBalance] = useState(0);
     const [address, setAddress] = useState("");
     const [filecoinAddress, setFilecoinAddress] = useState("");
-    const [amount, setAmount] = useState(0);
+    const [amount, setAmount] = useState("");
+    const [txAmount, setTxAmount] = useState(0);
     const [recipient, setRecipient] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -68,7 +69,8 @@ export default function Wallet() {
     const HandleSendSubmit = async (e) => {
         e.preventDefault();
 
-        const data = { amount: amount, address: recipient };
+        const data = { amount: txAmount, address: recipient };
+
 
         const sendCoins = async () => {
 
@@ -83,12 +85,19 @@ export default function Wallet() {
                     data
                 ).then((data)=>{
                     setSuccess("Funds sent successfully");
+                    setError("");
+                    const fetchData = async() => {
+                        const balance = await GetWalletBalance();
+                        setBalance(balance);
+                        setAmount("");
+                        setRecipient("");
+                    };
+                    fetchData();
                 }).catch(error => {
                     console.log("Send Failure", error.response);
                     setSuccess("");
                     setError(error.response.data.error);
                 });
-
                 return false;
 
             } catch(err) {
@@ -96,6 +105,8 @@ export default function Wallet() {
             }
         };
         sendCoins();
+        // setRecipient("");
+        // setAmount(0);
 
     }
 
@@ -120,12 +131,12 @@ export default function Wallet() {
                     <form onSubmit={HandleSendSubmit}>
                         <label>
                             Amount*
-                            <input type="text" name="amount" placeholder="0"
-                                   onChange={e => setAmount(parseFloat(e.target.value))}/>
+                            <input type="text" placeholder="0" value={amount}
+                                   onChange={e => setAmount(e.target.value)}/>
                         </label>
                         <label>
                             To (FIL address)*
-                            <input type="text" name="recipient" placeholder="e.g. t1cadxk4yywa7hfaiz3rs23t3wmyn7cjcdy5rtm4q"
+                            <input type="text" value={recipient} placeholder="e.g. f1cadxk4yywa7hfaiz3rs23t3wmyn7cjcdy5rtm4q"
                                    onChange={e => setRecipient(e.target.value)}/>
                         </label>
                         <div>
