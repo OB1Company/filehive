@@ -698,3 +698,7 @@ div.datasets-details:first-child {
 .dashboard-p {
     margin: 10px 0 10px 0;
 }
+
+.note {
+    margin-top: 5px;
+}

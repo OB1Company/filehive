@@ -1,7 +1,8 @@
 import React, { useState }  from 'react'
 import { useHistory } from "react-router-dom";
 import axios from "axios";
-import { ConvertImageToString } from "./utilities/images";
+import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
+import ErrorBox, {SuccessBox} from "./ErrorBox";
 
 function Create() {
 
@@ -12,13 +13,39 @@ function Create() {
   const [fileType, setFileType] = useState("");
   const [price, setPrice] = useState(0);
   const [dataset, setDataset] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [datasetPrice, setDatasetPrice] = useState("");
 
   const history = useHistory();
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
+
+    if(imageFile === "") {
+      setError("An image to depict your dataset is required");
+      return;
+    }
+    if(title === "") {
+      setError("Please specify a title for your dataset");
+      return;
+    }
+    if(shortDescription === "") {
+      setError("Please specify a short description for your dataset");
+      return;
+    }
+    if(fullDescription === "") {
+      setError("Please specify a full description for your dataset");
+      return;
+    }
+    if(price <= 0) {
+      setError("Please provide a price for your dataset");
+      return;
+    }
+    if(dataset === "") {
+      setError("Please choose a dataset to upload");
+      return;
+    }
 
     // Convert image file to base64 string
     const fileString = await ConvertImageToString(imageFile);
@@ -62,6 +89,19 @@ function Create() {
     }
 
   };
+
+  const HandleSetPrice = async (e)=>{
+    setPrice(e.target.value);
+    const filecoinPrice = await FilecoinPrice();
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 4,
+    });
+
+    const priceUSD = formatter.format(filecoinPrice*e.target.value);
+    setDatasetPrice(priceUSD);
+  }
 
   const HandleDatasetImage = (e) => {
     setImageFile(e.target.files[0]);
@@ -123,9 +163,9 @@ function Create() {
           </label>
 
           <label>
-            Price*
+            Price* {datasetPrice}
             <div>
-              <input type="text" name="price" placeholder="5.23" onChange={e => setPrice(e.target.value)}/>
+              <input type="text" name="price" placeholder="5.23" onChange={HandleSetPrice}/>
               <span>Set your price in Filecoin (FIL).</span>
             </div>
           </label>
@@ -139,6 +179,13 @@ function Create() {
           </label>
 
           <div className="form-divider"></div>
+
+            {error &&
+            <ErrorBox message={error}/>
+            }
+            {success &&
+            <SuccessBox message={success}/>
+            }
 
           <div>
             <input type="submit" value="Submit" className="orange-button"/>

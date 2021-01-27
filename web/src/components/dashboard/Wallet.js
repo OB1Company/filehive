@@ -4,6 +4,7 @@ import axios from "axios";
 import QRCode from 'qrcode.react';
 import ErrorBox, {SuccessBox} from "../ErrorBox";
 import {getAxiosInstance} from "../Auth";
+import { FilecoinPrice } from "../utilities/images";
 
 export const GetWalletBalance = async () => {
 
@@ -49,6 +50,7 @@ export default function Wallet() {
     const [recipient, setRecipient] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [filecoinPrice, setFilecoinPrice] = useState("");
 
     const qrSettings = {
         width: 188,
@@ -61,7 +63,18 @@ export default function Wallet() {
             setBalance(balance);
             const address = await GetWalletAddress();
             setAddress(address);
-            setFilecoinAddress(address)
+            setFilecoinAddress(address);
+
+            const filecoinPrice = await FilecoinPrice();
+
+            var formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            });
+
+            const balanceUSD = formatter.format(filecoinPrice*balance);
+
+            setFilecoinPrice(balanceUSD);
         };
         fetchData();
     }, []);
@@ -122,7 +135,7 @@ export default function Wallet() {
     return (
 
         <div className="maincontent margins-30">
-            <h2>Wallet <span className="h2-subtitle">({balance} FIL)</span></h2>
+            <h2>Wallet <span className="h2-subtitle">{balance} ({filecoinPrice})</span></h2>
 
             <div className="withdrawal-deposit-container">
                 <div className="wd-container">
@@ -150,6 +163,9 @@ export default function Wallet() {
                         </label>
                         <div>
                             <input type="submit" value="Send" className="orange-button"/>
+                        </div>
+                        <div className="note">
+                            <p className="mini-light-description">*Note that all transactions incur a gas fee.</p>
                         </div>
 
                         {error &&

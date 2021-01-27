@@ -1,3 +1,5 @@
+import {getAxiosInstance} from "../Auth";
+
 export const ConvertBase64 = (file) => {
     return new Promise((resolve, reject) => {
         const fileReader = new FileReader();
@@ -36,4 +38,15 @@ export function HumanFileSize(bytes, si=false, dp=1) {
 
 
     return bytes.toFixed(dp) + '' + units[u];
+}
+
+export async function FilecoinPrice() {
+    const url = "https://api.coingecko.com/api/v3/simple/price?ids=filecoin&vs_currencies=usd";
+    const instance = getAxiosInstance();
+
+    const result = await instance.get(
+        url
+    );
+
+    return result.data.filecoin.usd;
 }

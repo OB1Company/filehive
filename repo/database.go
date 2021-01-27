@@ -88,7 +88,9 @@ func (d *Database) View(fn func(db *gorm.DB) error) error {
 
 	tx := d.db.Begin()
 	if err := fn(tx); err != nil {
-		tx.Rollback()
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
 		return err
 	}
 	return tx.Commit().Error
