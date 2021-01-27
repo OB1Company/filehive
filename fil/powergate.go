@@ -83,17 +83,27 @@ type PowergateWalletBackend struct {
 }
 
 // NewMockWalletBackend instantiates a new WalletBackend.
-func NewPowergateWalletBackend() *PowergateWalletBackend {
+func NewPowergateWalletBackend() (*PowergateWalletBackend, error) {
 	client, err := pow.NewClient("127.0.0.1:5002")
 	if err != nil {
-		return nil
+		return nil, err
 	}
+
+	// Check if Powergate server is down
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	buildInfo, err := client.BuildInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug(buildInfo)
 
 	return &PowergateWalletBackend{
 		transactions: make(map[string][]Transaction),
 		mtx:          sync.RWMutex{},
 		powClient:    client,
-	}
+	}, nil
 }
 
 // GenerateToAddress creates mock coins and sends them to the address.
