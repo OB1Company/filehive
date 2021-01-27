@@ -438,7 +438,6 @@ div.datasets-details:first-child {
     font-size: 15px;
     line-height: 21px;
     padding: 9px 34px;
-    margin-bottom: 13px;
     cursor: pointer;
 }
 
@@ -694,4 +693,8 @@ div.datasets-details:first-child {
 }
 .tag-container > div {
     margin-right: 16px;
+}
+
+.dashboard-p {
+    margin: 10px 0 10px 0;
 }

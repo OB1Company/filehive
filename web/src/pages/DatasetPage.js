@@ -7,6 +7,7 @@ import Modal from "react-modal";
 import { Countries } from '../constants/Countries'
 import {HumanFileSize} from "../components/utilities/images";
 import TimeAgo from 'javascript-time-ago'
+import { GetWalletBalance } from "../components/dashboard/Wallet";
 
 const instance = getAxiosInstance();
 
@@ -23,10 +24,16 @@ export default function DatasetPage() {
     const [username, setUsername] = useState("");
     const [timestamp, setTimestamp] = useState("");
     const [publisher, setPublisher] = useState({});
+    const [balance, setBalance] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [openModal, setOpenModal] = useState("purchase");
 
     Modal.setAppElement('#root');
+
+    const handleCloseModal = () => {
+        setOpenModal("purchase");
+        setModalIsOpen(false);
+    }
 
     const DatasetSuccessModal = (props) => {
 
@@ -48,27 +55,40 @@ export default function DatasetPage() {
 
     const DatasetPurchaseModal = (props) => {
         const HandleClickPurchase = (e) => {
+
+
             setOpenModal("success");
         }
 
-        console.log(props);
+        const showWarning = (price > balance) ? true : false;
+
         return (
             <div className="modal-container">
                 <div className="modal-title">Purchase</div>
                 <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
                 <div className="modal-center-text-bold">Pay {price} FIL</div>
-                {/*<div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>*/}
-                <div className="modal-button-container">
-                    <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
+                {showWarning && <div>
+                    <div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>
+                    <div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet.
+                        Please add at least {price} FIL to your wallet.</div>
                 </div>
-                    {/*<div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet. Please add at least 5.1834 FIL to your wallet.</div>*/}
-                        <div className="mini-light-description text-center top-32">The funds will automatically be deducted from your wallet once you proceed.</div>
+                }
+                {!showWarning &&
+                    <div>
+                        <div className="modal-button-container">
+                            <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
                         </div>
-                        )
+                        <div className="mini-light-description text-center top-32">The funds will automatically be deducted from
+                        your wallet once you proceed.</div>
+                    </div>
+                }
+            </div>
+
+        )
     }
 
     const Modal1 = ({ onRequestClose, ...otherProps }) => (
-        <Modal isOpen={modalIsOpen} onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
+        <Modal shouldCloseOnOverlayClick="true" isOpen={modalIsOpen} onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
             {openModal === "purchase" &&
             <DatasetPurchaseModal datasetId={otherProps.datasetId} price={otherProps.price}/>
             }
@@ -109,6 +129,12 @@ export default function DatasetPage() {
                     }
                     getPublisher();
 
+                    const grabBalance = async () => {
+                        GetWalletBalance().then((balance)=>{setBalance(balance)});
+                    }
+                    grabBalance();
+
+
                 })
             //     // setDataset(data.data);
             //     // setDatasetImageUrl(datasetImageUrl+data.data.imageFilename);
@@ -126,7 +152,7 @@ export default function DatasetPage() {
 
     return (
             <div className="container">
-                <Modal1/>
+                <Modal1 onRequestClose={handleCloseModal}/>
                 <Header/>
                 <div className="maincontent">
                     <div className="dataset-container-header">

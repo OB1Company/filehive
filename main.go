@@ -8,6 +8,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/op/go-logging"
 	"io/ioutil"
+	"math/big"
 	"net"
 	"os"
 	"os/signal"
@@ -45,7 +46,11 @@ func main() {
 	}
 
 	// TODO: this will need to be set by a config option when powergate gets wired up.
-	wbe := fil.NewPowergateWalletBackend()
+	wbe, err := fil.NewPowergateWalletBackend()
+	if err != nil {
+		log.Fatalf("Powergate server is not available: %v", err)
+	}
+
 	if err := os.MkdirAll(path.Join(config.DataDir, "files"), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
@@ -55,19 +60,30 @@ func main() {
 	}
 
 	// Testing API
-	id, token, err := fbe.CreateUser()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Debugf("Create User, ID: %s, Token: %s", id, token)
+	//id, token, err := fbe.CreateUser()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//log.Debugf("Create User, ID: %s, Token: %s", id, token)
 
-	address, err := wbe.NewAddress(token)
+	//address, err := wbe.NewAddress(token)
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//log.Debugf("New Address: %s", address)
+	address := "f3qxhffhfixttmpcyoz2sfprndk63tiyfokeuf36qodd55ywkozdpcrpzjekp3t4y3scwsv35bxvdzjittxcca"
+	token := "ab2b12be-e55c-4601-a851-92eb39e0685f"
+
+	balance, err := wbe.Balance(address, token)
 	if err != nil {
 		log.Error(err)
 	}
-	log.Debugf("New Address: %s", address)
+	log.Debugf("Balance: %s", balance)
 
-	balance, err := wbe.Balance(address, token)
+	amount, _ := new(big.Int).SetString("223", 10)
+	wbe.Send(address, "f3rbtmh4x7akzrcijncaxz5q66r4vcd3diup7zibha53vi5omfyzwhvfkigqtxstq64kcxgmw5kgr4ewcqreya", amount, token)
+
+	balance, err = wbe.Balance(address, token)
 	if err != nil {
 		log.Error(err)
 	}

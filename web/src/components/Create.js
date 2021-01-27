@@ -68,6 +68,10 @@ function Create() {
   }
 
   const HandleDataset = (e) => {
+
+    // Determine file type extension
+    setFileType(e.target.files[0].type);
+
     setDataset(e.target.files[0]);
   }
 
@@ -115,12 +119,7 @@ function Create() {
           <h3>Files</h3>
 
           <label>
-            File Type*
-            <div>
-              <input type="text" name="filetype" placeholder="CSV, Excel, SQL, MP4, etc"
-                     onChange={e => setFileType(e.target.value)}/>
-              <span>Specify the file type for the dataset.</span>
-            </div>
+            File Type: {fileType}
           </label>
 
           <label>

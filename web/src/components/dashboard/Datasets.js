@@ -3,7 +3,7 @@ import Header from "../../Header";
 import TabbedLinks from "../TabbedLinks";
 import DataSetsRows from "../DataSetsRows";
 import Footer from "../../Footer";
-import {useLocation} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import axios from "axios";
 
 
@@ -47,8 +47,18 @@ export default function Datasets() {
 
         <div className="maincontent margins-30">
             <h2>My datasets</h2>
+            { datasets.length == 0 &&
+                <div>
+                    <p className="mini-description dashboard-p">You do not have any datasets uploaded yet.</p>
+                    <Link to='/create'><input type="button" className="orange-button" value="Create new dataset"/></Link>
+                </div>
+            }
+            { datasets.length > 0 &&
             <DataSetsRows sortby="trending" datasets={datasets} rowType="edit"/>
+            }
         </div>
+
+
 
     );
 }

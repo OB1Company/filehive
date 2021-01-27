@@ -69,8 +69,17 @@ export default function Wallet() {
     const HandleSendSubmit = async (e) => {
         e.preventDefault();
 
-        const data = { amount: txAmount, address: recipient };
+        // Validate form
+        if(amount <= 0) {
+            setError("Please enter an amount to send");
+            return false;
+        }
+        if(address === "") {
+            setError("Please enter a properly formatted FIL address");
+            return false;
+        }
 
+        const data = { amount: parseFloat(amount), address: recipient };
 
         const sendCoins = async () => {
 
