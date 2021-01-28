@@ -2,10 +2,13 @@ import React, {useState, useEffect} from 'react'
 import {useLocation} from 'react-router-dom'
 import Header from '../Header'
 import Footer from '../Footer'
-import TabbedLinks from "../components/TabbedLinks";
 import DataSetsRows from "../components/DataSetsRows";
 import axios from "axios";
 
+
+const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+}
 
 const getDatasets = async () => {
 
@@ -19,7 +22,7 @@ const getDatasets = async () => {
     const apiReq = await instance.get(
         loginUrl
     );
-    console.log(apiReq);
+    console.debug(apiReq);
 
     const datasets = (apiReq.data.hasOwnProperty("datasets")) ? apiReq.data.datasets : [];
 
@@ -28,9 +31,12 @@ const getDatasets = async () => {
 
 
 
-export default function HomePage() {
+export default function SearchPage() {
+
+    const query = useQuery();
 
     const [datasets, setDatasets] = useState([]);
+    const [searchQuery] = useState(query.get("q"));
 
     useEffect(() => {
         const fetchData = async() => {
@@ -40,17 +46,10 @@ export default function HomePage() {
         fetchData();
     }, []);
 
-    const linkNames = [
-        { name: 'Trending', link: '/datasets/trending' },
-        { name: 'Latest', link: '/datasets/latest' }
-    ];
-
-    const location = useLocation();
-
   return (
     <div className="container">
       <Header/>
-      <TabbedLinks linkNames={linkNames} activeLink={location.pathname}/>
+        <div className="search-results-header"><strong>283</strong> results matching "{searchQuery}"</div>
       <div className="maincontent margins-30">
         <DataSetsRows sortby="trending" datasets={datasets}/>
       </div>
