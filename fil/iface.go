@@ -25,7 +25,7 @@ const attoFilPerFilecoin = 1000000000000000000
 type FilecoinBackend interface {
 	// Store will put a file to Filecoin and pay for it out of the provided
 	// address. A jobID is return or an error.
-	Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error)
+	Store(data io.Reader, addr addr.Address, userToken string) (jobID, contentID string, size int64, err error)
 
 	// TODO
 	JobStatus(jobID cid.Cid) (string, error)
@@ -44,7 +44,7 @@ type WalletBackend interface {
 
 	// Send filecoin from one address to another. Returns the cid of the
 	// transaction.
-	Send(from, to string, amount *big.Int, userToken string) (cid.Cid, error)
+	Send(from, to string, amount *big.Int, userToken string) (string, error)
 
 	// Balance returns the balance for an address.
 	Balance(address string, userToken string) (*big.Int, error)
@@ -55,7 +55,7 @@ type WalletBackend interface {
 
 // Transaction represents a Filecoin transaction.
 type Transaction struct {
-	ID        cid.Cid
+	ID        string
 	From      string
 	To        string
 	Amount    *big.Int
@@ -71,7 +71,7 @@ func (t *Transaction) MarshalJSON() ([]byte, error) {
 		Amount    float64   `json:"amount"`
 		Timestamp time.Time `json:"timestamp"`
 	}{
-		ID:        t.ID.String(),
+		ID:        t.ID,
 		From:      t.From,
 		To:        t.To,
 		Amount:    AttoFILToFIL(t.Amount),

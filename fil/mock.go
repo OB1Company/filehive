@@ -18,7 +18,7 @@ import (
 // MockFilecoinBackend is a mock backend for a Filecoin service
 type MockFilecoinBackend struct {
 	dataDir    string
-	jobs       map[cid.Cid]string
+	jobs       map[string]string
 	adminToken string
 
 	mtx sync.RWMutex
@@ -29,12 +29,13 @@ func NewMockFilecoinBackend(dataDir string, adminToken string) (*MockFilecoinBac
 	if err := os.MkdirAll(dataDir, os.ModePerm); err != nil {
 		return nil, err
 	}
-	return &MockFilecoinBackend{dataDir: dataDir, jobs: make(map[cid.Cid]string), mtx: sync.RWMutex{}, adminToken: ""}, nil
+	return &MockFilecoinBackend{dataDir: dataDir, jobs: make(map[string]string), mtx: sync.RWMutex{}, adminToken: ""}, nil
 }
 
 // Store will put a file to Filecoin and pay for it out of the provided
 // address. A jobID is return or an error.
-func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error) {
+func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address, userToken string) (jobID, contentID string, size int64, err error) {
+
 	contentID, err = randCid()
 	if err != nil {
 		return
@@ -44,7 +45,7 @@ func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address) (jobID, c
 		return
 	}
 
-	outfile, err := os.Create(path.Join(f.dataDir, contentID.String()))
+	outfile, err := os.Create(path.Join(f.dataDir, contentID))
 	if err != nil {
 		return
 	}
@@ -83,7 +84,7 @@ func (f *MockFilecoinBackend) CreateUser() (string, string, error) {
 type MockWalletBackend struct {
 	transactions map[string][]Transaction
 	nextAddr     *addr.Address
-	nextTxid     *cid.Cid
+	nextTxid     string
 	nextTime     *time.Time
 	powClient    *pow.Client
 	mtx          sync.RWMutex
@@ -102,10 +103,10 @@ func (w *MockWalletBackend) GenerateToAddress(addr string, amount *big.Int) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
-	var txid cid.Cid
-	if w.nextTxid != nil {
-		txid = *w.nextTxid
-		w.nextTxid = nil
+	var txid string
+	if w.nextTxid != "" {
+		txid = w.nextTxid
+		w.nextTxid = ""
 	} else {
 		txid, _ = randCid()
 	}
@@ -156,11 +157,11 @@ func (w *MockWalletBackend) SetNextAddress(addr addr.Address) {
 	w.nextAddr = &addr
 }
 
-func (w *MockWalletBackend) SetNextTxid(id cid.Cid) {
+func (w *MockWalletBackend) SetNextTxid(id string) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
-	w.nextTxid = &id
+	w.nextTxid = id
 }
 
 func (w *MockWalletBackend) SetNextTime(timestamp time.Time) {
@@ -172,27 +173,27 @@ func (w *MockWalletBackend) SetNextTime(timestamp time.Time) {
 
 // Send filecoin from one address to another. Returns the cid of the
 // transaction.
-func (w *MockWalletBackend) Send(from, to string, amount *big.Int, userToken string) (cid.Cid, error) {
+func (w *MockWalletBackend) Send(from, to string, amount *big.Int, userToken string) (string, error) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
 	balance, err := w.balance(from, userToken)
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
 	if amount.Cmp(balance) > 0 {
-		return cid.Cid{}, ErrInsuffientFunds
+		return "", ErrInsuffientFunds
 	}
 
-	var txid cid.Cid
-	if w.nextTxid != nil {
-		txid = *w.nextTxid
-		w.nextTxid = nil
+	var txid string
+	if w.nextTxid != "" {
+		txid = w.nextTxid
+		w.nextTxid = ""
 	} else {
 		txid, err = randCid()
 		if err != nil {
-			return cid.Cid{}, err
+			return "", err
 		}
 	}
 
@@ -260,14 +261,14 @@ func (w *MockWalletBackend) Transactions(addr string, limit, offset int) ([]Tran
 	return txs[offset : offset+limit], nil
 }
 
-func randCid() (cid.Cid, error) {
+func randCid() (string, error) {
 	r := make([]byte, 32)
 	rand.Read(r)
 
 	mh, err := multihash.Encode(r, multihash.SHA2_256)
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
-	return cid.NewCidV1(cid.Raw, mh), nil
+	return cid.NewCidV1(cid.Raw, mh).String(), nil
 }

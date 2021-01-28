@@ -10,7 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
-	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 	"io"
 	"net/http"
@@ -499,7 +498,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 	sanitizedJSONResponse(w, struct {
 		Txid string
 	}{
-		Txid: txid.String(),
+		Txid: txid,
 	})
 }
 
@@ -606,7 +605,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 	var (
 		containsFile, containsMetadata bool
 		dataset                        models.Dataset
-		jobID                          cid.Cid
+		jobID                          string
 		size                           int64
 	)
 	for {
@@ -620,7 +619,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 
 		if part.FormName() == "file" {
-			_, jobID, size, err = s.filecoinBackend.Store(part, addr)
+			_, jobID, size, err = s.filecoinBackend.Store(part, addr, user.PowergateToken)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -669,7 +668,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
 		return
 	}
-	dataset.JobID = jobID.String()
+	dataset.JobID = jobID
 	err = s.db.Update(func(db *gorm.DB) error {
 		return db.Save(&dataset).Error
 	})
@@ -950,7 +949,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	sanitizedJSONResponse(w, struct {
 		Txid string `json:"txid"`
 	}{
-		Txid: txid.String(),
+		Txid: txid,
 	})
 }
 

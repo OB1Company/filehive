@@ -45,8 +45,31 @@ func NewPowergateBackend(dataDir string, adminToken string) (*PowergateBackend, 
 
 // Store will put a file to Filecoin and pay for it out of the provided
 // address. A jobID is return or an error.
-func (f *PowergateBackend) Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error) {
-	return contentID, jobID, size, nil
+func (f *PowergateBackend) Store(data io.Reader, addr addr.Address, userToken string) (jobId, contentID string, size int64, err error) {
+
+	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
+
+	resp, err := f.powClient.Data.Stage(ctx, data)
+	if err != nil {
+		return "", "", 0, err
+	}
+
+	cid := resp.GetCid()
+	configResponse, err := f.powClient.StorageConfig.Apply(ctx, cid)
+	if err != nil {
+		return "", cid, 0, err
+	}
+
+	jobId = configResponse.JobId
+
+	storageJob, err := f.powClient.StorageJobs.StorageJob(ctx, jobId)
+	if err != nil {
+		return jobId, cid, 0, err
+	}
+	dealInfo := storageJob.StorageJob.DealInfo[0]
+	size = int64(dealInfo.Size)
+
+	return jobId, cid, size, nil
 }
 
 // TODO
@@ -76,7 +99,7 @@ func (f *PowergateBackend) CreateUser() (string, string, error) {
 type PowergateWalletBackend struct {
 	transactions map[string][]Transaction
 	nextAddr     *addr.Address
-	nextTxid     *cid.Cid
+	nextTxid     string
 	nextTime     *time.Time
 	powClient    *pow.Client
 	mtx          sync.RWMutex
@@ -113,10 +136,10 @@ func (w *PowergateWalletBackend) GenerateToAddress(addr string, amount *big.Int)
 
 	// Get address for the user from Powergate
 
-	var txid cid.Cid
-	if w.nextTxid != nil {
-		txid = *w.nextTxid
-		w.nextTxid = nil
+	var txid string
+	if w.nextTxid != "" {
+		txid = w.nextTxid
+		w.nextTxid = ""
 	} else {
 		txid, _ = w.randCid()
 	}
@@ -160,11 +183,11 @@ func (w *PowergateWalletBackend) SetNextAddress(addr addr.Address) {
 	w.nextAddr = &addr
 }
 
-func (w *PowergateWalletBackend) SetNextTxid(id cid.Cid) {
+func (w *PowergateWalletBackend) SetNextTxid(id string) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
-	w.nextTxid = &id
+	w.nextTxid = id
 }
 
 func (w *PowergateWalletBackend) SetNextTime(timestamp time.Time) {
@@ -176,21 +199,21 @@ func (w *PowergateWalletBackend) SetNextTime(timestamp time.Time) {
 
 // Send filecoin from one address to another. Returns the cid of the
 // transaction.
-func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToken string) (cid.Cid, error) {
+func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToken string) (string, error) {
 	balance, err := w.balance(from, userToken)
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
 	if amount.Cmp(balance) > 0 {
-		return cid.Cid{}, ErrInsuffientFunds
+		return "", ErrInsuffientFunds
 	}
 
 	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
 
 	resp, err := w.powClient.Wallet.SendFil(ctx, from, to, amount)
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
 	log.Debug(resp.ProtoMessage)
@@ -224,7 +247,7 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 	//	w.transactions[from] = append(w.transactions[from], tx)
 	//}
 
-	return cid.Cid{}, nil
+	return "", nil
 }
 
 // Balance returns the balance for an address.
@@ -271,14 +294,14 @@ func (w *PowergateWalletBackend) Transactions(addr string, limit, offset int) ([
 	return txs[offset : offset+limit], nil
 }
 
-func (w *PowergateWalletBackend) randCid() (cid.Cid, error) {
+func (w *PowergateWalletBackend) randCid() (string, error) {
 	r := make([]byte, 32)
 	rand.Read(r)
 
 	mh, err := multihash.Encode(r, multihash.SHA2_256)
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
-	return cid.NewCidV1(cid.Raw, mh), nil
+	return cid.NewCidV1(cid.Raw, mh).String(), nil
 }
