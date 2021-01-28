@@ -1,23 +1,27 @@
 import React, { useState }  from 'react'
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
+import { getAxiosInstance } from "./Auth";
 
 function Create() {
+
+  // Page params
+  let { id } = useParams();
+
+  const history = useHistory();
 
   const [title, setTitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [fullDescription, setFullDescription] = useState("");
   const [imageFile, setImageFile] = useState("");
-  const [fileType, setFileType] = useState("");
+  const [fileType, setFileType] = useState("Unknown");
   const [price, setPrice] = useState(0);
   const [dataset, setDataset] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
-
-  const history = useHistory();
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
@@ -81,11 +85,8 @@ function Create() {
           .then((data) => {
             history.push('/dataset/'+data.data.datasetID);
           });
-
     } catch(e) {
-
       setError(e);
-      return false;
     }
 
   };
@@ -108,10 +109,8 @@ function Create() {
   }
 
   const HandleDataset = (e) => {
-
     // Determine file type extension
     setFileType(e.target.files[0].type);
-
     setDataset(e.target.files[0]);
   }
 
@@ -163,10 +162,10 @@ function Create() {
           </label>
 
           <label>
-            Price* {datasetPrice}
+            Price*
             <div>
               <input type="text" name="price" placeholder="5.23" onChange={HandleSetPrice}/>
-              <span>Set your price in Filecoin (FIL).</span>
+              <span>Set your price in Filecoin (FIL).<br/>Estimated price: <strong>{datasetPrice}</strong></span>
             </div>
           </label>
 
@@ -174,7 +173,7 @@ function Create() {
             Dataset*
             <div>
               <input type="file" name="dataset" onChange={HandleDataset}/>
-              <span>Finally, attach your dataset file(s) in zip format.</span>
+              <span>Finally, attach your dataset.</span>
             </div>
           </label>
 

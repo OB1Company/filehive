@@ -1,7 +1,6 @@
 import React from 'react'
 import './style/Header.css';
 import {Link, useHistory} from 'react-router-dom';
-import { useCookies } from "react-cookie";
 import {getAxiosInstance} from "./components/Auth";
 
 function Header() {
@@ -10,9 +9,8 @@ function Header() {
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
     const loggedIn = (!(email == null || email === ""));
-    const [token, getToken, removeToken] = useCookies(['token']);
 
-    const HandleLogout = (e) => {
+    const HandleLogout = () => {
 
         localStorage.removeItem("email");
         localStorage.removeItem("name");
@@ -21,24 +19,39 @@ function Header() {
         instance.post('/api/v1/logout')
             .then((result) => {
                 console.log(result);
+                history.push("/login");
             })
+            .catch((err) => {
+                console.error(err);
+                localStorage.removeItem("_gorilla_csrf");
+                history.push("/login");
+            })
+    }
 
-        history.push("/login");
+    const HandleSearchSubmit = (e)=>{
+        console.log(e.target.q.value);
+        e.preventDefault();
+        if(e.target.q.value === "") {
+            return false;
+        }
+        e.target.submit();
     }
 
   return (
-    <div class="Header">
+    <div className="Header">
       <div>
-        <Link to ='/'><h1>Filehive</h1></Link>
-        <input type="text"/>
+        <Link to='/'><h1>Filehive</h1></Link>
+        <form className="filehive-search-form" onSubmit={HandleSearchSubmit}>
+            <input type="text" name="q" placeholder="Search Filehive"/>
+        </form>
       </div>
-      <div class="Header-Right">
+      <div className="Header-Right">
           { !loggedIn ? <Link to='/login'>Log in</Link> : ""}
           { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
           { loggedIn ? <Link to='/dashboard'>{name}</Link> : ""}
           { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
 
-        <Link to ='/create'><input type="button" value="Create dataset"/></Link>
+        <Link to='/create'><input type="button" value="Create dataset"/></Link>
       </div>
     </div>
   )

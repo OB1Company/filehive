@@ -21,7 +21,7 @@ function DataSetsRow(props) {
     const timestamp = timeAgo.format(Date.parse(props.metadata.createdAt));
 
     const buttonText = (props.rowType === "edit") ? "Edit" : "Details";
-    const gotoPage = (props.rowType === "edit") ? '/dataset/'+props.metadata.id+'/edit' : '/dataset/'+props.metadata.id;
+    const gotoPage = (props.rowType === "edit") ? '/dashboard/datasets/'+props.metadata.id : '/dataset/'+props.metadata.id;
 
     const datasetImage = "/api/v1/image/" + imageFilename;
 
