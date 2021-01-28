@@ -9,6 +9,7 @@ import SignupPage from './pages/SignupPage'
 import CreatePage from './pages/CreatePage'
 import DashboardPage from './pages/DashboardPage'
 import DatasetPage from './pages/DatasetPage'
+import SearchPage from './pages/Search'
 import axios from "axios";
 
 
@@ -57,12 +58,14 @@ export default function App() {
           <Route path="/datasets/latest" component={HomePage} />
           <Route path="/dataset/:id" component={DatasetPage} />
           <Route path="/user/:id" component={UserPage} />
+          <Route path="/search" component={SearchPage} />
 
               <PrivateRoute path="/create" component={CreatePage} />
               <PrivateRoute exact path="/dashboard">
                   <Redirect to="/dashboard/datasets"/>
               </PrivateRoute>
-              <PrivateRoute path="/dashboard/datasets" component={DashboardPage} />
+              <PrivateRoute path="/dashboard/datasets/:id" component={CreatePage} />
+              <PrivateRoute path="/dashboard/datasets" component={CreatePage} />
               <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
               <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
               <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
