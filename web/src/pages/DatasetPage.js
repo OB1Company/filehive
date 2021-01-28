@@ -8,6 +8,7 @@ import { Countries } from '../constants/Countries'
 import {HumanFileSize} from "../components/utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import { GetWalletBalance } from "../components/dashboard/Wallet";
+import defaultAvatar from '../images/avatar-placeholder.png';
 
 const instance = getAxiosInstance();
 
@@ -118,7 +119,9 @@ export default function DatasetPage() {
                     const getPublisher = async () => {
                         instance.get("/api/v1/user/" + dataset.userID)
                             .then((publish) => {
-                                publish.data.avatarFilename = "/api/v1/image/"+publish.data.Avatar;
+
+                                const avatar = publish.data.Avatar;
+                                publish.data.avatarFilename = (avatar === "") ? defaultAvatar : "/api/v1/image/"+publish.data.Avatar;
 
                                 // Convert country code to name
                                 const countryObject = Countries.find(c => c.value === publish.data.Country);
