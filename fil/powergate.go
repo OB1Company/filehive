@@ -3,6 +3,7 @@ package fil
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	addr "github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
@@ -54,22 +55,28 @@ func (f *PowergateBackend) Store(data io.Reader, addr addr.Address, userToken st
 		return "", "", 0, err
 	}
 
-	cid := resp.GetCid()
-	configResponse, err := f.powClient.StorageConfig.Apply(ctx, cid)
+	fileCid := resp.GetCid()
+	configResponse, err := f.powClient.StorageConfig.Apply(ctx, fileCid)
 	if err != nil {
-		return "", cid, 0, err
+		log.Debug(err.Error())
+		return "", fileCid, 0, errors.New("file already exists")
 	}
 
 	jobId = configResponse.JobId
 
 	storageJob, err := f.powClient.StorageJobs.StorageJob(ctx, jobId)
 	if err != nil {
-		return jobId, cid, 0, err
+		return jobId, fileCid, 0, err
 	}
-	dealInfo := storageJob.StorageJob.DealInfo[0]
-	size = int64(dealInfo.Size)
 
-	return jobId, cid, size, nil
+	if storageJob.StorageJob.Status == 5 {
+		dealInfo := storageJob.StorageJob.DealInfo[0]
+		size = int64(dealInfo.Size)
+	} else {
+		size = 0
+	}
+
+	return jobId, fileCid, size, nil
 }
 
 // TODO

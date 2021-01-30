@@ -27,6 +27,7 @@ type Dataset struct {
 	CreatedAt        time.Time `gorm:"index" json:"createdAt"`
 	UserID           string    `json:"userID"`
 	JobID            string    `json:"jobID"`
+	ContentID        string    `json:"contentID"`
 	Username         string    `json:"username"`
 	Title            string    `json:"title"`
 	ShortDescription string    `json:"shortDescription"`

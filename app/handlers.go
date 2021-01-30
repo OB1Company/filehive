@@ -607,6 +607,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		dataset                        models.Dataset
 		jobID                          string
 		size                           int64
+		cid                            string
 	)
 	for {
 		part, err := mr.NextPart()
@@ -619,7 +620,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 
 		if part.FormName() == "file" {
-			_, jobID, size, err = s.filecoinBackend.Store(part, addr, user.PowergateToken)
+			jobID, cid, size, err = s.filecoinBackend.Store(part, addr, user.PowergateToken)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -663,6 +664,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 	}
 	dataset.FileSize = size
+	dataset.ContentID = cid
 
 	if !containsFile || !containsMetadata {
 		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
