@@ -3,12 +3,8 @@ import { useHistory, useParams } from "react-router-dom";
 import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
-import { getAxiosInstance } from "./Auth";
 
 function Create() {
-
-  // Page params
-  let { id } = useParams();
 
   const history = useHistory();
 
@@ -20,10 +16,10 @@ function Create() {
   const [price, setPrice] = useState(0);
   const [dataset, setDataset] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [success] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
 
-  const HandleFormSubmit = async (e) => {
+  const HandleFormSubmit = (e) => {
     e.preventDefault();
 
     if(imageFile === "") {
@@ -51,44 +47,50 @@ function Create() {
       return;
     }
 
-    // Convert image file to base64 string
-    const fileString = await ConvertImageToString(imageFile);
+    const handleForm = async() => {
+      // Convert image file to base64 string
+      const fileString = await ConvertImageToString(imageFile);
 
-    const data = {
-      title: title,
-      shortDescription: shortDescription,
-      fullDescription: fullDescription,
-      image: fileString,
-      fileType: fileType,
-      price: Number(price),
-    };
+      const data = {
+        title: title,
+        shortDescription: shortDescription,
+        fullDescription: fullDescription,
+        image: fileString,
+        fileType: fileType,
+        price: Number(price),
+      };
 
-    const formData = new FormData();
-    formData.append('metadata', JSON.stringify(data));
-    formData.append('file', dataset);
+      const formData = new FormData();
+      formData.append('metadata', JSON.stringify(data));
+      formData.append('file', dataset);
 
-    const csrftoken = localStorage.getItem('csrf_token');
-    const instance = axios.create({
-      baseURL: "",
-      headers: {
-        "x-csrf-token": csrftoken,
-        "content-type": "multipart/form-data"
+      const csrftoken = localStorage.getItem('csrf_token');
+      const instance = axios.create({
+        baseURL: "",
+        headers: {
+          "x-csrf-token": csrftoken,
+          "content-type": "multipart/form-data"
+        }
+      })
+
+      const url = "/api/v1/dataset";
+      try {
+        await instance.post(
+            url,
+            formData
+        )
+            .then((data) => {
+              history.push('/dataset/' + data.data.datasetID);
+            })
+            .catch((e) => {
+              console.log(e.response.data);
+              setError(e.response.data);
+            });
+      } catch (e) {
+        setError(e.response.data);
       }
-    })
-
-    const url = "/api/v1/dataset";
-    try {
-      await instance.post(
-          url,
-          formData
-      )
-          .then((data) => {
-            history.push('/dataset/'+data.data.datasetID);
-          });
-    } catch(e) {
-      setError(e);
-    }
-
+    };
+    handleForm();
   };
 
   const HandleSetPrice = async (e)=>{
