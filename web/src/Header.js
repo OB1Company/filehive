@@ -41,7 +41,7 @@ function Header() {
     <div className="Header">
       <div>
         <Link to='/'><h1>Filehive</h1></Link>
-        <form className="filehive-search-form" onSubmit={HandleSearchSubmit}>
+        <form action="/search" className="filehive-search-form" onSubmit={HandleSearchSubmit}>
             <input type="text" name="q" placeholder="Search Filehive"/>
         </form>
       </div>
