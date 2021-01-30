@@ -5,7 +5,7 @@ import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
 import {getAxiosInstance} from "./Auth";
 
-function Edit() {
+export default function Settings() {
 
   // Page params
   let { id } = useParams();
@@ -19,10 +19,34 @@ function Edit() {
   const [fileType, setFileType] = useState("Unknown");
   const [price, setPrice] = useState(0);
   const [error, setError] = useState("");
-  const [success] = useState("");
+  const [success, setSuccess] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
 
-  const HandleFormSubmit = (e) => {
+  useEffect(() => {
+    const GetDataset = async (datasetId) => {
+      const instance = getAxiosInstance();
+
+      const datasetUrl = "/api/v1/dataset/" + datasetId;
+      const response = await instance.get(datasetUrl, {withCredentials: true})
+
+      console.log(response.data);
+
+      const dr = response.data;
+      setTitle(dr.title);
+      setShortDescription(dr.shortDescription);
+      setFullDescription(dr.fullDescription);
+      setPrice(dr.price);
+      setFileType(dr.fileType);
+
+    }
+
+    const fetchData = async() => {
+      await GetDataset(id);
+    };
+    fetchData();
+  }, []);
+
+  const handleFormSubmit = (e) => {
     e.preventDefault();
 
     if(title === "") {
@@ -37,8 +61,8 @@ function Edit() {
       setError("Please specify a full description for your dataset");
       return;
     }
-    if(price <= 0) {
-      setError("Please provide a price for your dataset");
+    if(price <= 0 || isNaN(price)) {
+      setError("Please provide a valid price for your dataset");
       return;
     }
 
@@ -80,10 +104,12 @@ function Edit() {
             data
         )
             .then((data) => {
-              history.push('/dashboard/datasets/' + id);
+              setSuccess("Dataset has been updated")
+              setError("");
             })
             .catch((e) => {
               setError(e.response.data.error);
+              setSuccess("");
               return false;
             });
       } catch (e) {
@@ -93,55 +119,36 @@ function Edit() {
     handleForm();
   };
 
-  const HandleSetPrice = async (e)=>{
+  const handleSetPrice = async (e)=>{
     setPrice(e.target.value);
-    const filecoinPrice = await FilecoinPrice();
-    var formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 4,
-    });
 
-    const priceUSD = formatter.format(filecoinPrice*e.target.value);
-    setDatasetPrice(priceUSD);
+    if(!isNaN(e.target.value)) {
+      const filecoinPrice = await FilecoinPrice();
+      let formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 4,
+      });
+
+      const priceUSD = formatter.format(filecoinPrice*e.target.value);
+      setDatasetPrice(priceUSD);
+    }
   }
 
-  const HandleDatasetImage = (e) => {
+  const handleDatasetImage = (e) => {
     setImageFile(e.target.files[0]);
   }
 
-  const GetDataset = async (datasetId) => {
-    const instance = getAxiosInstance();
-
-    const datasetUrl = "/api/v1/dataset/" + datasetId;
-    const response = await instance.get(datasetUrl, {withCredentials: true})
-
-    console.log(response.data);
-
-    const dr = response.data;
-    setTitle(dr.title);
-    setShortDescription(dr.shortDescription);
-    setFullDescription(dr.fullDescription);
-    setPrice(dr.price);
-    setFileType(dr.fileType);
-
-  }
-  useEffect(() => {
-    const fetchData = async() => {
-      await GetDataset(id);
-    };
-    fetchData();
-  });
 
   return (
       <div className="CreateDataset">
         <h2>Edit dataset</h2>
         <div>
-          <form onSubmit={HandleFormSubmit}>
+          <form onSubmit={handleFormSubmit}>
           <label>
             Title*
             <div>
-              <input type="text" name="title" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)}/>
+              <input type="text" placeholder="What's the name?" value={title} onChange={e => setTitle(e.target.value)}/>
               <span>Set a clear description title for your dataset.</span>
             </div>
           </label>
@@ -167,7 +174,7 @@ function Edit() {
           <label>
             Image*
             <div>
-              <input type="file" name="imageFile" onChange={HandleDatasetImage}/>
+              <input type="file" name="imageFile" onChange={handleDatasetImage}/>
               <span>Attach a JPG or PNG cover photo for your dataset.</span>
             </div>
           </label>
@@ -183,7 +190,7 @@ function Edit() {
           <label>
             Price*
             <div>
-              <input type="text" name="price" value={price} placeholder="5.23" onChange={HandleSetPrice}/>
+              <input type="text" name="price" value={price} placeholder="5.23" onChange={handleSetPrice}/>
               <span>Set your price in Filecoin (FIL).<br/>Estimated price: <strong>{datasetPrice}</strong></span>
             </div>
           </label>
@@ -207,5 +214,3 @@ function Edit() {
       </div>
   )
 }
-
-export default Edit
