@@ -1,6 +1,6 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {useHistory} from "react-router-dom";
-import {HumanFileSize} from "./utilities/images";
+import {FiatPrice, HumanFileSize} from "./utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
 
@@ -9,12 +9,20 @@ TimeAgo.addDefaultLocale(en);
 function DataSetsRow(props) {
     const history = useHistory();
 
+    const [fiatPrice, setFiatPrice] = useState("");
+
     const timeAgo = new TimeAgo('en-US')
 
     const imageFilename = props.metadata.imageFilename;
     const title = props.metadata.title;
     const shortDescription = props.metadata.shortDescription;
     const price = Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
+
+    const getFiatPrice = async ()=>{
+        setFiatPrice(await FiatPrice(props.metadata.price));
+    }
+    getFiatPrice();
+
     const fileType = props.metadata.fileType;
     const fileSize = HumanFileSize(props.metadata.fileSize, true);
     const username = props.metadata.username;
@@ -30,9 +38,9 @@ function DataSetsRow(props) {
     }
 
     return (
-        <div class="datasets-row" onClick={handleClickDatasetRow}>
+        <div className="datasets-row" onClick={handleClickDatasetRow}>
             <div className="datasets-row-image">
-                <img className="datasets-image" src={datasetImage}/>
+                <img className="datasets-image" src={datasetImage} alt={title}/>
             </div>
             <div className="datasets-row-info">
                 <div className="mini-bold-title">{title}</div>
@@ -46,7 +54,8 @@ function DataSetsRow(props) {
             </div>
             <div className="datasets-details">
                 <div><button className="normal-button">{buttonText}</button></div>
-                <div className="small-orange-text">{price} FIL</div>
+                <div className="small-orange-text dataset-row-price">{price} FIL</div>
+                <div className="mini-light-description">{fiatPrice}</div>
             </div>
         </div>
     )
