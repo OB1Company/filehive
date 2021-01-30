@@ -55,8 +55,20 @@ export default function DatasetPage() {
     }
 
     const DatasetPurchaseModal = (props) => {
-        const HandleClickPurchase = (e) => {
+        const HandleClickPurchase = async (e) => {
 
+            // Send payment
+            const sendPayment = async () => {
+                const updateUserUrl = "/api/v1/purchase/"+id;
+                await instance.post(
+                    updateUserUrl
+                ).then((data)=>{
+                    console.log(data);
+                }).catch((error)=>{
+                    console.log(error);
+                })
+            }
+            await sendPayment();
 
             setOpenModal("success");
         }

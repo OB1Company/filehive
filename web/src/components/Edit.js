@@ -19,6 +19,7 @@ export default function Settings() {
   const [fileType, setFileType] = useState("Unknown");
   const [price, setPrice] = useState(0);
   const [error, setError] = useState("");
+  const [cid, setCid] = useState("");
   const [success, setSuccess] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
 
@@ -37,7 +38,7 @@ export default function Settings() {
       setFullDescription(dr.fullDescription);
       setPrice(dr.price);
       setFileType(dr.fileType);
-
+      setCid(dr.contentID);
     }
 
     const fetchData = async() => {
@@ -185,6 +186,14 @@ export default function Settings() {
 
           <label>
             File Type: {fileType}
+          </label>
+
+          <label>
+            IPFS Address:
+            <ul className="form-ul">
+              <li><a href={"ipfs://"+cid} target="_blank" className="orange-link">ipfs://{cid}</a></li>
+              <li><a href={"https://gateway.ipfs.io/ipfs/"+cid} target="_blank" className="orange-link">https://gateway.ipfs.io/ipfs/{cid}</a></li>
+            </ul>
           </label>
 
           <label>

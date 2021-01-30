@@ -918,7 +918,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	txid, err := s.walletBackend.Send(user.FilecoinAddress, datasetUser.FilecoinAddress, amt, "")
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, datasetUser.FilecoinAddress, amt, user.PowergateToken)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
