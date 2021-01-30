@@ -45,6 +45,8 @@ function Login() {
           console.log("Login Failure", error.response);
           setIsError(true);
           setError(error.response.data.error);
+          localStorage.removeItem('csrf_token');
+          history.push('/login');
         });
 
         return false;
