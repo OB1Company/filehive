@@ -45,8 +45,10 @@ export default function Datasets() {
 
     return (
 
-        <div className="maincontent margins-30">
-            <h2>My datasets</h2>
+        <div className="maincontent">
+            <div className="dashboard-header">
+                <h2>My datasets</h2>
+            </div>
             { datasets.length == 0 &&
                 <div>
                     <p className="mini-description dashboard-p">You do not have any datasets uploaded yet.</p>

@@ -356,9 +356,13 @@ div.form-divider {
     margin-bottom: 50px;
 }
 
+.datasets-rows > div:nth-child(even) {
+    background-color: #FFFCF8;
+}
+
 .datasets-row {
     display: flex;
-    margin: 10px 20px 10px 0px;
+    padding: 10px 30px 10px 30px;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
@@ -714,4 +718,8 @@ div.datasets-details:first-child {
 .form-ul  {
     list-style: disc;
     margin-left: 20px;
+}
+
+.dashboard-header {
+    margin-left: 30px;
 }
