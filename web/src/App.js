@@ -28,7 +28,8 @@ export default function App() {
         let token = localStorage.getItem("csrf_token");
         await axios.get('/api/v1/user', {withCredentials: true})
             .then((data)=>{
-
+                console.log(data.headers);
+                localStorage.setItem("csrf_token", data.headers['x-csrf-token']);
             })
             .catch((err) => {
                 console.log('GET User call failed', err.response);
@@ -64,11 +65,13 @@ export default function App() {
               <PrivateRoute exact path="/dashboard">
                   <Redirect to="/dashboard/datasets"/>
               </PrivateRoute>
-              <PrivateRoute path="/dashboard/datasets/:id" component={CreatePage} />
-              <PrivateRoute path="/dashboard/datasets" component={CreatePage} />
+              <PrivateRoute exact path="/dashboard/datasets" component={DashboardPage} />
               <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
               <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
               <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
+              <PrivateRoute exact path="/dashboard/datasets/:id">
+                  <CreatePage/>
+              </PrivateRoute>
 
           <Route component={HomePage} />
       </Switch>
