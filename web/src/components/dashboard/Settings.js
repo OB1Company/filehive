@@ -24,14 +24,13 @@ export default function Settings() {
             const instance = getAxiosInstance();
             const data = await instance.get("/api/v1/user/" + localStorage.getItem("email"));
             const user = data.data;
+
             user.avatarFilename = "/api/v1/image/" + user.Avatar;
             setEmail(user.Email);
             setName(user.Name);
             setCountry(user.Country);
             const c = Countries.find(obj => obj.value === user.Country);
-            console.log(c);
             setDefaultCountry(c);
-            console.log(user);
         };
 
         const fetchData = async() => {
