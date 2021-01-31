@@ -12,6 +12,7 @@ function Create() {
   const [shortDescription, setShortDescription] = useState("");
   const [fullDescription, setFullDescription] = useState("");
   const [imageFile, setImageFile] = useState("");
+  const [datasetFilename, setDatasetFilename] = useState("");
   const [fileType, setFileType] = useState("Unknown");
   const [price, setPrice] = useState(0);
   const [dataset, setDataset] = useState("");
@@ -58,6 +59,7 @@ function Create() {
         image: fileString,
         fileType: fileType,
         price: Number(price),
+        filename: datasetFilename
       };
 
       const formData = new FormData();
@@ -111,8 +113,8 @@ function Create() {
   }
 
   const HandleDataset = (e) => {
-    // Determine file type extension
     setFileType(e.target.files[0].type);
+    setDatasetFilename(e.target.files[0].name);
     setDataset(e.target.files[0]);
   }
 

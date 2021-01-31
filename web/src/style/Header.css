@@ -21,9 +21,17 @@ body {
     font-size: 16px;
 }
 
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+}
+
 a {
     color: #8C8C8C;
     text-decoration: none;
+    outline: none;
 }
 
 img {
@@ -722,4 +730,36 @@ div.datasets-details:first-child {
 
 .dashboard-header {
     margin-left: 30px;
+}
+
+.tiny-price {
+    color: #8C8C8C;
+    font-size: 13px;
+}
+
+.dataset-maintext H1 {
+    font-size: 22px;
+}
+
+.dataset-maintext H2 {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.dataset-maintext p {
+    font-size: 16px;
+    line-height: 24px;
+    margin: 5px 0;
+}
+
+.dataset-maintext p, .dataset-maintext blockquote, .dataset-maintext ul, .dataset-maintext ol, .dataset-maintext dl, .dataset-maintext li, .dataset-maintext table, .dataset-maintext pre {
+    margin: 15px 0;
+}
+
+.dataset-maintext ul, .dataset-maintext li {
+    margin-left: 0;
+    padding-left: 0;
+    list-style-position: inside;
+    list-style-type: disc;
+    font-size: 16px;
 }

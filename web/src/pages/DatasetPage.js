@@ -1,25 +1,29 @@
 import React, {useEffect, useState} from 'react'
 import Header from '../Header'
 import Footer from '../Footer'
-import { useParams, Link } from 'react-router-dom'
+import {useParams, Link, useHistory} from 'react-router-dom'
 import {getAxiosInstance} from "../components/Auth";
 import Modal from "react-modal";
 import { Countries } from '../constants/Countries'
-import {HumanFileSize} from "../components/utilities/images";
+import {FiatPrice, HumanFileSize} from "../components/utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import { GetWalletBalance } from "../components/dashboard/Wallet";
 import defaultAvatar from '../images/avatar-placeholder.png';
+import { decode } from 'html-entities';
+import ReactMarkdown from 'react-markdown'
 
 const instance = getAxiosInstance();
 
 export default function DatasetPage() {
 
-    const timeAgo = new TimeAgo('en-US')
+    const timeAgo = new TimeAgo('en-US');
+    const history = useHistory();
 
     const [datasetImageUrl, setDatasetImageUrl] = useState("/api/v1/image/");
     let { id } = useParams();
     const [dataset, setDataset] = useState({});
     const [price, setPrice] = useState("");
+    const [fiatPrice, setFiatPrice] = useState("");
     const [fileType, setFileType] = useState("");
     const [fileSize, setFileSize] = useState("");
     const [username, setUsername] = useState("");
@@ -38,8 +42,18 @@ export default function DatasetPage() {
 
     const DatasetSuccessModal = (props) => {
 
-        const HandleClickDownload = (e) => {
-            console.log('Clicked', e);
+        const HandleClickDownload = async (e) => {
+
+            // 1. Try to retrieve via IPFS
+            const getDatasetFile = async () => {
+                const datasetUrl = "/api/v1/download/"+id;
+                window.open(datasetUrl);
+            }
+            await getDatasetFile();
+
+            // 2. Warn the user that it's being retrieved via Filecoin
+            // 3. Server will attempt to retrieve it from Filecoin
+
             setOpenModal("purchase");
             setModalIsOpen(false);
         }
@@ -73,7 +87,11 @@ export default function DatasetPage() {
             setOpenModal("success");
         }
 
-        const showWarning = (price > balance) ? true : false;
+        const handleTopUp = () => {
+            history.push("/dashboard/wallet");
+        }
+
+        const showWarning = (price > balance);
 
         return (
             <div className="modal-container">
@@ -81,7 +99,7 @@ export default function DatasetPage() {
                 <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
                 <div className="modal-center-text-bold">Pay {price} FIL</div>
                 {showWarning && <div>
-                    <div className="modal-button-container"><button className="normal-button">Top up wallet</button></div>
+                    <div className="modal-button-container"><button className="normal-button" onClick={handleTopUp}>Top up wallet</button></div>
                     <div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet.
                         Please add at least {price} FIL to your wallet.</div>
                 </div>
@@ -123,6 +141,12 @@ export default function DatasetPage() {
                     setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
 
                     setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
+                    const getFiatPrice = async ()=>{
+                        console.log(dataset.price);
+                        setFiatPrice(await FiatPrice(dataset.price));
+                    }
+                    getFiatPrice();
+
                     setFileType(dataset.fileType);
                     setFileSize(HumanFileSize(dataset.fileSize, true));
                     setUsername(dataset.username);
@@ -173,8 +197,8 @@ export default function DatasetPage() {
                     <div className="dataset-container-header">
                         <div>
                             <div className="dataset-header">
-                                <div><h2>{dataset.title}</h2></div>
-                                <div className="dataset-description">{dataset.shortDescription}</div>
+                                <div><h2>{decode(dataset.title)}</h2></div>
+                                <div className="dataset-description">{decode(dataset.shortDescription)}</div>
                                 <div className="mini-light-description tag-container">
                                     <div>{fileType}</div>
                                     <div>{fileSize}</div>
@@ -198,11 +222,11 @@ export default function DatasetPage() {
                             <div>
                                 <img src={datasetImageUrl} alt="" className="dataset-hero-image"/>
                             </div>
-                            <div className="dataset-maintext">{dataset.fullDescription}</div>
+                            <div className="dataset-maintext"><ReactMarkdown>{decode(dataset.fullDescription)}</ReactMarkdown></div>
                         </div>
                         <div>
                             <div className="dataset-metadata-container">
-                                <div className="dataset-metadata-price">{dataset.price} FIL</div>
+                                <div className="dataset-metadata-price">{dataset.price} FIL <span className="tiny-price">({fiatPrice})</span></div>
                                 <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                 <div className="dataset-metadata-button">
                                         <button className="orange-button" onClick={() => setModalIsOpen(true)}>Buy Now</button>

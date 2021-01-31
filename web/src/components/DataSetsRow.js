@@ -3,6 +3,7 @@ import {useHistory} from "react-router-dom";
 import {FiatPrice, HumanFileSize} from "./utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
+import { decode } from 'html-entities';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -40,11 +41,11 @@ function DataSetsRow(props) {
     return (
         <div className="datasets-row" onClick={handleClickDatasetRow}>
             <div className="datasets-row-image">
-                <img className="datasets-image" src={datasetImage} alt={title}/>
+                <img className="datasets-image" src={datasetImage} alt={decode(title)}/>
             </div>
             <div className="datasets-row-info">
-                <div className="mini-bold-title">{title}</div>
-                <div className="mini-description">{shortDescription}</div>
+                <div className="mini-bold-title">{decode(title)}</div>
+                <div className="mini-description">{decode(shortDescription)}</div>
                 <div className="mini-light-description tag-container">
                     <div>{fileType}</div>
                     <div>{fileSize}</div>

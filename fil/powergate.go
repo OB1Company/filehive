@@ -84,9 +84,14 @@ func (f *PowergateBackend) JobStatus(jobID cid.Cid) (string, error) {
 	return "", nil
 }
 
-// TODO
-func (f *PowergateBackend) Get(id cid.Cid) (io.Reader, error) {
-	return nil, nil
+func (f *PowergateBackend) Get(cid string, userToken string) (io.Reader, error) {
+	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
+
+	dataset, err := f.powClient.Data.Get(ctx, cid)
+	if err != nil {
+		return nil, err
+	}
+	return dataset, nil
 }
 
 func (f *PowergateBackend) CreateUser() (string, string, error) {

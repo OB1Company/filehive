@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -636,6 +637,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 				Image            string  `json:"image"`
 				FileType         string  `json:"fileType"`
 				Price            float64 `json:"price"`
+				Filename         string  `json:"filename"`
 			}
 			var d data
 			if err := json.NewDecoder(part).Decode(&d); err != nil {
@@ -659,6 +661,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 				ID:               id,
 				Username:         user.Name,
 				ImageFilename:    filename,
+				DatasetFilename:  d.Filename,
 			}
 			containsMetadata = true
 		}
@@ -766,6 +769,59 @@ func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Reque
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	// Get dataset
+	var dataset models.Dataset
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", id).First(&dataset).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	fileStream, err := s.filecoinBackend.Get(dataset.ContentID, user.PowergateToken)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusNotFound)
+		return
+	}
+
+	fileData, err := ioutil.ReadAll(fileStream)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusBadRequest)
+		return
+	}
+
+	raw := bytes.NewBuffer(fileData)
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+dataset.DatasetFilename)
+	w.Header().Set("Content-Type", dataset.FileType)
+
+	w.Write(raw.Bytes())
+
 }
 
 func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request) {

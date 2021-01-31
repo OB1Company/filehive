@@ -33,6 +33,7 @@ type Dataset struct {
 	ShortDescription string    `json:"shortDescription"`
 	FullDescription  string    `json:"fullDescription"`
 	ImageFilename    string    `json:"imageFilename"`
+	DatasetFilename  string    `json:"datasetFilename"`
 	FileType         string    `json:"fileType"`
 	FileSize         int64     `json:"fileSize"`
 	Price            float64   `json:"price"`

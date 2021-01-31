@@ -71,7 +71,7 @@ func (f *MockFilecoinBackend) JobStatus(jobID cid.Cid) (string, error) {
 }
 
 // TODO
-func (f *MockFilecoinBackend) Get(id cid.Cid) (io.Reader, error) {
+func (f *MockFilecoinBackend) Get(cid string, userToken string) (io.Reader, error) {
 	return nil, nil
 }
 

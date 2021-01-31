@@ -30,8 +30,7 @@ type FilecoinBackend interface {
 	// TODO
 	JobStatus(jobID cid.Cid) (string, error)
 
-	// TODO
-	Get(id cid.Cid) (io.Reader, error)
+	Get(cid string, userToken string) (io.Reader, error)
 
 	CreateUser() (id string, token string, error error)
 }

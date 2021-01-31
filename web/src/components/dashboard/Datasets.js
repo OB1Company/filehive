@@ -6,7 +6,6 @@ import Footer from "../../Footer";
 import {Link, useLocation} from "react-router-dom";
 import axios from "axios";
 
-
 const getDatasets = async () => {
 
     const csrftoken = localStorage.getItem('csrf_token');
@@ -49,15 +48,18 @@ export default function Datasets() {
             <div className="dashboard-header">
                 <h2>My datasets</h2>
             </div>
-            { datasets.length == 0 &&
-                <div>
-                    <p className="mini-description dashboard-p">You do not have any datasets uploaded yet.</p>
-                    <Link to='/create'><input type="button" className="orange-button" value="Create new dataset"/></Link>
-                </div>
-            }
-            { datasets.length > 0 &&
-            <DataSetsRows sortby="trending" datasets={datasets} rowType="edit"/>
-            }
+            <div className="margins-30">
+                { datasets.length == 0 &&
+                    <div>
+                        <p className="mini-description dashboard-p">You do not have any datasets uploaded yet.</p>
+                        <Link to='/create'><input type="button" className="orange-button" value="Create new dataset"/></Link>
+                    </div>
+                }
+                { datasets.length > 0 &&
+                <DataSetsRows sortby="trending" datasets={datasets} rowType="edit"/>
+                }
+            </div>
+
         </div>
 
 
