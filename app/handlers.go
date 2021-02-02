@@ -811,7 +811,7 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 
 	fileData, err := ioutil.ReadAll(fileStream)
 	if err != nil {
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusBadRequest)
+		http.Error(w, wrapError(err), http.StatusBadRequest)
 		return
 	}
 

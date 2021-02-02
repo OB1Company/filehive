@@ -101,7 +101,7 @@ export default function Purchases() {
 
             <div className="">
                 { purchases.length ==0 &&
-                <div>
+                <div className="margins-30">
                     <p className="mini-description dashboard-p">You have not made any purchases yet. Check out some of our <a href="/datasets/trending" className="orange-link">trending datasets</a></p>
                 </div>
                 }

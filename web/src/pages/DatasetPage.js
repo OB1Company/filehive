@@ -31,6 +31,8 @@ export default function DatasetPage() {
     const [publisher, setPublisher] = useState({});
     const [balance, setBalance] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [purchaseOpen, setPurchaseOpen] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
     const [openModal, setOpenModal] = useState("purchase");
     const [disableBuy, setDisableBuy] = useState("orange-button-disable");
 
@@ -38,7 +40,8 @@ export default function DatasetPage() {
 
     const handleCloseModal = () => {
         setOpenModal("purchase");
-        setModalIsOpen(false);
+        setPurchaseOpen(false);
+        setSuccessOpen(false);
     }
 
     const DatasetSuccessModal = (props) => {
@@ -70,7 +73,7 @@ export default function DatasetPage() {
     }
 
     const DatasetPurchaseModal = (props) => {
-        const HandleClickPurchase = async (e) => {
+        const HandleClickPurchase = async () => {
 
             // Send payment
             const sendPayment = async () => {
@@ -85,7 +88,10 @@ export default function DatasetPage() {
             }
             await sendPayment();
 
-            setOpenModal("success");
+            // nextModal();
+            console.log(props);
+            props.nextModal();
+
         }
 
         const handleTopUp = () => {
@@ -119,18 +125,23 @@ export default function DatasetPage() {
         )
     }
 
+    const NextModal = (e)=>{
+        console.log('Next Modal', this);
+        setPurchaseOpen(false);
+        setSuccessOpen(true);
+    };
+
     const Modal1 = ({ onRequestClose, ...otherProps }) => (
-        <Modal shouldCloseOnOverlayClick="true" isOpen={modalIsOpen} onRequestClose={onRequestClose} className="dataset-purchase-modal" {...otherProps}>
-            {openModal === "purchase" &&
-            <DatasetPurchaseModal datasetId={otherProps.datasetId} price={otherProps.price}/>
-            }
-            {openModal === "success" &&
-            <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
-            }
+        <Modal shouldCloseOnOverlayClick="true" isOpen={purchaseOpen} onRequestClose={handleCloseModal} nextModal={NextModal} className="dataset-purchase-modal" {...otherProps}>
+            <DatasetPurchaseModal datasetId={otherProps.datasetId} nextModal={NextModal} price={otherProps.price}/>
         </Modal>
     );
 
-
+    const Modal2 = ({ onRequestClose, ...otherProps }) => (
+        <Modal shouldCloseOnOverlayClick="true" isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-purchase-modal" {...otherProps}>
+            <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
+        </Modal>
+    );
 
     useEffect(() => {
         const pullDataset = async (datasetId) => {
@@ -194,13 +205,14 @@ export default function DatasetPage() {
 
     const HandleBuyButton = () => {
         if(disableBuy === "") {
-            setModalIsOpen(true);
+            setPurchaseOpen(true);
         }
     }
 
     return (
             <div className="container">
                 <Modal1 onRequestClose={handleCloseModal}/>
+                <Modal2 onRequestClose={handleCloseModal}/>
                 <Header/>
                 <div className="maincontent">
                     <div className="dataset-container-header">

@@ -178,10 +178,10 @@ export default function Wallet() {
                     </form>
                 </div>
             </div>
-            <div className="transaction-ledger">
-                <h3>Transactions</h3>
+            {/*<div className="transaction-ledger">*/}
+            {/*    <h3>Transactions</h3>*/}
 
-            </div>
+            {/*</div>*/}
 
 
         </div>
