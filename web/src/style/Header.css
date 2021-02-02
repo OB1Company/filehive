@@ -218,20 +218,24 @@ div.subBody {
     border: 1px solid #F3A815;
     box-sizing: border-box;
     border-radius: 20px;
-
     font-style: normal;
     font-weight: bold;
     font-size: 15px;
     line-height: 21px;
-
     text-align: center;
-
     color: #FFFFFF;
     padding: 0 10px;
     height: 38px;
     min-width: 135px;
     margin-right: 18px;
     cursor: pointer;
+}
+
+.orange-button-disable {
+    background: #efefef;
+    border: 1px solid #dddddd;
+    color: #999999;
+    cursor: not-allowed;
 }
 
 .ErrorBox {

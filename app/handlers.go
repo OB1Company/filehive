@@ -281,7 +281,7 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		Country string
 		Avatar  string
 	}{
-		Email:   email,
+		Email:   user.Email,
 		Name:    user.Name,
 		Country: user.Country,
 		Avatar:  user.AvatarFilename,

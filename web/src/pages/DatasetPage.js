@@ -32,6 +32,7 @@ export default function DatasetPage() {
     const [balance, setBalance] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [openModal, setOpenModal] = useState("purchase");
+    const [disableBuy, setDisableBuy] = useState("orange-button-disable");
 
     Modal.setAppElement('#root');
 
@@ -155,7 +156,6 @@ export default function DatasetPage() {
                     const getPublisher = async () => {
                         instance.get("/api/v1/user/" + dataset.userID)
                             .then((publish) => {
-
                                 const avatar = publish.data.Avatar;
                                 publish.data.avatarFilename = (avatar === "") ? defaultAvatar : "/api/v1/image/"+publish.data.Avatar;
 
@@ -163,6 +163,9 @@ export default function DatasetPage() {
                                 const countryObject = Countries.find(c => c.value === publish.data.Country);
                                 publish.data.countryName = countryObject.label;
                                 setPublisher(publish.data);
+
+                                const checkPublisher = (publish.data.Email === localStorage.getItem("email")) ? "orange-button-disable" : "";
+                                setDisableBuy(checkPublisher);
                             })
 
                     }
@@ -188,6 +191,12 @@ export default function DatasetPage() {
         };
         fetchData();
     }, []);
+
+    const HandleBuyButton = () => {
+        if(disableBuy === "") {
+            setModalIsOpen(true);
+        }
+    }
 
     return (
             <div className="container">
@@ -229,7 +238,7 @@ export default function DatasetPage() {
                                 <div className="dataset-metadata-price">{dataset.price} FIL <span className="tiny-price">({fiatPrice})</span></div>
                                 <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                 <div className="dataset-metadata-button">
-                                        <button className="orange-button" onClick={() => setModalIsOpen(true)}>Buy Now</button>
+                                        <button className={"orange-button "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
                                 </div>
                                 <div className="dataset-metadata-warning">The price includes the miner fee.</div>
                             </div>
