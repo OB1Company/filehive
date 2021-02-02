@@ -77,7 +77,7 @@ function Login() {
   }
 
   return (
-    <div class="Login form-540">
+    <div className="Login form-540">
       <h2>Log in</h2>
       <form onSubmit={HandleFormSubmit}>
         <label>
@@ -89,7 +89,7 @@ function Login() {
           <input type="password" name="password" placeholder="Password"  onChange={e => setPassword(e.target.value )} />
         </label>
         <div>
-          <input type="submit" value="Log in" class="orange-button" />
+          <input type="submit" value="Log in" className="orange-button" />
           <Link to='/passwordreset'>Forgot password?</Link>
         </div>
         

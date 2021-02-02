@@ -18,7 +18,7 @@ export const GetWalletBalance = async () => {
     const apiReq = await instance.get(
         loginUrl
     );
-    console.log(apiReq);
+    console.debug(apiReq);
 
     return apiReq.data.Balance;
 }
@@ -35,7 +35,7 @@ export const GetWalletAddress = async () => {
     const apiReq = await instance.get(
         loginUrl
     );
-    console.log(apiReq);
+    console.debug(apiReq);
 
     return apiReq.data.Address;
 }
@@ -145,7 +145,7 @@ export default function Wallet() {
                         <QRCode value={filecoinAddress} size="99" imageSettings={qrSettings} />
                     </div>
                     <div className="center">{address}</div>
-                    <div className="center"><a href="javascript:void(0);" className="orange-link" onClick={() =>  navigator.clipboard.writeText(address)}>copy</a></div>
+                    <div className="center"><a className="orange-link" onClick={() =>  navigator.clipboard.writeText(address)}>copy</a></div>
                 </div>
                 <div className="wd-container form-540">
                     <h3>Withdrawal</h3>

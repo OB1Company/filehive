@@ -55,7 +55,7 @@ function Signup() {
   }
 
   return (
-    <div class="Signup form-540 form-center">
+    <div className="Signup form-540 form-center">
       <h2>Sign up</h2>
       <form onSubmit={HandleFormSubmit}>
         <label>
@@ -75,7 +75,7 @@ function Signup() {
             <Select name="country" options={Countries} placeholder="--" onChange={handleCountry}/>
         </label>
         <div>
-          <input type="submit" value="Sign up" class="orange-button" />
+          <input type="submit" value="Sign up" className="orange-button" />
           <Link to='/login'>Already registered?</Link>
         </div>
 

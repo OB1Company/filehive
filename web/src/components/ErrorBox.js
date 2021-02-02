@@ -2,7 +2,7 @@ import React from 'react'
 
 function ErrorBox(props) {
   return (
-    <div class="ErrorBox">
+    <div className="ErrorBox">
       {props.message}
     </div>
   )
@@ -10,7 +10,7 @@ function ErrorBox(props) {
 
 export function SuccessBox(props) {
   return (
-      <div class="SuccessBox">
+      <div className="SuccessBox">
         {props.message}
       </div>
   )

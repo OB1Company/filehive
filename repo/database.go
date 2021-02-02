@@ -92,9 +92,6 @@ func (d *Database) View(fn func(db *gorm.DB) error) error {
 // Update is used for write access to the db. Updates are made
 // inside an open transaction.
 func (d *Database) Update(fn func(db *gorm.DB) error) error {
-	d.mtx.Lock()
-	defer d.mtx.Unlock()
-
 	tx := d.db.Begin()
 	if err := fn(tx); err != nil {
 		if r := recover(); r != nil {
