@@ -621,11 +621,20 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 
 		if part.FormName() == "file" {
-			jobID, cid, size, err = s.filecoinBackend.Store(part, addr, user.PowergateToken)
+			fileBytes, err := ioutil.ReadAll(part)
+			if err != nil {
+				http.Error(w, "failed to read content of the part", http.StatusInternalServerError)
+				return
+			}
+
+			jobID, cid, _, err = s.filecoinBackend.Store(bytes.NewReader(fileBytes), addr, user.PowergateToken)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
+			size = int64(len(fileBytes))
+
 			containsFile = true
 		}
 
@@ -803,7 +812,17 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fileStream, err := s.filecoinBackend.Get(dataset.ContentID, user.PowergateToken)
+	// Get datset uploader account token
+	var uploader models.User
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", dataset.UserID).First(&uploader).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrUserNotFound), http.StatusUnauthorized)
+		return
+	}
+
+	fileStream, err := s.filecoinBackend.Get(dataset.ContentID, uploader.PowergateToken)
 	if err != nil {
 		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusNotFound)
 		return
