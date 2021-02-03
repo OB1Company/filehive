@@ -10,9 +10,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
-	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -88,9 +88,11 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		Value:    tokenString,
 		Expires:  expirationTime,
 		Domain:   s.domain,
+		MaxAge:   0,
+		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	})
 }
 
@@ -141,9 +143,10 @@ func (s *FileHiveServer) handlePOSTLogout(w http.ResponseWriter, r *http.Request
 		Value:    "expired",
 		Expires:  time.Time{},
 		Domain:   s.domain,
+		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	})
 }
 
@@ -191,7 +194,12 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newAddress, err := s.walletBackend.NewAddress()
+	userId, token, err := s.filecoinBackend.CreateUser()
+	if err != nil {
+		http.Error(w, wrapError(ErrWeakPassword), http.StatusBadRequest)
+	}
+
+	newAddress, err := s.walletBackend.NewAddress(token)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -213,7 +221,9 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		Country:         d.Country,
 		Salt:            salt,
 		HashedPassword:  hashedPW,
-		FilecoinAddress: newAddress.String(),
+		FilecoinAddress: newAddress,
+		PowergateToken:  token,
+		PowergateID:     userId,
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
@@ -271,7 +281,7 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		Country string
 		Avatar  string
 	}{
-		Email:   email,
+		Email:   user.Email,
 		Name:    user.Name,
 		Country: user.Country,
 		Avatar:  user.AvatarFilename,
@@ -434,13 +444,7 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	addr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	balance, err := s.walletBackend.Balance(addr)
+	balance, err := s.walletBackend.Balance(user.FilecoinAddress, user.PowergateToken)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -482,19 +486,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	from, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	to, err := address.NewFromString(d.Address)
-	if err != nil {
-		http.Error(w, wrapError(ErrInvalidAddress), http.StatusBadRequest)
-		return
-	}
-
-	txid, err := s.walletBackend.Send(from, to, fil.FILtoAttoFIL(d.Amount))
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, d.Address, fil.FILtoAttoFIL(d.Amount), user.PowergateToken)
 	if err != nil {
 		if errors.Is(err, fil.ErrInsuffientFunds) {
 			http.Error(w, wrapError(fil.ErrInsuffientFunds), http.StatusBadRequest)
@@ -507,7 +499,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 	sanitizedJSONResponse(w, struct {
 		Txid string
 	}{
-		Txid: txid.String(),
+		Txid: txid,
 	})
 }
 
@@ -551,13 +543,7 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 		}
 	}
 
-	addr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	txs, err := s.walletBackend.Transactions(addr, limit, offset)
+	txs, err := s.walletBackend.Transactions(user.FilecoinAddress, limit, offset)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -576,13 +562,8 @@ func (s *FileHiveServer) handlePOSTGenerateCoins(w http.ResponseWriter, r *http.
 		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
 		return
 	}
-	addr, err := address.NewFromString(d.Address)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
 
-	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(addr, fil.FILtoAttoFIL(d.Amount))
+	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(d.Address, fil.FILtoAttoFIL(d.Amount))
 }
 
 func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Request) {
@@ -625,8 +606,9 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 	var (
 		containsFile, containsMetadata bool
 		dataset                        models.Dataset
-		jobID                          cid.Cid
+		jobID                          string
 		size                           int64
+		cid                            string
 	)
 	for {
 		part, err := mr.NextPart()
@@ -639,11 +621,20 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 		}
 
 		if part.FormName() == "file" {
-			_, jobID, size, err = s.filecoinBackend.Store(part, addr)
+			fileBytes, err := ioutil.ReadAll(part)
+			if err != nil {
+				http.Error(w, "failed to read content of the part", http.StatusInternalServerError)
+				return
+			}
+
+			jobID, cid, _, err = s.filecoinBackend.Store(bytes.NewReader(fileBytes), addr, user.PowergateToken)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
+			size = int64(len(fileBytes))
+
 			containsFile = true
 		}
 
@@ -655,6 +646,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 				Image            string  `json:"image"`
 				FileType         string  `json:"fileType"`
 				Price            float64 `json:"price"`
+				Filename         string  `json:"filename"`
 			}
 			var d data
 			if err := json.NewDecoder(part).Decode(&d); err != nil {
@@ -678,17 +670,19 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 				ID:               id,
 				Username:         user.Name,
 				ImageFilename:    filename,
+				DatasetFilename:  d.Filename,
 			}
 			containsMetadata = true
 		}
 	}
 	dataset.FileSize = size
+	dataset.ContentID = cid
 
 	if !containsFile || !containsMetadata {
 		http.Error(w, wrapError(ErrMissingForm), http.StatusInternalServerError)
 		return
 	}
-	dataset.JobID = jobID.String()
+	dataset.JobID = jobID
 	err = s.db.Update(func(db *gorm.DB) error {
 		return db.Save(&dataset).Error
 	})
@@ -784,6 +778,69 @@ func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Reque
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	// Get dataset
+	var dataset models.Dataset
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", id).First(&dataset).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	// Get datset uploader account token
+	var uploader models.User
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", dataset.UserID).First(&uploader).Error
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrUserNotFound), http.StatusUnauthorized)
+		return
+	}
+
+	fileStream, err := s.filecoinBackend.Get(dataset.ContentID, uploader.PowergateToken)
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusNotFound)
+		return
+	}
+
+	fileData, err := ioutil.ReadAll(fileStream)
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	raw := bytes.NewBuffer(fileData)
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+dataset.DatasetFilename)
+	w.Header().Set("Content-Type", dataset.FileType)
+
+	w.Write(raw.Bytes())
+
 }
 
 func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request) {
@@ -924,18 +981,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userAddr, err := address.NewFromString(user.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-	datasetUserAddr, err := address.NewFromString(datasetUser.FilecoinAddress)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusInternalServerError)
-		return
-	}
-
-	balance, err := s.walletBackend.Balance(userAddr)
+	balance, err := s.walletBackend.Balance(user.FilecoinAddress, "")
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -947,7 +993,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	txid, err := s.walletBackend.Send(userAddr, datasetUserAddr, amt)
+	txid, err := s.walletBackend.Send(user.FilecoinAddress, datasetUser.FilecoinAddress, amt, user.PowergateToken)
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
@@ -980,7 +1026,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	sanitizedJSONResponse(w, struct {
 		Txid string `json:"txid"`
 	}{
-		Txid: txid.String(),
+		Txid: txid,
 	})
 }
 
@@ -1129,7 +1175,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		sort.Slice(results, func(i, j int) bool { return results[i].Count > results[j].Count })
 		count = len(results)
 
-		if page*10 > int(count-1) {
+		if page > 0 && page*10 > int(count-1) {
 			page = int(count - 1)
 		}
 

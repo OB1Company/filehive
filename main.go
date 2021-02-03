@@ -45,11 +45,15 @@ func main() {
 	}
 
 	// TODO: this will need to be set by a config option when powergate gets wired up.
-	wbe := fil.NewMockWalletBackend()
+	wbe, err := fil.NewPowergateWalletBackend()
+	if err != nil {
+		log.Fatalf("Powergate server is not available: %v", err)
+	}
+
 	if err := os.MkdirAll(path.Join(config.DataDir, "files"), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	fbe, err := fil.NewMockFilecoinBackend(path.Join(config.DataDir, "files"))
+	fbe, err := fil.NewPowergateBackend(path.Join(config.DataDir, "files"), "")
 	if err != nil {
 		log.Fatal(err)
 	}

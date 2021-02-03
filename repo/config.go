@@ -60,6 +60,9 @@ type Config struct {
 	DBHost    string `long:"dbhost" description:"The host:post location of the database."`
 	DBUser    string `long:"dbuser" description:"The database username"`
 	DBPass    string `long:"dbpass" description:"The database password"`
+
+	PowergateToken  string `long:"powtoken" description:"The Powergate admin token"`
+	FilecoinAddress string `long:"filaddress" description:"Filecoin address for payouts"`
 }
 
 // LoadConfig initializes and parses the config using a config file and command

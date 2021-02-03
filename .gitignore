@@ -40,3 +40,4 @@ openbazaar-go*
 # macOS
 .DS_Store
 .eslintcache
+.env

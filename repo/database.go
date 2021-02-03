@@ -83,26 +83,20 @@ func NewDatabase(dataDir string, opts ...Option) (*Database, error) {
 // View is used for read access to the db. Reads are made
 // inside and open transaction.
 func (d *Database) View(fn func(db *gorm.DB) error) error {
-	d.mtx.Lock()
-	defer d.mtx.Unlock()
-
-	tx := d.db.Begin()
-	if err := fn(tx); err != nil {
-		tx.Rollback()
+	if err := fn(d.db); err != nil {
 		return err
 	}
-	return tx.Commit().Error
+	return nil
 }
 
 // Update is used for write access to the db. Updates are made
 // inside an open transaction.
 func (d *Database) Update(fn func(db *gorm.DB) error) error {
-	d.mtx.Lock()
-	defer d.mtx.Unlock()
-
 	tx := d.db.Begin()
 	if err := fn(tx); err != nil {
-		tx.Rollback()
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
 		return err
 	}
 	return tx.Commit().Error

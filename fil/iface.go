@@ -25,37 +25,38 @@ const attoFilPerFilecoin = 1000000000000000000
 type FilecoinBackend interface {
 	// Store will put a file to Filecoin and pay for it out of the provided
 	// address. A jobID is return or an error.
-	Store(data io.Reader, addr addr.Address) (jobID, contentID cid.Cid, size int64, err error)
+	Store(data io.Reader, addr addr.Address, userToken string) (jobID, contentID string, size int64, err error)
 
 	// TODO
 	JobStatus(jobID cid.Cid) (string, error)
 
-	// TODO
-	Get(id cid.Cid) (io.Reader, error)
+	Get(cid string, userToken string) (io.Reader, error)
+
+	CreateUser() (id string, token string, error error)
 }
 
 // WalletBackend is an interface for a Filecoin wallet that can hold the keys
 // for multiple addresses and can make transactions.
 type WalletBackend interface {
 	// NewAddress generates a new address and store the key in the backend.
-	NewAddress() (addr.Address, error)
+	NewAddress(userToken string) (string, error)
 
 	// Send filecoin from one address to another. Returns the cid of the
 	// transaction.
-	Send(from, to addr.Address, amount *big.Int) (cid.Cid, error)
+	Send(from, to string, amount *big.Int, userToken string) (string, error)
 
 	// Balance returns the balance for an address.
-	Balance(addr addr.Address) (*big.Int, error)
+	Balance(address string, userToken string) (*big.Int, error)
 
 	// Transactions returns the list of transactions for an address.
-	Transactions(addr addr.Address, limit, offset int) ([]Transaction, error)
+	Transactions(addr string, limit, offset int) ([]Transaction, error)
 }
 
 // Transaction represents a Filecoin transaction.
 type Transaction struct {
-	ID        cid.Cid
-	From      addr.Address
-	To        addr.Address
+	ID        string
+	From      string
+	To        string
 	Amount    *big.Int
 	Timestamp time.Time
 }
@@ -69,9 +70,9 @@ func (t *Transaction) MarshalJSON() ([]byte, error) {
 		Amount    float64   `json:"amount"`
 		Timestamp time.Time `json:"timestamp"`
 	}{
-		ID:        t.ID.String(),
-		From:      t.From.String(),
-		To:        t.To.String(),
+		ID:        t.ID,
+		From:      t.From,
+		To:        t.To,
 		Amount:    AttoFILToFIL(t.Amount),
 		Timestamp: t.Timestamp,
 	})

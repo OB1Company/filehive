@@ -56,10 +56,10 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 	}
 
 	if options.TestMode {
-		if _, ok := walletBackend.(*fil.MockWalletBackend); !ok {
+		if _, ok := walletBackend.(*fil.PowergateWalletBackend); !ok {
 			return nil, errors.New("MockWalletBackend must be used in testmode")
 		}
-		if _, ok := filecoinBackend.(*fil.MockFilecoinBackend); !ok {
+		if _, ok := filecoinBackend.(*fil.PowergateBackend); !ok {
 			return nil, errors.New("MockFilecoinBackend must be used in testmode")
 		}
 	}
@@ -98,6 +98,9 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 
 	csrfOpts := []csrf.Option{
 		csrf.SameSite(csrf.SameSiteLaxMode),
+		csrf.Secure(false),
+		csrf.HttpOnly(true),
+		csrf.Path("/"),
 	}
 	if options.Domain != "" {
 		csrfOpts = append(csrfOpts, csrf.Domain(options.Domain))
@@ -143,7 +146,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	r.HandleFunc("/api/v1/login", s.handlePOSTLogin).Methods("POST")
 	r.HandleFunc("/api/v1/image/{filename}", s.handleGETImage).Methods("GET")
 	r.HandleFunc("/api/v1/dataset/{id}", s.handleGETDataset).Methods("GET")
-	r.HandleFunc("/api/v1/recent", s.handleGETRecent).Methods("GET")
+	r.HandleFunc("/api/v1/latest", s.handleGETRecent).Methods("GET")
 	r.HandleFunc("/api/v1/trending", s.handleGETTrending).Methods("GET")
 	r.HandleFunc("/api/v1/search", s.handleGETSearch).Methods("GET")
 
@@ -168,6 +171,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/datasets", s.handleGETDatasets).Methods("GET")
 	subRouter.HandleFunc("/purchase/{id}", s.handlePOSTPurchase).Methods("POST")
 	subRouter.HandleFunc("/purchases", s.handleGETPurchases).Methods("GET")
+	subRouter.HandleFunc("/download/{cid}", s.handleGETDatasetFile).Methods("GET")
 
 	return r
 }

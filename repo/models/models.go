@@ -16,6 +16,8 @@ type User struct {
 	Country         string
 	AvatarFilename  string
 	FilecoinAddress string
+	PowergateToken  string
+	PowergateID     string
 }
 
 // Dataset holds metadata about a dataaset.
@@ -25,11 +27,13 @@ type Dataset struct {
 	CreatedAt        time.Time `gorm:"index" json:"createdAt"`
 	UserID           string    `json:"userID"`
 	JobID            string    `json:"jobID"`
+	ContentID        string    `json:"contentID"`
 	Username         string    `json:"username"`
 	Title            string    `json:"title"`
 	ShortDescription string    `json:"shortDescription"`
 	FullDescription  string    `json:"fullDescription"`
 	ImageFilename    string    `json:"imageFilename"`
+	DatasetFilename  string    `json:"datasetFilename"`
 	FileType         string    `json:"fileType"`
 	FileSize         int64     `json:"fileSize"`
 	Price            float64   `json:"price"`
