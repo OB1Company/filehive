@@ -83,6 +83,14 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		return
 	}
 
+	httpOnly := true
+	secureToken := false
+
+	if s.useSSL {
+		httpOnly = false
+		secureToken = true
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    tokenString,
@@ -91,8 +99,8 @@ func (s *FileHiveServer) loginUser(w http.ResponseWriter, email string) {
 		MaxAge:   0,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Secure:   false,
+		HttpOnly: httpOnly,
+		Secure:   secureToken,
 	})
 }
 
@@ -138,6 +146,14 @@ func (s *FileHiveServer) handlePOSTLogout(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	httpOnly := true
+	secureToken := false
+
+	if s.useSSL {
+		httpOnly = false
+		secureToken = true
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    "expired",
@@ -145,8 +161,8 @@ func (s *FileHiveServer) handlePOSTLogout(w http.ResponseWriter, r *http.Request
 		Domain:   s.domain,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Secure:   false,
+		HttpOnly: httpOnly,
+		Secure:   secureToken,
 	})
 }
 
