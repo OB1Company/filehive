@@ -1,8 +1,9 @@
 import React, { useState }  from 'react'
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
+import spinner from "../images/spinner.gif";
 
 function Create() {
 
@@ -19,36 +20,47 @@ function Create() {
   const [error, setError] = useState("");
   const [success] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const HandleFormSubmit = (e) => {
+
+    setIsCreating(true);
+
     e.preventDefault();
 
     if(imageFile === "") {
       setError("An image to depict your dataset is required");
+      setIsCreating(false);
       return;
     }
     if(title === "") {
       setError("Please specify a title for your dataset");
+      setIsCreating(false);
       return;
     }
     if(shortDescription === "") {
       setError("Please specify a short description for your dataset");
+      setIsCreating(false);
       return;
     }
     if(fullDescription === "") {
       setError("Please specify a full description for your dataset");
+      setIsCreating(false);
       return;
     }
     if(price <= 0) {
       setError("Please provide a price for your dataset");
+      setIsCreating(false);
       return;
     }
     if(dataset === "") {
       setError("Please choose a dataset to upload");
+      setIsCreating(false);
       return;
     }
 
     const handleForm = async() => {
+
       // Convert image file to base64 string
       const fileString = await ConvertImageToString(imageFile);
 
@@ -82,14 +94,17 @@ function Create() {
             formData
         )
             .then((data) => {
+              setIsCreating(false);
               history.push('/dataset/' + data.data.datasetID);
             })
             .catch((e) => {
               console.log(e.response.data);
               setError(e.response.data);
+              setIsCreating(false);
             });
       } catch (e) {
         setError(e.response.data);
+        setIsCreating(false);
       }
     };
     handleForm();
@@ -116,6 +131,16 @@ function Create() {
     setFileType(e.target.files[0].type);
     setDatasetFilename(e.target.files[0].name);
     setDataset(e.target.files[0]);
+  }
+
+  const CreateButton = () => {
+    if (!isCreating) {
+      return <input type="submit" value="Submit" className="orange-button"/>;
+    } else {
+      return <div>
+        <img src={spinner} width="20" height="20"/> Creating dataset...
+      </div>
+    }
   }
 
   return (
@@ -191,7 +216,7 @@ function Create() {
             }
 
           <div>
-            <input type="submit" value="Submit" className="orange-button"/>
+            <CreateButton/>
           </div>
 
         </form>
