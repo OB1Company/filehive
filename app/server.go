@@ -126,12 +126,14 @@ func (s *FileHiveServer) Close() error {
 
 // Serve begins listening on the configured address.
 func (s *FileHiveServer) Serve() error {
-	log.Infof("FileHive server listening on %s\n", s.listener.Addr().String())
 	var err error
 	if s.useSSL {
-		err = http.ListenAndServeTLS(s.listener.Addr().String(), s.sslCert, s.sslKey, s.handler)
+		err = http.ServeTLS(s.listener, s.handler, s.sslCert, s.sslKey)
 	} else {
 		err = http.Serve(s.listener, s.handler)
+	}
+	if err == nil {
+		log.Infof("FileHive server listening on %s\n", s.listener.Addr().String())
 	}
 	return err
 }
