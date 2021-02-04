@@ -811,6 +811,7 @@ div.datasets-details:first-child {
     }
     .orange-link { word-break: break-word; }
 
+    div.Footer { width: 100%; }
     .dataset-purchase-modal {
         width: 100%;
     }
