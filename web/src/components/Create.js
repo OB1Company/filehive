@@ -138,7 +138,7 @@ function Create() {
       return <input type="submit" value="Submit" className="orange-button"/>;
     } else {
       return <div>
-        <img src={spinner} width="20" height="20"/> Creating dataset...
+        <img src={spinner} width="20" height="20" alt="spinner"/> Creating dataset...
       </div>
     }
   }

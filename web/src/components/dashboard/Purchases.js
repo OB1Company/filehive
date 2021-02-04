@@ -42,8 +42,8 @@ function PurchaseRow(props) {
     const username = props.metadata.username;
     const timestamp = timeAgo.format(Date.parse(props.metadata.Timestamp));
 
-    const buttonText = (props.rowType === "edit") ? "Edit" : "Details";
-    const gotoPage = (props.rowType === "edit") ? '/dashboard/datasets/'+props.metadata.id : '/dataset/'+props.metadata.id;
+    const buttonText = "Download";
+    const gotoPage = '/dataset/'+props.metadata.datasetID;
 
     const datasetImage = "/api/v1/image/" + imageFilename;
 
@@ -51,13 +51,15 @@ function PurchaseRow(props) {
         history.push(gotoPage);
     }
 
+    const datasetUrl = "/api/v1/download/"+props.metadata.datasetID;
+
     return (
-        <div className="datasets-row" onClick={handleClickDatasetRow}>
+        <div className="datasets-row">
             <div className="datasets-row-image">
                 <img className="datasets-image" src={datasetImage} alt={decode(title)}/>
             </div>
             <div className="datasets-row-info">
-                <div className="mini-bold-title">{decode(title)}</div>
+                <div className="mini-bold-title" onClick={handleClickDatasetRow}>{decode(title)}</div>
                 <div className="mini-description">{decode(shortDescription)}</div>
                 <div className="mini-light-description tag-container">
                     <div>{fileType}</div>
@@ -67,9 +69,7 @@ function PurchaseRow(props) {
                 </div>
             </div>
             <div className="datasets-details">
-                <div><button className="normal-button">{buttonText}</button></div>
-                <div className="small-orange-text dataset-row-price">{price} FIL</div>
-                <div className="mini-light-description">{fiatPrice}</div>
+                <div><a href={datasetUrl} download><button className="normal-button">{buttonText}</button></a></div>
             </div>
         </div>
     )
@@ -100,7 +100,7 @@ export default function Purchases() {
             <h2 className="margins-30">Purchases</h2>
 
             <div className="">
-                { purchases.length ==0 &&
+                { purchases.length === 0 &&
                 <div className="margins-30">
                     <p className="mini-description dashboard-p">You have not made any purchases yet. Check out some of our <a href="/datasets/trending" className="orange-link">trending datasets</a></p>
                 </div>
