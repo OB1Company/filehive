@@ -83,9 +83,35 @@ Filehive requires three components:
 
 #### Textile Powergate
 
+See Textile's amazing instructions for setting a Powergate server. If you would like to run this application locally in development mode you can use a `localnet` version of Powergate. Textile provides details on how to use Docker to set it all up very quickly. https://docs.textile.io/powergate/localnet/
+
 #### Filehive Go API Server
 
+Once you have your Powergate server up and running or you have access to a hosted instance that you can connect to from Filehive you can proceed to installing and starting the Filehive Go API Server.
+
+Make sure you have Go 1.15 or above to run this server.
+
+1. Go get this project on your machine (`go get -u https://github.com/OB1Company/filehive`)
+2. Change into your source code folder (`cd $GOPATH/src/github.com/OB1Company/filehive`)
+3. Start the server (`go run main.go`)
+
+Once you start the server a Filehive data repository will be created on your machine in your OS-specific location. If you need to customize your configuration to connect to a different Powergate server there is a `filehive.conf` file in your data repository folder that you can modify. Once you've updated your conf file you need to restart the server for changes to take effect.
+
 #### Filehive UI
+
+Filehive is a mono repo so the Go repo has the React web UI included (in the /web folder). You can either clone this repo in a different location or use the existing Go repo and navigate to the `/web` folder.
+
+1. Change into the `/web` folder
+2. Install dependencies using `yarn` or `npm` (`yarn install`)
+3. Start the node application (`yarn start`)
+
+You can customize your application by specifying settings in the `.env` file in the root of the `/web` folder. You can see a [sample `.env` file](https://github.com/OB1Company/filehive/blob/master/web/.env_sample).
+
+1. Create `.env` file in root `/web` folder
+2. Update contents of `.env`
+3. Restart the node application (`yarn start`)
+
+The application will start by default at [http://localhost:3000](http://localhost:3000)
 
 <!-- ROADMAP -->
 ## Roadmap
