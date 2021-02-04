@@ -769,3 +769,46 @@ div.datasets-details:first-child {
     list-style-type: disc;
     font-size: 16px;
 }
+
+
+@media only screen and (max-width: 600px) {
+
+    div.container {
+        width: 100%;
+    }
+
+    div.Header {
+        flex-flow: row wrap;
+        height: 120px;
+    }
+
+    div.Header input[type=text] {
+        width: 100%;
+    }
+
+    div.subBody {
+        padding: 0 20px;
+    }
+
+    .form-540 {
+        width: 100%;
+    }
+
+    div.Footer {
+        /*height: 88px;*/
+    }
+
+    div.settings-form {
+        padding: 0 20px 40px 20px;
+    }
+
+    div.withdrawal-deposit-container {
+        flex-flow: row wrap;
+        margin-bottom: 10px;
+    }
+
+    div.wd-container {
+        margin: 0 0 15px 0;
+    }
+
+}
