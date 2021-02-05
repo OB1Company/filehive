@@ -51,8 +51,8 @@ export async function FilecoinPrice() {
     return result.data.filecoin.usd;
 }
 
-export async function FiatPrice(amount) {
-    const filecoinPrice = await FilecoinPrice();
+export function FiatPrice(amount, filecoinPrice) {
+
     var formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',

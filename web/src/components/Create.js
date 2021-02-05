@@ -4,6 +4,7 @@ import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
 import spinner from "../images/spinner.gif";
+import useSWR from 'swr'
 
 function Create() {
 
@@ -21,6 +22,8 @@ function Create() {
   const [success] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
 
   const HandleFormSubmit = (e) => {
 
@@ -112,14 +115,14 @@ function Create() {
 
   const HandleSetPrice = async (e)=>{
     setPrice(e.target.value);
-    const filecoinPrice = await FilecoinPrice();
+
     var formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       maximumFractionDigits: 4,
     });
 
-    const priceUSD = formatter.format(filecoinPrice*e.target.value);
+    const priceUSD = formatter.format(filecoinPrice.data*e.target.value);
     setDatasetPrice(priceUSD);
   }
 

@@ -5,12 +5,13 @@ import {useParams, Link, useHistory} from 'react-router-dom'
 import {getAxiosInstance} from "../components/Auth";
 import Modal from "react-modal";
 import { Countries } from '../constants/Countries'
-import {FiatPrice, HumanFileSize} from "../components/utilities/images";
+import {FiatPrice, FilecoinPrice, HumanFileSize} from "../components/utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import { GetWalletBalance } from "../components/dashboard/Wallet";
 import defaultAvatar from '../images/avatar-placeholder.png';
 import { decode } from 'html-entities';
 import ReactMarkdown from 'react-markdown'
+import useSWR from "swr";
 
 const instance = getAxiosInstance();
 
@@ -23,7 +24,6 @@ export default function DatasetPage() {
     let { id } = useParams();
     const [dataset, setDataset] = useState({});
     const [price, setPrice] = useState("");
-    const [fiatPrice, setFiatPrice] = useState("");
     const [fileType, setFileType] = useState("");
     const [fileSize, setFileSize] = useState("");
     const [username, setUsername] = useState("");
@@ -143,6 +143,9 @@ export default function DatasetPage() {
         </Modal>
     );
 
+    const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
+    const fiatPrice = FiatPrice(dataset.price, filecoinPrice.data);
+
     useEffect(() => {
         const pullDataset = async (datasetId) => {
             const datasetUrl = "/api/v1/dataset/" + datasetId;
@@ -153,11 +156,6 @@ export default function DatasetPage() {
                     setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
 
                     setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
-                    const getFiatPrice = async ()=>{
-                        console.log(dataset.price);
-                        setFiatPrice(await FiatPrice(dataset.price));
-                    }
-                    getFiatPrice();
 
                     setFileType(dataset.fileType);
                     setFileSize(HumanFileSize(dataset.fileSize, true));

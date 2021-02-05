@@ -1,16 +1,15 @@
 import React, {useState} from 'react'
 import {useHistory} from "react-router-dom";
-import {FiatPrice, HumanFileSize} from "./utilities/images";
+import {FiatPrice, FilecoinPrice, HumanFileSize} from "./utilities/images";
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
 import { decode } from 'html-entities';
+import useSWR from "swr";
 
 TimeAgo.addDefaultLocale(en);
 
 function DataSetsRow(props) {
     const history = useHistory();
-
-    const [fiatPrice, setFiatPrice] = useState("");
 
     const timeAgo = new TimeAgo('en-US')
 
@@ -19,10 +18,9 @@ function DataSetsRow(props) {
     const shortDescription = props.metadata.shortDescription;
     const price = Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
 
-    const getFiatPrice = async ()=>{
-        setFiatPrice(await FiatPrice(props.metadata.price));
-    }
-    getFiatPrice();
+    const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
+
+    const fiatPrice = FiatPrice(props.metadata.price, filecoinPrice.data);
 
     const fileType = props.metadata.fileType;
     const fileSize = HumanFileSize(props.metadata.fileSize, true);
