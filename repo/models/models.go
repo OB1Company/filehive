@@ -29,9 +29,9 @@ type Dataset struct {
 	JobID            string    `json:"jobID"`
 	ContentID        string    `json:"contentID"`
 	Username         string    `json:"username"`
-	Title            string    `json:"title"`
-	ShortDescription string    `json:"shortDescription"`
-	FullDescription  string    `json:"fullDescription"`
+	Title            string    `gorm:"index:idx_search" json:"title"`
+	ShortDescription string    `gorm:"index:idx_search" json:"shortDescription"`
+	FullDescription  string    `gorm:"index:idx_search" json:"fullDescription"`
 	ImageFilename    string    `json:"imageFilename"`
 	DatasetFilename  string    `json:"datasetFilename"`
 	FileType         string    `json:"fileType"`

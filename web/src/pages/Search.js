@@ -4,13 +4,14 @@ import Header from '../Header'
 import Footer from '../Footer'
 import DataSetsRows from "../components/DataSetsRows";
 import axios from "axios";
+import Pluralize from 'react-pluralize'
 
 
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);
 }
 
-const getDatasets = async () => {
+const getDatasets = async (query) => {
 
     const csrftoken = localStorage.getItem('csrf_token');
     const instance = axios.create({
@@ -18,7 +19,7 @@ const getDatasets = async () => {
         headers: { "x-csrf-token": csrftoken }
     })
 
-    const loginUrl = "/api/v1/trending";
+    const loginUrl = "/api/v1/search?query="+query;
     const apiReq = await instance.get(
         loginUrl
     );
@@ -40,7 +41,7 @@ export default function SearchPage() {
 
     useEffect(() => {
         const fetchData = async() => {
-            const ds = await getDatasets();
+            const ds = await getDatasets(searchQuery);
             setDatasets(ds);
         };
         fetchData();
@@ -49,7 +50,7 @@ export default function SearchPage() {
   return (
     <div className="container">
       <Header/>
-        <div className="search-results-header"><strong>283</strong> results matching "{searchQuery}"</div>
+        <div className="search-results-header"><strong>{datasets.length}</strong> <Pluralize singular={'result'} showCount={false} count={datasets.length} /> matching "{searchQuery}"</div>
       <div className="maincontent margins-30">
         <DataSetsRows sortby="trending" datasets={datasets}/>
       </div>
