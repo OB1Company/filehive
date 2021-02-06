@@ -53,7 +53,7 @@ func main() {
 	if err := os.MkdirAll(path.Join(config.DataDir, "files"), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	fbe, err := fil.NewPowergateBackend(path.Join(config.DataDir, "files"), "")
+	fbe, err := fil.NewPowergateBackend(path.Join(config.DataDir, "files"), config.PowergateToken, config.PowergateHost)
 	if err != nil {
 		log.Fatal(err)
 	}

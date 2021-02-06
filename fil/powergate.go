@@ -32,8 +32,8 @@ type PowergateUser struct {
 }
 
 // NewPowergateBackend instantiates a new FilecoinBackend
-func NewPowergateBackend(dataDir string, adminToken string) (*PowergateBackend, error) {
-	client, err := pow.NewClient("127.0.0.1:5002")
+func NewPowergateBackend(dataDir string, adminToken string, hostname string) (*PowergateBackend, error) {
+	client, err := pow.NewClient(hostname)
 	if err != nil {
 		return nil, nil
 	}
@@ -95,9 +95,7 @@ func (f *PowergateBackend) Get(cid string, userToken string) (io.Reader, error) 
 }
 
 func (f *PowergateBackend) CreateUser() (string, string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(60)*time.Second)
-	defer cancel()
-
+	ctx := context.WithValue(context.Background(), pow.AdminKey, f.adminToken)
 	response, err := f.powClient.Admin.Users.Create(ctx)
 	if err != nil {
 		return "", "", err
