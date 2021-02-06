@@ -162,7 +162,7 @@ export default function Wallet() {
                                    onChange={e => setRecipient(e.target.value)}/>
                         </label>
                         <div>
-                            <input type="submit" value="Send" className="orange-button"/>
+                            <input type="submit" value="Send" className="orange-button raise"/>
                         </div>
                         <div className="note">
                             <p className="mini-light-description">*Note that all transactions incur a gas fee.</p>

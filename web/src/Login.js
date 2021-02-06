@@ -89,7 +89,7 @@ function Login() {
           <input type="password" name="password" placeholder="Password"  onChange={e => setPassword(e.target.value )} />
         </label>
         <div>
-          <input type="submit" value="Log in" className="orange-button" />
+          <input type="submit" value="Log in" className="raise orange-button" />
           <Link to='/passwordreset'>Forgot password?</Link>
         </div>
         

@@ -574,6 +574,16 @@ div.datasets-details:first-child {
     background-position: top center;
 }
 
+.header-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-size: cover;
+    object-fit: cover;
+    background-position: top center;
+    margin-right: 10px;
+}
+
 .dataset-publisher {
     display: flex;
     align-items: center;
@@ -769,6 +779,17 @@ div.datasets-details:first-child {
     list-style-type: disc;
     font-size: 16px;
 }
+
+.raise:hover,
+.raise:focus {
+    box-shadow: 0 0.5em 0.5em -0.4em var(--hover);
+    transform: translateY(-0.15em);
+    -moz-box-shadow: 1px 1px 0px 1px #999999;
+    -webkit-box-shadow: 1px 1px 0px 1px #999999;
+
+}
+
+
 
 
 @media only screen and (max-width: 600px) {

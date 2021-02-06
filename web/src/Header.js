@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import './style/Header.css';
 import {Link, useHistory} from 'react-router-dom';
 import {getAxiosInstance} from "./components/Auth";
@@ -9,6 +9,7 @@ function Header() {
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
     const loggedIn = (!(email == null || email === ""));
+    const [avatar, setAvatar] = useState("");
 
     const HandleLogout = () => {
 
@@ -37,6 +38,15 @@ function Header() {
         e.target.submit();
     }
 
+    useEffect(() => {
+        const instance = getAxiosInstance();
+        instance.get("/api/v1/user")
+            .then((data) => {
+
+                setAvatar("/api/v1/image/" + data.data.Avatar);
+            })
+    });
+
   return (
     <div className="Header">
       <div>
@@ -48,10 +58,11 @@ function Header() {
       <div className="Header-Right">
           { !loggedIn ? <Link to='/login'>Log in</Link> : ""}
           { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
+          { loggedIn ? <img src={avatar} className="header-avatar"/> : ""}
           { loggedIn ? <Link to='/dashboard'>{name}</Link> : ""}
           { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
 
-        <Link to='/create'><input type="button" value="Create dataset"/></Link>
+        <Link to='/create'><input type="button" value="Create dataset" className="raise"/></Link>
       </div>
     </div>
   )

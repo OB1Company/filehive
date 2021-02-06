@@ -77,7 +77,8 @@ export default function Settings() {
             localStorage.setItem("email", email);
             localStorage.setItem("name", name);
 
-            history.push("/dashboard/settings");
+            window.location.reload();
+
         }).catch((error) => {
             console.log(error);
             setError(error.response.data.error);
@@ -126,7 +127,7 @@ export default function Settings() {
                     </div>
                 </label>
                 <div>
-                    <input type="submit" value="Save" className="orange-button"/>
+                    <input type="submit" value="Save" className="orange-button raise"/>
                 </div>
 
                 {error &&
