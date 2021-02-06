@@ -67,7 +67,7 @@
           <tr>
             <td class="sm-px-16 sm-py-24" style="padding: 48px 40px; text-align: left" bgcolor="#ffffff">
               <div style="margin-bottom: 24px">
-                <a href="https://%domain_name" style="color: #0047c3; text-decoration: none">
+                <a href="https://%domain_name%" style="color: #0047c3; text-decoration: none">
                   <img src="https://filehive.app/filehive-logo.png" alt="Filehive" width="119" style="border: 0; line-height: 100%; max-width: 100%; vertical-align: middle">
                 </a>
               </div>
