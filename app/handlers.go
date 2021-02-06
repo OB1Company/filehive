@@ -274,7 +274,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	templateString := strings.ReplaceAll(string(template), "%recipient_name%", d.Name)
-	templateString = strings.ReplaceAll(string(template), "%domain_name%", s.domain)
+	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.domain)
 
 	message.SetHtml(templateString)
 
