@@ -75,7 +75,7 @@ function Signup() {
             <Select name="country" options={Countries} placeholder="--" onChange={handleCountry}/>
         </label>
         <div>
-          <input type="submit" value="Sign up" className="orange-button" />
+          <input type="submit" value="Sign up" className="raise orange-button" />
           <Link to='/login'>Already registered?</Link>
         </div>
 

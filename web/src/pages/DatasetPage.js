@@ -248,7 +248,7 @@ export default function DatasetPage() {
                                 <div className="dataset-metadata-price">{dataset.price} FIL <span className="tiny-price">({fiatPrice})</span></div>
                                 <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                 <div className="dataset-metadata-button">
-                                        <button className={"orange-button "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
+                                        <button className={"orange-button raise "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
                                 </div>
                                 <div className="dataset-metadata-warning">The price includes the miner fee.</div>
                             </div>

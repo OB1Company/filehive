@@ -52,7 +52,7 @@ function DataSetsRow(props) {
                 </div>
             </div>
             <div className="datasets-details">
-                <div><button className="normal-button">{buttonText}</button></div>
+                <div><button className="normal-button raise">{buttonText}</button></div>
                 <div className="small-orange-text dataset-row-price">{price} FIL</div>
                 <div className="mini-light-description">{fiatPrice}</div>
             </div>

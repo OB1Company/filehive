@@ -214,7 +214,7 @@ export default function Settings() {
             }
 
           <div>
-            <input type="submit" value="Submit" className="orange-button"/>
+            <input type="submit" value="Submit" className="raise orange-button"/>
           </div>
 
         </form>

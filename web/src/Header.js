@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react'
 import './style/Header.css';
 import {Link, useHistory} from 'react-router-dom';
 import {getAxiosInstance} from "./components/Auth";
+import defaultAvatar from './images/avatar-placeholder.png';
 
 function Header() {
 
@@ -42,9 +43,13 @@ function Header() {
         const instance = getAxiosInstance();
         instance.get("/api/v1/user")
             .then((data) => {
-
-                setAvatar("/api/v1/image/" + data.data.Avatar);
+                if(data.data.Avatar !== "") {
+                    setAvatar("/api/v1/image/" + data.data.Avatar);
+                } else {
+                    setAvatar(defaultAvatar);
+                }
             })
+
     });
 
   return (

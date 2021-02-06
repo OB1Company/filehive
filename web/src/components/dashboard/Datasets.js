@@ -52,7 +52,7 @@ export default function Datasets() {
                 { datasets.length == 0 &&
                     <div className="margins-30">
                         <p className="mini-description dashboard-p">You do not have any datasets uploaded yet.</p>
-                        <Link to='/create'><input type="button" className="orange-button" value="Create new dataset"/></Link>
+                        <Link to='/create'><input type="button" className="orange-button raise" value="Create new dataset"/></Link>
                     </div>
                 }
                 { datasets.length > 0 &&
