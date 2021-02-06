@@ -65,6 +65,7 @@ type Config struct {
 	FilecoinAddress string `long:"filaddress" description:"Filecoin address for payouts"`
 	PowergateHost   string `long:"powergate" description:"Hostname for the Powergate instance"`
 	MailgunKey      string `long:"mailgunkey" description:"API key for Mailgun"`
+	MailDomain      string `long:"maildomain" description:"Domain to send email"`
 }
 
 // LoadConfig initializes and parses the config using a config file and command

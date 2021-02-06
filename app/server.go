@@ -32,6 +32,7 @@ type FileHiveServer struct {
 	jwtKey          []byte
 	domain          string
 	mailgunKey      string
+	mailDomain      string
 	shutdown        chan struct{}
 
 	testMode bool
@@ -88,6 +89,7 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 			jwtKey:          options.JWTKey,
 			domain:          options.Domain,
 			mailgunKey:      options.MailgunKey,
+			mailDomain:      options.MailDomain,
 			shutdown:        make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
@@ -189,6 +191,7 @@ type Options struct {
 	SSLKey     string
 	TestMode   bool
 	MailgunKey string
+	MailDomain string
 }
 
 // Apply sets the provided options in the main options struct.
@@ -230,6 +233,13 @@ func Domain(domain string) Option {
 func MailgunKey(mailgunKey string) Option {
 	return func(o *Options) error {
 		o.MailgunKey = mailgunKey
+		return nil
+	}
+}
+
+func MailDomain(mailDomain string) Option {
+	return func(o *Options) error {
+		o.MailDomain = mailDomain
 		return nil
 	}
 }
