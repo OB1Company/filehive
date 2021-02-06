@@ -7,10 +7,12 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/filecoin-project/go-address v0.0.5-0.20201103152444-f2023ef3f5bb
 	github.com/gcash/bchd v0.17.0
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/mux v1.8.0
 	github.com/ipfs/go-cid v0.0.7
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/mailgun/mailgun-go/v4 v4.3.3
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/natefinch/lumberjack v2.0.0+incompatible

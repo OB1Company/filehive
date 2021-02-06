@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,12 +11,14 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
+	"github.com/mailgun/mailgun-go/v4"
 	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -249,6 +252,43 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
 		return
 	}
+
+	// Send email notification
+	mg := mailgun.NewMailgun(s.domain, s.mailgunKey)
+
+	sender := "administrator@" + s.domain
+	subject := "Welcome to Filehive!"
+	body := ""
+	recipient := d.Email
+
+	// The message object allows you to add attachments and Bcc recipients
+	message := mg.NewMessage(sender, subject, body, recipient)
+
+	// If you want to use a pre-made template in Mailgun set it here
+	//message.SetTemplate("welcome-email")
+
+	pwd, _ := os.Getwd()
+	template, err := ioutil.ReadFile(filepath.Join(pwd, "email_templates/welcome-email.tpl"))
+	if err != nil {
+		log.Debug(err)
+	}
+
+	templateString := strings.ReplaceAll(string(template), "%recipient_name%", d.Name)
+	templateString = strings.ReplaceAll(string(template), "%domain_name%", s.domain)
+
+	message.SetHtml(templateString)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Send the message with a 10 second timeout
+	resp, id, err := mg.Send(ctx, message)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 
 	s.loginUser(w, user.Email)
 }
