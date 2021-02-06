@@ -28,11 +28,11 @@ export default function App() {
         let token = localStorage.getItem("csrf_token");
         await axios.get('/api/v1/user', {withCredentials: true})
             .then((data)=>{
-                console.log(data.headers);
+                console.debug(data.headers);
                 localStorage.setItem("csrf_token", data.headers['x-csrf-token']);
             })
             .catch((err) => {
-                console.log('GET User call failed', err.response);
+                console.debug('GET User call failed', err.response);
 
                 if(err.response.status === 400) {
                     localStorage.removeItem("email");

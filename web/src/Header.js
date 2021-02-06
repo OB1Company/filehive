@@ -40,15 +40,20 @@ function Header() {
     }
 
     useEffect(() => {
-        const instance = getAxiosInstance();
-        instance.get("/api/v1/user")
-            .then((data) => {
-                if(data.data.Avatar !== "") {
-                    setAvatar("/api/v1/image/" + data.data.Avatar);
-                } else {
-                    setAvatar(defaultAvatar);
-                }
-            })
+        if(localStorage.getItem("email")) {
+            const instance = getAxiosInstance();
+            instance.get("/api/v1/user")
+                .then((data) => {
+                    if (data.data.Avatar !== "") {
+                        setAvatar("/api/v1/image/" + data.data.Avatar);
+                    } else {
+                        setAvatar(defaultAvatar);
+                    }
+                })
+                .catch((error) => {
+                    console.log(error.data);
+                })
+        }
 
     });
 
