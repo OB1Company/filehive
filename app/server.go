@@ -31,6 +31,7 @@ type FileHiveServer struct {
 	handler         http.Handler
 	jwtKey          []byte
 	domain          string
+	mailgunKey      string
 	shutdown        chan struct{}
 
 	testMode bool
@@ -86,6 +87,7 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 			sslKey:          options.SSLKey,
 			jwtKey:          options.JWTKey,
 			domain:          options.Domain,
+			mailgunKey:      options.MailgunKey,
 			shutdown:        make(chan struct{}),
 		}
 		topMux = http.NewServeMux()
@@ -180,12 +182,13 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 
 // Options represents the filehive server options.
 type Options struct {
-	JWTKey   []byte
-	Domain   string
-	UseSSL   bool
-	SSLCert  string
-	SSLKey   string
-	TestMode bool
+	JWTKey     []byte
+	Domain     string
+	UseSSL     bool
+	SSLCert    string
+	SSLKey     string
+	TestMode   bool
+	MailgunKey string
 }
 
 // Apply sets the provided options in the main options struct.
@@ -220,6 +223,13 @@ func JWTKey(key []byte) Option {
 func Domain(domain string) Option {
 	return func(o *Options) error {
 		o.Domain = domain
+		return nil
+	}
+}
+
+func MailgunKey(mailgunKey string) Option {
+	return func(o *Options) error {
+		o.MailgunKey = mailgunKey
 		return nil
 	}
 }

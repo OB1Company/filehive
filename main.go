@@ -75,6 +75,12 @@ func main() {
 		}...)
 	}
 
+	if config.MailgunKey != "" {
+		serverOpts = append(serverOpts, []app.Option{
+			app.MailgunKey(config.MailgunKey),
+		}...)
+	}
+
 	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, fbe, serverOpts...)
 	if err != nil {
 		log.Fatal(err)
