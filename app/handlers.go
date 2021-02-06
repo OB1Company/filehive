@@ -254,9 +254,9 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Send email notification
-	mg := mailgun.NewMailgun(s.domain, s.mailgunKey)
+	mg := mailgun.NewMailgun(s.mailDomain, s.mailgunKey)
 
-	sender := "administrator@" + s.domain
+	sender := "administrator@" + s.mailDomain
 	subject := "Welcome to Filehive!"
 	body := ""
 	recipient := d.Email
@@ -274,7 +274,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	templateString := strings.ReplaceAll(string(template), "%recipient_name%", d.Name)
-	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.domain)
+	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.mailDomain)
 
 	message.SetHtml(templateString)
 
