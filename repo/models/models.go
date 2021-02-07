@@ -18,6 +18,10 @@ type User struct {
 	FilecoinAddress string
 	PowergateToken  string
 	PowergateID     string
+	ActivationCode  string
+	Activated       bool `gorm:"default:false;not null"`
+	ResetToken      string
+	ResetValid      time.Time
 }
 
 // Dataset holds metadata about a dataaset.

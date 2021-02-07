@@ -10,6 +10,7 @@ import CreatePage from './pages/CreatePage'
 import DashboardPage from './pages/DashboardPage'
 import DatasetPage from './pages/DatasetPage'
 import SearchPage from './pages/Search'
+import ConfirmPage from './pages/ConfirmPage'
 import axios from "axios";
 
 
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/dataset/:id" component={DatasetPage} />
           <Route path="/user/:id" component={UserPage} />
           <Route path="/search" component={SearchPage} />
+          <Route path="/confirm_email" component={ConfirmPage} />
 
               <PrivateRoute path="/create" component={CreatePage} />
               <PrivateRoute exact path="/dashboard">

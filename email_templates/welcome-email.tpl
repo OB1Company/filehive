@@ -77,12 +77,12 @@
               <table class="sm-w-full" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td align="center" class="hover-bg-brand-600" style="mso-padding-alt: 20px 32px; border-radius: 4px; color: #ffffff; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" bgcolor="#F3A815">
-                    <a href="https://%domain_name%/login" class="sm-text-14 sm-py-16" style="display: inline-block; font-weight: 700; font-size: 16px; line-height: 16px; padding: 20px 32px; color: #ffffff; text-decoration: none">Sign in to your account</a>
+                    <a href="https://%domain_name%/confirm_email?email=%email%&code=%code%" class="sm-text-14 sm-py-16" style="display: inline-block; font-weight: 700; font-size: 16px; line-height: 16px; padding: 20px 32px; color: #ffffff; text-decoration: none">Confirm Your Email Address</a>
                   </td>
                 </tr>
               </table>
               <div class="sm-h-16" style="line-height: 16px">&nbsp;</div>
-              <p style="font-size: 16px; line-height: 22px; margin: 0; color: #8492a6">If you did not sign up for this account you can ignore this email.</p>
+              <p style="font-size: 16px; line-height: 22px; margin: 0; color: #8492a6">In order to create and upload new datasets to Filehive you must confirm your email address.</p>
               <div style="text-align: left">
                 <table style="width: 100%" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>

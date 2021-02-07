@@ -1,17 +1,25 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+import {useHistory, useLocation} from "react-router-dom";
 import {Link} from "react-router-dom";
-import ErrorBox from './components/ErrorBox'
+import ErrorBox, {SuccessBox} from "./components/ErrorBox";
 
 function Login() {
 
   const history = useHistory();
+  const location = new URLSearchParams(useLocation().search)
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+
+  useEffect(()=>{
+    if(location.get("confirmed") === "1") {
+      setConfirmationMessage("Your account has been confirmed.");
+    }
+  })
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +85,15 @@ function Login() {
   }
 
   return (
+
     <div className="Login form-540">
+
+      {confirmationMessage &&
+          <div className="marginbottom-15">
+            <SuccessBox message={confirmationMessage}/>
+          </div>
+      }
+
       <h2>Log in</h2>
       <form onSubmit={HandleFormSubmit}>
         <label>

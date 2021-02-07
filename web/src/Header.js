@@ -44,6 +44,7 @@ function Header() {
             const instance = getAxiosInstance();
             instance.get("/api/v1/user")
                 .then((data) => {
+                    console.log("Got user for header", data.data.Activated)
                     if (data.data.Avatar !== "") {
                         setAvatar("/api/v1/image/" + data.data.Avatar);
                     } else {

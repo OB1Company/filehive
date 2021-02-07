@@ -16,6 +16,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -233,6 +234,12 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Generate activation code for creating datasets
+	otp, err := GenerateOTP(6)
+	if err != nil {
+		log.Errorf("error generating OTP code: %v", err)
+	}
+
 	user := models.User{
 		ID:              id,
 		Email:           d.Email,
@@ -243,6 +250,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		FilecoinAddress: newAddress,
 		PowergateToken:  token,
 		PowergateID:     userId,
+		ActivationCode:  otp,
 	}
 
 	err = s.db.Update(func(db *gorm.DB) error {
@@ -257,7 +265,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	mg := mailgun.NewMailgun(s.mailDomain, s.mailgunKey)
 
 	sender := "administrator@" + s.mailDomain
-	subject := "Welcome to Filehive!"
+	subject := "Welcome to Filehive! 🐝"
 	body := ""
 	recipient := d.Email
 
@@ -275,6 +283,8 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 
 	templateString := strings.ReplaceAll(string(template), "%recipient_name%", d.Name)
 	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.mailDomain)
+	templateString = strings.ReplaceAll(templateString, "%code%", otp)
+	templateString = strings.ReplaceAll(templateString, "%email%", url.QueryEscape(d.Email))
 
 	message.SetHtml(templateString)
 
@@ -314,6 +324,7 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
+
 	err := s.db.View(func(db *gorm.DB) error {
 		if email != "" {
 			return db.Where("email = ?", email).First(&user).Error
@@ -332,15 +343,17 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sanitizedJSONResponse(w, struct {
-		Email   string
-		Name    string
-		Country string
-		Avatar  string
+		Email     string
+		Name      string
+		Country   string
+		Avatar    string
+		Activated bool
 	}{
-		Email:   user.Email,
-		Name:    user.Name,
-		Country: user.Country,
-		Avatar:  user.AvatarFilename,
+		Email:     user.Email,
+		Name:      user.Name,
+		Country:   user.Country,
+		Avatar:    user.AvatarFilename,
+		Activated: user.Activated,
 	})
 }
 
@@ -1283,6 +1296,26 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		Page:     page,
 		Datasets: trending,
 	})
+}
+
+func (s *FileHiveServer) handleGETConfirm(w http.ResponseWriter, r *http.Request) {
+
+	email := r.URL.Query().Get("email")
+	code := r.URL.Query().Get("code")
+
+	// Fix email if has space, it's supposed to be a +
+	email = strings.Replace(email, " ", "+", 1)
+
+	err := s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.User{}).Where("email = ? and activation_code = ?", email, code).Update("activated", true).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		log.Error(err)
+	}
+
 }
 
 func (s *FileHiveServer) handleGETSearch(w http.ResponseWriter, r *http.Request) {

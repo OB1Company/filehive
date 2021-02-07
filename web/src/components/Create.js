@@ -1,10 +1,11 @@
-import React, { useState }  from 'react'
+import React, {useEffect, useState} from 'react'
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
 import spinner from "../images/spinner.gif";
 import useSWR from 'swr'
+import {getAxiosInstance} from "./Auth";
 
 function Create() {
 
@@ -22,8 +23,19 @@ function Create() {
   const [success] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [activated, setActivated] = useState(false);
 
   const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
+
+
+  useEffect(()=>{
+    const instance = getAxiosInstance();
+    instance.get("/api/v1/user")
+        .then((data) => {
+          console.log("Got user for create", data.data.Activated)
+          setActivated(data.data.Activated);
+        })
+  }, []);
 
   const HandleFormSubmit = (e) => {
 
@@ -146,7 +158,7 @@ function Create() {
     }
   }
 
-  return (
+  return (activated &&
       <div className="CreateDataset">
         <h2>Create dataset</h2>
         <div>
