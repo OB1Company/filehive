@@ -13,7 +13,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isError, setIsError] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [confirmationMessage, setConfirmationMessage] = useState("");
 
   useEffect(()=>{
@@ -53,7 +53,12 @@ function Login() {
         }).catch(error => {
           console.log("Login Failure", error.response);
           setIsError(true);
-          setError(error.response.data);
+          if(error.response.status === 403) {
+            window.location.reload(false);
+          } else {
+            const errorMessage = error.response.data.error;
+            setError(errorMessage);
+          }
           localStorage.removeItem('csrf_token');
           history.push('/login');
         });
