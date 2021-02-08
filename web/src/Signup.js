@@ -44,7 +44,7 @@ function Signup() {
       history.push("/dashboard");
     }).catch((error) => {
       console.log(error);
-      setError(error.response.data.error);
+      setError(error.response.data);
       return false;
     });
 
