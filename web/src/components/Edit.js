@@ -4,6 +4,7 @@ import axios from "axios";
 import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
 import {getAxiosInstance} from "./Auth";
+import Helmet from "react-helmet";
 
 export default function Settings() {
 
@@ -143,6 +144,11 @@ export default function Settings() {
 
   return (
       <div className="CreateDataset">
+
+        <Helmet>
+          <title>Filehive | Edit Dataset</title>
+        </Helmet>
+
         <h2>Edit dataset</h2>
         <div>
           <form onSubmit={handleFormSubmit}>

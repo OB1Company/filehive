@@ -12,6 +12,7 @@ import defaultAvatar from '../images/avatar-placeholder.png';
 import { decode } from 'html-entities';
 import ReactMarkdown from 'react-markdown'
 import useSWR from "swr";
+import {Helmet} from "react-helmet";
 
 const instance = getAxiosInstance();
 
@@ -209,6 +210,10 @@ export default function DatasetPage() {
 
     return (
             <div className="container">
+                <Helmet>
+                    <title>Filehive | {decode(dataset.title)}</title>
+                </Helmet>
+
                 <Modal1 onRequestClose={handleCloseModal}/>
                 <Modal2 onRequestClose={handleCloseModal}/>
                 <Header/>

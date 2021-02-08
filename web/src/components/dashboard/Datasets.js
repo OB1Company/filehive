@@ -1,8 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import Header from "../../Header";
-import TabbedLinks from "../TabbedLinks";
 import DataSetsRows from "../DataSetsRows";
-import Footer from "../../Footer";
 import {Link, useLocation} from "react-router-dom";
 import axios from "axios";
 
@@ -45,6 +42,7 @@ export default function Datasets() {
     return (
 
         <div className="maincontent">
+
             <div className="dashboard-header">
                 <h2>My datasets</h2>
             </div>

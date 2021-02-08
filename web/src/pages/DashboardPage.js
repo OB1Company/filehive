@@ -7,6 +7,7 @@ import Datasets from "../components/dashboard/Datasets";
 import Purchases from "../components/dashboard/Purchases";
 import Wallet from "../components/dashboard/Wallet";
 import Settings from "../components/dashboard/Settings";
+import {Helmet} from "react-helmet";
 
 export default function DashboardPage() {
 
@@ -39,6 +40,9 @@ export default function DashboardPage() {
 
     return (
         <div className="container">
+            <Helmet>
+                <title>Filehive | Dashboard</title>
+            </Helmet>
             <Header/>
             <div className="maincontent">
                 <TabbedLinks linkNames={linkNames} activeLink={location.pathname} />

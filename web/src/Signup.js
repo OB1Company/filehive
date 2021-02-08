@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import Select from 'react-select'
 import { Countries } from './constants/Countries'
 import { getAxiosInstance } from "./components/Auth";
+import { Helmet } from 'react-helmet';
 
 function Signup() {
 
@@ -56,6 +57,10 @@ function Signup() {
 
   return (
     <div className="Signup form-540 form-center">
+      <Helmet>
+        <title>Filehive | Signup</title>
+      </Helmet>
+
       <h2>Sign up</h2>
       <form onSubmit={HandleFormSubmit}>
         <label>

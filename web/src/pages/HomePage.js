@@ -5,6 +5,7 @@ import Footer from '../Footer'
 import TabbedLinks from "../components/TabbedLinks";
 import DataSetsRows from "../components/DataSetsRows";
 import axios from "axios";
+import {Helmet} from "react-helmet";
 
 
 const getDatasets = async (tabName) => {
@@ -52,6 +53,10 @@ export default function HomePage() {
 
     return (
     <div className="container">
+        <Helmet>
+            <title>Filehive | {tabName.charAt(0).toUpperCase() + tabName.slice(1)} Datasets</title>
+        </Helmet>
+
       <Header/>
       <TabbedLinks linkNames={linkNames} activeLink={location.pathname}/>
       <div className="maincontent">

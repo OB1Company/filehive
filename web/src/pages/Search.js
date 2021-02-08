@@ -5,6 +5,7 @@ import Footer from '../Footer'
 import DataSetsRows from "../components/DataSetsRows";
 import axios from "axios";
 import Pluralize from 'react-pluralize'
+import Helmet from "react-helmet";
 
 
 const useQuery = () => {
@@ -49,6 +50,9 @@ export default function SearchPage() {
 
   return (
     <div className="container">
+        <Helmet>
+            <title>Filehive | Search results for "{searchQuery}"</title>
+        </Helmet>
       <Header/>
         <div className="search-results-header"><strong>{datasets.length}</strong> <Pluralize singular={'result'} showCount={false} count={datasets.length} /> matching "{searchQuery}"</div>
       <div className="maincontent margins-30">

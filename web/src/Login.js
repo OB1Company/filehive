@@ -3,6 +3,7 @@ import axios from "axios";
 import {useHistory, useLocation} from "react-router-dom";
 import {Link} from "react-router-dom";
 import ErrorBox, {SuccessBox} from "./components/ErrorBox";
+import {Helmet} from "react-helmet";
 
 function Login() {
 
@@ -87,6 +88,10 @@ function Login() {
   return (
 
     <div className="Login form-540">
+
+      <Helmet>
+        <title>Filehive | Login</title>
+      </Helmet>
 
       {confirmationMessage &&
           <div className="marginbottom-15">
