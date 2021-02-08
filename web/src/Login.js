@@ -52,7 +52,7 @@ function Login() {
         }).catch(error => {
           console.log("Login Failure", error.response);
           setIsError(true);
-          setError(error.response.data.error);
+          setError(error.response.data);
           localStorage.removeItem('csrf_token');
           history.push('/login');
         });
