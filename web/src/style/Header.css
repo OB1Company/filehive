@@ -66,6 +66,8 @@ div#root {
     height: 100%;
 }
 
+.noblock { display: inline; }
+
 div.Header {
     height: 60px;
     min-height: 60px;

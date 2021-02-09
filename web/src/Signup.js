@@ -6,6 +6,7 @@ import Select from 'react-select'
 import { Countries } from './constants/Countries'
 import { getAxiosInstance } from "./components/Auth";
 import { Helmet } from 'react-helmet';
+import spinner from "./images/spinner.gif";
 
 function Signup() {
 
@@ -16,9 +17,13 @@ function Signup() {
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [error, setError] = useState("")
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
+    setIsRegistering(true);
 
     const data = { email, password, country, name };
 
@@ -44,6 +49,7 @@ function Signup() {
 
       history.push("/dashboard");
     }).catch((error) => {
+      setIsRegistering(false);
       if(error.response.status === 409) {
         setError("This email address has already been used");
         return false;
@@ -59,6 +65,16 @@ function Signup() {
 
   const handleCountry = (e) => {
     setCountry(e.value);
+  }
+
+  const SignupButton = () => {
+    if (!isRegistering) {
+      return  <input type="submit" value="Sign up" className="raise orange-button" />
+    } else {
+      return <span>
+        <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Creating account...
+        </span>
+    }
   }
 
   return (
@@ -86,7 +102,7 @@ function Signup() {
             <Select name="country" options={Countries} placeholder="--" onChange={handleCountry}/>
         </label>
         <div>
-          <input type="submit" value="Sign up" className="raise orange-button" />
+          <SignupButton/>
           <Link to='/login'>Already registered?</Link>
         </div>
 

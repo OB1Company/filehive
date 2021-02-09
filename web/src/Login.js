@@ -4,6 +4,7 @@ import {useHistory, useLocation} from "react-router-dom";
 import {Link} from "react-router-dom";
 import ErrorBox, {SuccessBox} from "./components/ErrorBox";
 import {Helmet} from "react-helmet";
+import spinner from "./images/spinner.gif";
 
 function Login() {
 
@@ -15,17 +16,31 @@ function Login() {
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState("");
   const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  useEffect(()=>{
-    if(location.get("confirmed") === "1") {
-      setConfirmationMessage("Your account has been confirmed.");
-    }
-  })
+  if(location.get("confirmed") === "1") {
+    setConfirmationMessage("Your account has been confirmed.");
+  }
 
   const HandleFormSubmit = async (e) => {
     e.preventDefault();
 
+    setError("");
+    setIsLoggingIn(true);
+
     const data = { email, password };
+
+    if(data.email === "") {
+      setError("Enter an email address");
+      setIsLoggingIn(false);
+      return false;
+    }
+
+    if(data.password === "") {
+      setError("Enter a password");
+      setIsLoggingIn(false);
+      return false;
+    }
 
     const login = async () => {
 
@@ -49,18 +64,17 @@ function Login() {
                 history.push("/dashboard");
               })
 
-
         }).catch(error => {
           console.log("Login Failure", error.response);
           setIsError(true);
           if(error.response.status === 403) {
-            window.location.reload(false);
+            localStorage.removeItem('csrf_token');
+            window.location.reload();
           } else {
             const errorMessage = error.response.data.error;
             setError(errorMessage);
           }
-          localStorage.removeItem('csrf_token');
-          history.push('/login');
+          setIsLoggingIn(false);
         });
 
         return false;
@@ -76,18 +90,19 @@ function Login() {
     try {
       await login();
     } catch (error) {
-      // Check for csrf issue
       console.log(error);
-      // if(error.response.data === "Forbidden - CSRF token invalid\n") {
-      //   console.log("NO CSRF");
-      //
-      // }
-      //
-      // setIsError(true);
-      // setError(error.response.data.message);
-      // console.log(error.response);
     }
     return false;
+  }
+
+  const LoginButton = () => {
+    if (!isLoggingIn) {
+      return  <input type="submit" value="Login" className="raise orange-button" />
+    } else {
+      return <span>
+        <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Logging in...
+        </span>
+    }
   }
 
   return (
@@ -115,7 +130,7 @@ function Login() {
           <input type="password" name="password" placeholder="Password"  onChange={e => setPassword(e.target.value )} />
         </label>
         <div>
-          <input type="submit" value="Log in" className="raise orange-button" />
+          <LoginButton/>
           <Link to='/password_reset'>Forgot password?</Link>
         </div>
         
