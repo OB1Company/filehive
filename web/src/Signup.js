@@ -44,8 +44,14 @@ function Signup() {
 
       history.push("/dashboard");
     }).catch((error) => {
-      console.log(error);
-      setError(error.response.data);
+      if(error.response.status === 409) {
+        setError("This email address has already been used");
+        return false;
+      }
+      if(error.response.status === 400) {
+        setError("There was an error with your registration: "+error.response.data.error);
+        return false;
+      }
       return false;
     });
 
