@@ -126,8 +126,8 @@ type PowergateWalletBackend struct {
 }
 
 // NewMockWalletBackend instantiates a new WalletBackend.
-func NewPowergateWalletBackend() (*PowergateWalletBackend, error) {
-	client, err := pow.NewClient("127.0.0.1:5002")
+func NewPowergateWalletBackend(hostname string) (*PowergateWalletBackend, error) {
+	client, err := pow.NewClient(hostname)
 	if err != nil {
 		return nil, err
 	}

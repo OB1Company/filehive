@@ -44,8 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: this will need to be set by a config option when powergate gets wired up.
-	wbe, err := fil.NewPowergateWalletBackend()
+	wbe, err := fil.NewPowergateWalletBackend(config.PowergateHost)
 	if err != nil {
 		log.Fatalf("Powergate server is not available: %v", err)
 	}
