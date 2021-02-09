@@ -95,6 +95,13 @@ export default function Sales() {
             {/*    <div>Data sold: 0MB</div>*/}
             {/*</div>*/}
 
+            { sales.length === 0 &&
+            <div className="margins-30">
+                <p className="mini-description dashboard-p">You have not made any sales yet. Good luck! 🤞 </p>
+            </div>
+            }
+
+            { sales.length > 0 &&
             <div className="sales-table-container">
             <Table className="sales-table">
                 <Thead>
@@ -106,17 +113,11 @@ export default function Sales() {
                     </Tr>
                 </Thead>
                 <Tbody>
-                { sales.length === 0 &&
-                <div className="margins-30">
-                    <p className="mini-description dashboard-p">You have not made any sales yet. Good luck! 🤞 </p>
-                </div>
-                }
-                { sales.length > 0 &&
                 <SalesRows purchases={sales}/>
-                }
                 </Tbody>
             </Table>
             </div>
+            }
 
         </div>
 
