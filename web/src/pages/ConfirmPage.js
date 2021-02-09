@@ -1,14 +1,11 @@
 import React from 'react'
 import { Redirect, useLocation } from 'react-router-dom'
 import {getAxiosInstance} from "../components/Auth";
-
-function useQuery() {
-    return new URLSearchParams(useLocation().search);
-}
+import { UseQuery } from "../components/utilities/images";
 
 export default function ConfirmPage() {
 
-    let query = useQuery();
+    let query = UseQuery();
 
     // Update database to confirm email
     const code = query.get("code");

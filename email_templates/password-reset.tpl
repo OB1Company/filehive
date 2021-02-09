@@ -59,7 +59,7 @@
 <div style="display: none">Nice to have you on board, %recipient_name%!&#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &zwnj;
   &#160;&#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &zwnj;
   &#160;&#847; &#847; &#847; &#847; &#847; </div>
-<div role="article" aria-roledescription="email" aria-label="Nice to have you on board, %recipient_name%!" lang="en">
+<div role="article" aria-roledescription="email" aria-label="Password Reset Instructions for Filehive" lang="en">
   <table style="font-family: -apple-system, 'Segoe UI', sans-serif; width: 100%" cellpadding="0" cellspacing="0" role="presentation">
     <tr>
       <td align="center" bgcolor="#ffffff">
@@ -71,18 +71,19 @@
                   <img src="https://filehive.app/filehive-logo.png" alt="Filehive" width="119" style="border: 0; line-height: 100%; max-width: 100%; vertical-align: middle">
                 </a>
               </div>
-              <p style="font-size: 21px; line-height: 28px; margin: 0; color: #4a5566">Hi %recipient_name% 👋</p>
-              <p style="font-size: 21px; line-height: 28px; margin: 0; color: #4a5566">Thanks for signing up. Welcome to Filehive, a great place for data lovers like you!</p>
+              <p style="font-size: 21px; line-height: 28px; margin-bottom:10px; color: #4a5566">Hello %recipient_name%,</p>
+              <p style="font-size: 21px; line-height: 28px; margin: 0; color: #4a5566">Click the button below to reset your password for your Filehive account.</p>
               <div class="sm-h-16" style="line-height: 16px">&nbsp;</div>
               <table class="sm-w-full" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td align="center" class="hover-bg-brand-600" style="mso-padding-alt: 20px 32px; border-radius: 4px; color: #ffffff; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" bgcolor="#F3A815">
-                    <a href="https://%domain_name%/confirm_email?email=%email%&code=%code%" class="sm-text-14 sm-py-16" style="display: inline-block; font-weight: 700; font-size: 16px; line-height: 16px; padding: 20px 32px; color: #ffffff; text-decoration: none">Confirm Your Email Address</a>
+                    <a href="https://%domain_name%/change_password?email=%email%&code=%code%" class="sm-text-14 sm-py-16" style="display: inline-block; font-weight: 700; font-size: 16px; line-height: 16px; padding: 20px 32px; color: #ffffff; text-decoration: none">Reset Password</a>
                   </td>
                 </tr>
               </table>
               <div class="sm-h-16" style="line-height: 16px">&nbsp;</div>
-              <p style="font-size: 16px; line-height: 22px; margin: 0; color: #8492a6">In order to create and upload new datasets to Filehive you must confirm your email address.</p>
+              <p style="font-size: 16px; line-height: 22px; margin-bottom: 10px; color: #8492a6">Is the button not working for you? Copy the url below into your browser.<br/><br/><a href="https://%domain_name%/change_password?email=%email%&code=%code%">https://%domain_name%/change_password?email=%email%&code=%code%</a></p>
+              <p style="font-size: 16px; line-height: 22px; margin: 0; color: #8492a6">Thank you,<br/>The Filehive Team</p>
               <div style="text-align: left">
                 <table style="width: 100%" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>

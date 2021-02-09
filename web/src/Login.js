@@ -116,7 +116,7 @@ function Login() {
         </label>
         <div>
           <input type="submit" value="Log in" className="raise orange-button" />
-          <Link to='/passwordreset'>Forgot password?</Link>
+          <Link to='/password_reset'>Forgot password?</Link>
         </div>
         
         {error &&

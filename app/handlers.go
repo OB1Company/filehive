@@ -36,6 +36,7 @@ var (
 	ErrInvalidEmail       = errors.New("email address is invalid")
 	ErrInvalidJSON        = errors.New("invalid JSON input")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrUserNotResetting   = errors.New("password token and email combo not valid")
 	ErrDatasetNotFound    = errors.New("dataset not found")
 	ErrNotLoggedIn        = errors.New("not logged in")
 	ErrInvalidImage       = errors.New("invalid base64 image")
@@ -1298,6 +1299,158 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+func (s *FileHiveServer) handleGETCheckResetCode(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+	code := r.URL.Query().Get("code")
+
+	var user models.User
+	success := true
+
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ? and reset_token = ? and reset_valid > ?", email, code, time.Now().Format(time.RFC3339)).First(&user).Error
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			success = false
+		}
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Success bool `json:"success"`
+	}{
+		Success: success,
+	})
+
+}
+
+func (s *FileHiveServer) handlePOSTPasswordReset(w http.ResponseWriter, r *http.Request) {
+	type passwordReset struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		Code     string `json:"code"`
+	}
+	var newPasswordReset passwordReset
+	if err := json.NewDecoder(r.Body).Decode(&newPasswordReset); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	// Get user for the salt
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", newPasswordReset.Email).First(&user).Error
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	// Hash the password
+	var newPW []byte
+	if newPasswordReset.Password != "" {
+		newPW = hashPassword([]byte(newPasswordReset.Password), user.Salt)
+	}
+
+	// Update the user password, clear code where email and code match
+	err = s.db.Update(func(db *gorm.DB) error {
+		if err := db.Model(&models.User{}).Where("email = ? and reset_token = ?", newPasswordReset.Email, newPasswordReset.Code).Update("hashed_password", newPW).Update("reset_token", "").Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	success := true
+	if err != nil {
+		success = false
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Success bool `json:"success"`
+	}{
+		Success: success,
+	})
+}
+
+func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+
+	// Fix email if has space, it's supposed to be a +
+	email = strings.Replace(email, " ", "+", 1)
+
+	otp, err := GenerateOTP(12)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Update user record with reset token and time limit
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.User{}).Where("email = ?", email).Update("reset_token", otp).Update("reset_valid", time.Now().Add(time.Hour*24).Format(time.RFC3339)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("email = ?", email).First(&user).Error
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		return
+	}
+
+	// Send email notification
+	mg := mailgun.NewMailgun(s.mailDomain, s.mailgunKey)
+
+	sender := "administrator@" + s.mailDomain
+	subject := "Password Reset Instructions for Filehive Account"
+	body := ""
+	recipient := user.Email
+
+	message := mg.NewMessage(sender, subject, body, recipient)
+
+	pwd, _ := os.Getwd()
+	template, err := ioutil.ReadFile(filepath.Join(pwd, "email_templates/password-reset.tpl"))
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	templateString := strings.ReplaceAll(string(template), "%recipient_name%", user.Name)
+	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.mailDomain)
+	templateString = strings.ReplaceAll(templateString, "%code%", otp)
+	templateString = strings.ReplaceAll(templateString, "%email%", url.QueryEscape(user.Email))
+
+	message.SetHtml(templateString)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Send the message with a 10 second timeout
+	resp, id, err := mg.Send(ctx, message)
+
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+
+}
+
 func (s *FileHiveServer) handleGETConfirm(w http.ResponseWriter, r *http.Request) {
 
 	email := r.URL.Query().Get("email")
@@ -1313,7 +1466,8 @@ func (s *FileHiveServer) handleGETConfirm(w http.ResponseWriter, r *http.Request
 		return nil
 	})
 	if err != nil {
-		log.Error(err)
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
 	}
 
 }

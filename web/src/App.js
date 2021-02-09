@@ -11,6 +11,8 @@ import DashboardPage from './pages/DashboardPage'
 import DatasetPage from './pages/DatasetPage'
 import SearchPage from './pages/Search'
 import ConfirmPage from './pages/ConfirmPage'
+import PasswordResetPage from './pages/PasswordResetPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 import axios from "axios";
 
 
@@ -62,18 +64,20 @@ export default function App() {
           <Route path="/user/:id" component={UserPage} />
           <Route path="/search" component={SearchPage} />
           <Route path="/confirm_email" component={ConfirmPage} />
+          <Route path="/password_reset" component={PasswordResetPage} />
+          <Route path="/change_password" component={ChangePasswordPage} />
 
-              <PrivateRoute path="/create" component={CreatePage} />
-              <PrivateRoute exact path="/dashboard">
-                  <Redirect to="/dashboard/datasets"/>
-              </PrivateRoute>
-              <PrivateRoute exact path="/dashboard/datasets" component={DashboardPage} />
-              <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
-              <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
-              <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
-              <PrivateRoute exact path="/dashboard/datasets/:id">
-                  <CreatePage/>
-              </PrivateRoute>
+          <PrivateRoute path="/create" component={CreatePage} />
+          <PrivateRoute exact path="/dashboard">
+              <Redirect to="/dashboard/datasets"/>
+          </PrivateRoute>
+          <PrivateRoute exact path="/dashboard/datasets" component={DashboardPage} />
+          <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
+          <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
+          <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
+          <PrivateRoute exact path="/dashboard/datasets/:id">
+              <CreatePage/>
+          </PrivateRoute>
 
           <Route component={HomePage} />
       </Switch>

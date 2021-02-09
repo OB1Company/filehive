@@ -1,4 +1,5 @@
 import {getAxiosInstance} from "../Auth";
+import {useLocation} from "react-router-dom";
 
 export const ConvertBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -60,4 +61,8 @@ export function FiatPrice(amount, filecoinPrice) {
     });
 
     return formatter.format(filecoinPrice*amount);
+}
+
+export function UseQuery() {
+    return new URLSearchParams(useLocation().search);
 }
