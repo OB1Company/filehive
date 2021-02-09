@@ -121,7 +121,7 @@ func (s *FileHiveServer) handlePOSTLogin(w http.ResponseWriter, r *http.Request)
 	}
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", creds.Email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(creds.Email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -202,7 +202,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 
 	err := s.db.View(func(db *gorm.DB) error {
 		var user models.User
-		return db.Where("email = ?", d.Email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(d.Email)).First(&user).Error
 
 	})
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -328,7 +328,7 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 
 	err := s.db.View(func(db *gorm.DB) error {
 		if email != "" {
-			return db.Where("email = ?", email).First(&user).Error
+			return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 		} else {
 			return db.Where("id = ?", userID).First(&user).Error
 		}
@@ -369,7 +369,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", currentEmail).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(currentEmail)).First(&user).Error
 
 	})
 	if err != nil {
@@ -406,7 +406,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 			}
 
 			var checkUser models.User
-			if err := db.Where("email = ?", d.Email).First(&checkUser).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := db.Where("LOWER(email) = ?", strings.ToLower(d.Email)).First(&checkUser).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
 				return ErrUserExists
 			}
 
@@ -480,7 +480,7 @@ func (s *FileHiveServer) handleGETWalletAddress(w http.ResponseWriter, r *http.R
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -506,7 +506,7 @@ func (s *FileHiveServer) handleGETWalletBalance(w http.ResponseWriter, r *http.R
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -538,7 +538,7 @@ func (s *FileHiveServer) handlePOSTWalletSend(w http.ResponseWriter, r *http.Req
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -584,7 +584,7 @@ func (s *FileHiveServer) handleGETWalletTransactions(w http.ResponseWriter, r *h
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -647,7 +647,7 @@ func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Reques
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -778,7 +778,7 @@ func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Reque
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -864,7 +864,7 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -953,7 +953,7 @@ func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Reques
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -1015,7 +1015,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -1111,7 +1111,7 @@ func (s *FileHiveServer) handleGETPurchases(w http.ResponseWriter, r *http.Reque
 
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 
 	})
 	if err != nil {
@@ -1307,7 +1307,7 @@ func (s *FileHiveServer) handleGETCheckResetCode(w http.ResponseWriter, r *http.
 	success := true
 
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ? and reset_token = ? and reset_valid > ?", email, code, time.Now().Format(time.RFC3339)).First(&user).Error
+		return db.Where("LOWER(email) = ? and reset_token = ? and reset_valid > ?", strings.ToLower(email), code, time.Now().Format(time.RFC3339)).First(&user).Error
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1338,7 +1338,7 @@ func (s *FileHiveServer) handlePOSTPasswordReset(w http.ResponseWriter, r *http.
 	// Get user for the salt
 	var user models.User
 	err := s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", newPasswordReset.Email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(newPasswordReset.Email)).First(&user).Error
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1357,7 +1357,7 @@ func (s *FileHiveServer) handlePOSTPasswordReset(w http.ResponseWriter, r *http.
 
 	// Update the user password, clear code where email and code match
 	err = s.db.Update(func(db *gorm.DB) error {
-		if err := db.Model(&models.User{}).Where("email = ? and reset_token = ?", newPasswordReset.Email, newPasswordReset.Code).Update("hashed_password", newPW).Update("reset_token", "").Error; err != nil {
+		if err := db.Model(&models.User{}).Where("LOWER(email) = ? and reset_token = ?", strings.ToLower(newPasswordReset.Email), newPasswordReset.Code).Update("hashed_password", newPW).Update("reset_token", "").Error; err != nil {
 			return err
 		}
 		return nil
@@ -1388,7 +1388,7 @@ func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.R
 
 	// Update user record with reset token and time limit
 	err = s.db.View(func(db *gorm.DB) error {
-		if err := db.Model(&models.User{}).Where("email = ?", email).Update("reset_token", otp).Update("reset_valid", time.Now().Add(time.Hour*24).Format(time.RFC3339)).Error; err != nil {
+		if err := db.Model(&models.User{}).Where("LOWER(email) = ?", strings.ToLower(email)).Update("reset_token", otp).Update("reset_valid", time.Now().Add(time.Hour*24).Format(time.RFC3339)).Error; err != nil {
 			return err
 		}
 		return nil
@@ -1401,7 +1401,7 @@ func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.R
 	var user models.User
 
 	err = s.db.View(func(db *gorm.DB) error {
-		return db.Where("email = ?", email).First(&user).Error
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1460,7 +1460,7 @@ func (s *FileHiveServer) handleGETConfirm(w http.ResponseWriter, r *http.Request
 	email = strings.Replace(email, " ", "+", 1)
 
 	err := s.db.View(func(db *gorm.DB) error {
-		if err := db.Model(&models.User{}).Where("email = ? and activation_code = ?", email, code).Update("activated", true).Error; err != nil {
+		if err := db.Model(&models.User{}).Where("LOWER(email) = ? and activation_code = ?", strings.ToLower(email), code).Update("activated", true).Error; err != nil {
 			return err
 		}
 		return nil
