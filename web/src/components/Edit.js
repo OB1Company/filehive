@@ -23,6 +23,9 @@ export default function Settings() {
   const [cid, setCid] = useState("");
   const [success, setSuccess] = useState("");
   const [datasetPrice, setDatasetPrice] = useState("");
+  const [dealStatus, setDealStatus] = useState("");
+  const [dealPieceCid, setDealPieceCid] = useState("");
+  const [dealProposalCid, setDealProposalCid] = useState("");
 
   useEffect(() => {
     const GetDataset = async (datasetId) => {
@@ -40,6 +43,13 @@ export default function Settings() {
       setPrice(dr.price);
       setFileType(dr.fileType);
       setCid(dr.contentID);
+
+      const deal = await instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
+      console.log(deal);
+      setDealStatus(deal.data.deal_info[0].state_name);
+      setDealPieceCid(deal.data.deal_info[0].piece_cid);
+      setDealProposalCid(deal.data.deal_info[0].proposal_cid);
+
     }
 
     const fetchData = async() => {
@@ -188,7 +198,7 @@ export default function Settings() {
 
           <div className="form-divider"></div>
 
-          <h3>Files</h3>
+          <h3>File</h3>
 
           <label>
             File Type: {fileType}
@@ -200,6 +210,12 @@ export default function Settings() {
               <li><a href={"ipfs://"+cid} target="_blank" className="orange-link">ipfs://{cid}</a></li>
               <li><a href={"https://gateway.ipfs.io/ipfs/"+cid} target="_blank" className="orange-link">https://gateway.ipfs.io/ipfs/{cid}</a></li>
             </ul>
+          </label>
+
+          <label>
+            Status: <strong>{dealStatus}</strong><br/>
+            Piece CID: {dealPieceCid}<br/>
+            Proposal CID: {dealProposalCid}
           </label>
 
           <label>

@@ -7,6 +7,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
 	pow "github.com/textileio/powergate/api/client"
+	userPb "github.com/textileio/powergate/api/gen/powergate/user/v1"
 	"io"
 	"math/big"
 	"os"
@@ -65,12 +66,10 @@ func (f *MockFilecoinBackend) Store(data io.Reader, addr addr.Address, userToken
 	return contentID, jobID, size, nil
 }
 
-// TODO
-func (f *MockFilecoinBackend) JobStatus(jobID cid.Cid) (string, error) {
-	return "", nil
+func (f *MockFilecoinBackend) JobStatus(cid string, userToken string) (*userPb.StorageJob, error) {
+	return nil, nil
 }
 
-// TODO
 func (f *MockFilecoinBackend) Get(cid string, userToken string) (io.Reader, error) {
 	return nil, nil
 }

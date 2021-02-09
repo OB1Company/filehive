@@ -913,6 +913,47 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 
 }
 
+func (s *FileHiveServer) handleGETDatasetDeal(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	var dataset models.Dataset
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("content_id = ?", id).First(&dataset).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	jobStatus, err := s.filecoinBackend.JobStatus(dataset.JobID, user.PowergateToken)
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	sanitizedJSONResponse(w, jobStatus)
+}
+
 func (s *FileHiveServer) handleGETDataset(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 

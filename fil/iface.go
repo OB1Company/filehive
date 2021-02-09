@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	addr "github.com/filecoin-project/go-address"
-	"github.com/ipfs/go-cid"
+	userPb "github.com/textileio/powergate/api/gen/powergate/user/v1"
 	"io"
 	"math/big"
 	"time"
@@ -27,8 +27,7 @@ type FilecoinBackend interface {
 	// address. A jobID is return or an error.
 	Store(data io.Reader, addr addr.Address, userToken string) (jobID, contentID string, size int64, err error)
 
-	// TODO
-	JobStatus(jobID cid.Cid) (string, error)
+	JobStatus(cid string, userToken string) (*userPb.StorageJob, error)
 
 	Get(cid string, userToken string) (io.Reader, error)
 

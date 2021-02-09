@@ -9,6 +9,7 @@ import (
 	"github.com/multiformats/go-multihash"
 	"github.com/prometheus/common/log"
 	pow "github.com/textileio/powergate/api/client"
+	userPb "github.com/textileio/powergate/api/gen/powergate/user/v1"
 	"io"
 	"math/big"
 	"os"
@@ -79,9 +80,15 @@ func (f *PowergateBackend) Store(data io.Reader, addr addr.Address, userToken st
 	return jobId, fileCid, size, nil
 }
 
-// TODO
-func (f *PowergateBackend) JobStatus(jobID cid.Cid) (string, error) {
-	return "", nil
+func (f *PowergateBackend) JobStatus(cid string, userToken string) (*userPb.StorageJob, error) {
+	ctx := context.WithValue(context.Background(), pow.AuthKey, userToken)
+
+	summary, err := f.powClient.StorageJobs.StorageJob(ctx, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	return summary.StorageJob, nil
 }
 
 func (f *PowergateBackend) Get(cid string, userToken string) (io.Reader, error) {
