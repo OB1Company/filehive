@@ -101,6 +101,16 @@ func (f *PowergateBackend) CreateUser() (string, string, error) {
 		return "", "", err
 	}
 
+	uctx := context.WithValue(context.Background(), pow.AuthKey, response.User.Token)
+
+	// Update storageconfig to allow Hot storage (not default in mainnet)
+	sc, err := f.powClient.StorageConfig.Default(uctx)
+	if err != nil {
+		return "", "", err
+	}
+	sc.DefaultStorageConfig.Hot.Enabled = true
+	f.powClient.StorageConfig.SetDefault(uctx, sc.DefaultStorageConfig)
+
 	return response.User.Id, response.User.Token, nil
 }
 
