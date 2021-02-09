@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react'
 import {getAxiosInstance} from "../Auth";
 import {useHistory} from "react-router-dom";
 import TimeAgo from "javascript-time-ago";
-import {FiatPrice, HumanFileSize} from "../utilities/images";
+import {FiatPrice, FilecoinPrice, HumanFileSize} from "../utilities/images";
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table';
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css';
+import useSWR from "swr";
 
 
 function SalesRows(props) {
@@ -24,42 +25,24 @@ function SalesRow(props) {
     const [fiatPrice, setFiatPrice] = useState("");
 
     const timeAgo = new TimeAgo('en-US');
-
     const sale = props.metadata;
-
-    const imageFilename = props.metadata.imageFilename;
-    const title = props.metadata.title;
-    const shortDescription = props.metadata.shortDescription;
-    const price = "1.00"; //Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
-
-    const getFiatPrice = async ()=>{
-        setFiatPrice(await FiatPrice("1"));
-    }
-    getFiatPrice();
-
-    const fileType = props.metadata.fileType;
-    const fileSize = HumanFileSize(props.metadata.fileSize, true);
-    const username = props.metadata.username;
     const timestamp = timeAgo.format(Date.parse(props.metadata.Timestamp));
-
-    const buttonText = "Download";
     const gotoPage = '/dataset/'+props.metadata.datasetID;
 
-    const datasetImage = "/api/v1/image/" + imageFilename;
+    const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
 
-    const handleClickDatasetRow = (e) => {
-        history.push(gotoPage);
-    }
+    useEffect(()=> {
+        setFiatPrice(FiatPrice(sale.price, filecoinPrice.data));
+    }, []);
 
-    const datasetUrl = "/api/v1/download/"+props.metadata.datasetID;
 
     return (
 
         <Tr>
             <Td>{sale.id}</Td>
             <Td>{sale.username}</Td>
-            <Td>{sale.price} FIL</Td>
-            <Td>{sale.Timestamp}</Td>
+            <Td>{sale.price} FIL ({fiatPrice})</Td>
+            <Td>{timestamp}</Td>
         </Tr>
 
     )
