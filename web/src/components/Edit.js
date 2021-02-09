@@ -46,9 +46,15 @@ export default function Settings() {
 
       const deal = await instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
       console.log(deal);
-      setDealStatus(deal.data.deal_info[0].state_name);
-      setDealPieceCid(deal.data.deal_info[0].piece_cid);
-      setDealProposalCid(deal.data.deal_info[0].proposal_cid);
+
+      if(deal.data.hasOwnProperty("error_cause")) {
+        console.log(deal.data.error_cause);
+      } else {
+        setDealStatus(deal.data.deal_info[0].state_name);
+        setDealPieceCid(deal.data.deal_info[0].piece_cid);
+        setDealProposalCid(deal.data.deal_info[0].proposal_cid);
+      }
+
 
     }
 
