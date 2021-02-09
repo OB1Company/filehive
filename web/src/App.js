@@ -73,6 +73,7 @@ export default function App() {
           </PrivateRoute>
           <PrivateRoute exact path="/dashboard/datasets" component={DashboardPage} />
           <PrivateRoute path="/dashboard/purchases" component={DashboardPage} />
+          <PrivateRoute path="/dashboard/sales" component={DashboardPage} />
           <PrivateRoute path="/dashboard/wallet" component={DashboardPage} />
           <PrivateRoute path="/dashboard/settings" component={DashboardPage} />
           <PrivateRoute exact path="/dashboard/datasets/:id">

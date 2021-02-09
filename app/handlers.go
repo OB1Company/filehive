@@ -1071,8 +1071,10 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 
 	purchase := models.Purchase{
 		UserID:           user.ID,
+		SellerID:         datasetUser.ID,
 		Username:         datasetUser.Name,
 		ImageFilename:    dataset.ImageFilename,
+		Price:            dataset.Price,
 		ShortDescription: dataset.ShortDescription,
 		FileType:         dataset.FileType,
 		DatasetID:        dataset.ID,
@@ -1097,6 +1099,64 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		Txid string `json:"txid"`
 	}{
 		Txid: txid,
+	})
+}
+
+func (s *FileHiveServer) handleGETSales(w http.ResponseWriter, r *http.Request) {
+	pagesize := 1000
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var seller models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&seller).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var page int
+	pageStr := mux.Vars(r)["page"]
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidOption), http.StatusBadRequest)
+			return
+		}
+	}
+
+	var (
+		sales []models.Purchase
+		count int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Purchase{}).Where("seller_id = ?", seller.ID).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Where("seller_id = ?", seller.ID).Offset(page * pagesize).Limit(pagesize).Find(&sales).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Pages int               `json:"pages"`
+		Page  int               `json:"page"`
+		Sales []models.Purchase `json:"sales"`
+	}{
+		Pages: (int(count) / pagesize) + 1,
+		Page:  page,
+		Sales: sales,
 	})
 }
 

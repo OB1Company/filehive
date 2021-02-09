@@ -66,6 +66,7 @@ div#root {
     height: 100%;
 }
 
+
 .noblock { display: inline; }
 
 div.Header {
@@ -794,7 +795,31 @@ div.datasets-details:first-child {
 
 }
 
+.sales-table-container {
+    padding: 0 30px;
+    margin-top: 30px;
+}
+.sales-table {
+    width:100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    border-style: hidden; /* hide standard table (collapsed) border */
+    box-shadow: 0 0 0 1px #ddd; /* this draws the table border  */
 
+
+}
+
+.sales-table th, .sales-table td {
+    text-align: left;
+    padding: 10px 20px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.sales-table th {
+
+    font-weight: bold;
+}
 
 
 @media only screen and (max-width: 600px) {

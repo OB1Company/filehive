@@ -181,6 +181,7 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/datasets", s.handleGETDatasets).Methods("GET")
 	subRouter.HandleFunc("/purchase/{id}", s.handlePOSTPurchase).Methods("POST")
 	subRouter.HandleFunc("/purchases", s.handleGETPurchases).Methods("GET")
+	subRouter.HandleFunc("/sales", s.handleGETSales).Methods("GET")
 	subRouter.HandleFunc("/download/{cid}", s.handleGETDatasetFile).Methods("GET")
 
 	return r

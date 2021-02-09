@@ -64,6 +64,8 @@ export default function Settings() {
 
         if(avatar !== null) {
             data.avatar = await ConvertImageToString(avatar);
+        } else {
+            delete data.avatar;
         }
 
         const instance = getAxiosInstance();

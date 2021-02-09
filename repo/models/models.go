@@ -44,6 +44,7 @@ type Dataset struct {
 	Price            float64   `json:"price"`
 	Views            int64     `json:"totalViews"`
 	Purchases        int64     `json:"totalPurchases"`
+	Delisted         bool      `gorm:"default:false;non null"`
 }
 
 // Purchase holds information about a user purchase.
@@ -51,13 +52,15 @@ type Purchase struct {
 	gorm.Model       `json:"-"`
 	ID               string `json:"id" gorm:"primary_key"`
 	UserID           string `json:"userID"`
+	SellerID         string `json:"sellerID"`
 	DatasetID        string `json:"datasetID"`
 	Timestamp        time.Time
-	Title            string `json:"title"`
-	ShortDescription string `json:"shortDescription"`
-	ImageFilename    string `json:"imageFilename"`
-	FileType         string `json:"fileType"`
-	Username         string `json:"username"`
+	Title            string  `json:"title"`
+	ShortDescription string  `json:"shortDescription"`
+	ImageFilename    string  `json:"imageFilename"`
+	FileType         string  `json:"fileType"`
+	Username         string  `json:"username"`
+	Price            float64 `json:"price"`
 }
 
 // Click represents a view on a dataset.

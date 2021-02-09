@@ -5,6 +5,7 @@ import Footer from '../Footer'
 import TabbedLinks from "../components/TabbedLinks";
 import Datasets from "../components/dashboard/Datasets";
 import Purchases from "../components/dashboard/Purchases";
+import Sales from "../components/dashboard/Sales";
 import Wallet from "../components/dashboard/Wallet";
 import Settings from "../components/dashboard/Settings";
 import {Helmet} from "react-helmet";
@@ -14,6 +15,7 @@ export default function DashboardPage() {
     const linkNames = [
         { name: 'Datasets', link: '/dashboard/datasets' },
         { name: 'Purchases', link: '/dashboard/purchases' },
+        { name: 'Sales', link: '/dashboard/sales' },
         { name: 'Wallet', link: '/dashboard/wallet' },
         { name: 'Settings', link: '/dashboard/settings' }
     ];
@@ -28,6 +30,8 @@ export default function DashboardPage() {
                 return <Datasets/>;
             case "purchases":
                 return <Purchases/>;
+            case "sales":
+                return <Sales/>;
             case "wallet":
                 return <Wallet/>;
             case "settings":
