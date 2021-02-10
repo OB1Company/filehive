@@ -158,10 +158,11 @@ function Create() {
     }
   }
 
-  return (activated &&
+  return (
       <div className="CreateDataset">
         <h2>Create dataset</h2>
         <div>
+          {activated &&
           <form onSubmit={HandleFormSubmit}>
           <label>
             Title*
@@ -235,6 +236,10 @@ function Create() {
           </div>
 
         </form>
+          }
+          {!activated &&
+            <p className="mini-description dashboard-p">Check your email 📪 to confirm your account and start creating datasets.</p>
+          }
         </div>
 
       </div>
