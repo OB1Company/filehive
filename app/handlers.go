@@ -18,6 +18,7 @@ import (
 	"image/jpeg"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 	"net/url"
 	"os"
@@ -1147,6 +1148,20 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	if balance.Cmp(amt) < 0 {
 		http.Error(w, wrapError(ErrInsuffientFunds), http.StatusBadRequest)
 		return
+	}
+
+	feeAmount := new(big.Int).Set(amt)
+
+	if s.filecoinAddress != "" {
+		// Send fee amount to Filehive if address is specified
+		feeAmount.Div(amt, new(big.Int).SetInt64(20))
+		_, err := s.walletBackend.Send(user.FilecoinAddress, s.filecoinAddress, feeAmount, user.PowergateToken)
+		if err != nil {
+			http.Error(w, wrapError(err), http.StatusInternalServerError)
+			return
+		}
+
+		amt.Sub(amt, feeAmount)
 	}
 
 	txid, err := s.walletBackend.Send(user.FilecoinAddress, datasetUser.FilecoinAddress, amt, user.PowergateToken)

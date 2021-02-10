@@ -26,6 +26,7 @@ type FileHiveServer struct {
 	db              *repo.Database
 	walletBackend   fil.WalletBackend
 	filecoinBackend fil.FilecoinBackend
+	filecoinAddress string
 	staticFileDir   string
 	listener        net.Listener
 	handler         http.Handler
@@ -81,6 +82,7 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 			db:              db,
 			walletBackend:   walletBackend,
 			filecoinBackend: filecoinBackend,
+			filecoinAddress: options.FilecoinAddress,
 			listener:        listener,
 			staticFileDir:   staticFileDir,
 			useSSL:          options.UseSSL,
@@ -191,14 +193,15 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 
 // Options represents the filehive server options.
 type Options struct {
-	JWTKey     []byte
-	Domain     string
-	UseSSL     bool
-	SSLCert    string
-	SSLKey     string
-	TestMode   bool
-	MailgunKey string
-	MailDomain string
+	JWTKey          []byte
+	Domain          string
+	UseSSL          bool
+	FilecoinAddress string
+	SSLCert         string
+	SSLKey          string
+	TestMode        bool
+	MailgunKey      string
+	MailDomain      string
 }
 
 // Apply sets the provided options in the main options struct.
@@ -247,6 +250,13 @@ func MailgunKey(mailgunKey string) Option {
 func MailDomain(mailDomain string) Option {
 	return func(o *Options) error {
 		o.MailDomain = mailDomain
+		return nil
+	}
+}
+
+func FilecoinAddress(filecoinAddress string) Option {
+	return func(o *Options) error {
+		o.FilecoinAddress = filecoinAddress
 		return nil
 	}
 }

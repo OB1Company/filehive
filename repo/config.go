@@ -62,7 +62,7 @@ type Config struct {
 	DBPass    string `long:"dbpass" description:"The database password"`
 
 	PowergateToken  string `long:"powtoken" description:"The Powergate admin token"`
-	FilecoinAddress string `long:"filaddress" description:"Filecoin address for payouts"`
+	FilecoinAddress string `long:"filecoinaddress" description:"Filecoin address for payouts"`
 	PowergateHost   string `long:"powergate" description:"Hostname for the Powergate instance"`
 	MailgunKey      string `long:"mailgunkey" description:"API key for Mailgun"`
 	MailDomain      string `long:"maildomain" description:"Domain to send email"`

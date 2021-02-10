@@ -86,6 +86,12 @@ func main() {
 		}...)
 	}
 
+	if config.FilecoinAddress != "" {
+		serverOpts = append(serverOpts, []app.Option{
+			app.FilecoinAddress(config.FilecoinAddress),
+		}...)
+	}
+
 	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, fbe, serverOpts...)
 	if err != nil {
 		log.Fatal(err)
