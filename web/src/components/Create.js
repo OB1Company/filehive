@@ -174,7 +174,7 @@ function Create() {
           <label>
             Short description*
             <div>
-              <input type="text" name="shortDescription" placeholder="(100 char max)"
+              <input type="text" name="shortDescription" maxLength="100" placeholder="(100 char max)"
                      onChange={e => setShortDescription(e.target.value)}/>
               <span>Explain your dataset in 100 characters or less.</span>
             </div>
