@@ -913,6 +913,48 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 
 }
 
+func (s *FileHiveServer) handleGETPurchased(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	// Get email address from session
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	// Get user info
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	// Retrieve matching purchase if it exists
+	var purchase models.Purchase
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("user_id = ? and dataset_id = ?", user.ID, id).First(&purchase).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrDatasetNotFound), http.StatusBadRequest)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Success bool `json:"success"`
+	}{
+		Success: true,
+	})
+}
+
 func (s *FileHiveServer) handleGETDatasetDeal(w http.ResponseWriter, r *http.Request) {
 	sp := strings.Split(r.URL.Path, "/")
 	id := sp[len(sp)-1]

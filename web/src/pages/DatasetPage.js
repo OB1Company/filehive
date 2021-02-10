@@ -177,6 +177,15 @@ export default function DatasetPage() {
                     }
                     getPublisher();
 
+                    const checkIfPurchased = async () => {
+                        instance.get("/api/v1/purchased/" + dataset.id)
+                            .then((result) => {
+                                setDisableBuy("orange-button-disable");
+                            })
+
+                    }
+                    checkIfPurchased();
+
                     const grabBalance = async () => {
                         GetWalletBalance().then((balance)=>{setBalance(balance)});
                     }
