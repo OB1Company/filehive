@@ -441,6 +441,7 @@ div.form-divider {
     line-height: 19px;
     color: #8C8C8C;
     margin-bottom: 3px;
+    font-weight: normal;
 }
 
 div.datasets-details {

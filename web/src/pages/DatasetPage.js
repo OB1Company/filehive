@@ -85,8 +85,6 @@ export default function DatasetPage() {
             }
             await sendPayment();
 
-            // nextModal();
-            console.log(props);
             props.nextModal();
 
         }
@@ -101,7 +99,9 @@ export default function DatasetPage() {
             <div className="modal-container">
                 <div className="modal-title">Purchase</div>
                 <div>You’re almost finished. Please confirm the order details below to purchase the dataset.</div>
-                <div className="modal-center-text-bold">Pay {price} FIL</div>
+                <div className="modal-center-text-bold">Pay {price} FIL<br/>
+                    <span className="mini-light-description">Wallet balance: {balance} FIL</span>
+                </div>
                 {showWarning && <div>
                     <div className="modal-button-container"><button className="normal-button" onClick={handleTopUp}>Top up wallet</button></div>
                     <div className="mini-light-description text-center top-32">You don’t have enough funds in your wallet.
