@@ -15,7 +15,6 @@ const getDatasets = async () => {
     const apiReq = await instance.get(
         loginUrl
     );
-    console.log(apiReq);
 
     return apiReq.data.datasets;
 }

@@ -17,7 +17,6 @@ const getDatasets = async (tabName) => {
     })
 
     const loginUrl = "/api/v1/"+tabName;
-    console.log(loginUrl);
     const apiReq = await instance.get(
         loginUrl
     );
@@ -35,12 +34,10 @@ export default function HomePage() {
 
     const location = useLocation();
     const tabName = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-    console.log(tabName);
 
     useEffect(() => {
         const fetchData = async() => {
             const ds = await getDatasets(tabName);
-            console.log(tabName);
             setDatasets(ds);
         };
         fetchData();

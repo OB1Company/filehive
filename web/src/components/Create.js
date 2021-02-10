@@ -32,7 +32,6 @@ function Create() {
     const instance = getAxiosInstance();
     instance.get("/api/v1/user")
         .then((data) => {
-          console.log("Got user for create", data.data.Activated)
           setActivated(data.data.Activated);
         })
   }, []);

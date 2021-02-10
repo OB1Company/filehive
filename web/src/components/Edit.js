@@ -47,7 +47,6 @@ export default function Settings() {
       instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
           .then((deal)=>{
             setDealStatusCode(deal.data.status);
-            console.log(deal.data.status, dealStatusCode);
 
             if(deal.data.status !== 3 && deal.data.status !== 4) {
               setDealStatus(deal.data.deal_info[0].state_name);

@@ -20,7 +20,6 @@ function Header() {
         const instance = getAxiosInstance();
         instance.post('/api/v1/logout')
             .then((result) => {
-                console.log(result);
                 history.push("/login");
             })
             .catch((err) => {
@@ -31,7 +30,6 @@ function Header() {
     }
 
     const HandleSearchSubmit = (e)=>{
-        console.log(e.target.q.value);
         e.preventDefault();
         if(e.target.q.value === "") {
             return false;
@@ -44,7 +42,6 @@ function Header() {
             const instance = getAxiosInstance();
             instance.get("/api/v1/user")
                 .then((data) => {
-                    console.log("Got user for header", data.data.Activated)
                     if (data.data.Avatar !== "") {
                         setAvatar("/api/v1/image/" + data.data.Avatar);
                     } else {
