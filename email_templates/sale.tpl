@@ -15,7 +15,7 @@
   <![endif]-->
   <style>
     .hover-bg-brand-600:hover {
-      background-color: #0047c3 !important;
+      background-color: #F3A815 !important;
     }
     .hover-underline:hover {
       text-decoration: underline !important;
@@ -61,13 +61,13 @@
           <tr>
             <td align="left" class="sm-px-16 sm-py-24" style="padding: 48px 40px" bgcolor="#ffffff">
               <div style="margin-bottom: 24px">
-                <a href="https://%domain_name%" style="color: #0047c3; text-decoration: none">
+                <a href="https://%domain_name%" style="color: #F3A815; text-decoration: none">
                   <img src="https://filehive.app/filehive-logo.png" alt="Filehive" width="119" style="border: 0; line-height: 100%; max-width: 100%; vertical-align: middle">
                 </a>
               </div>
               <p style="font-size: 21px; line-height: 28px; margin: 0; color: #4a5566">Hi %recipient_name% 💵</p>
               <p style="font-size: 21px; line-height: 28px; margin: 10px 0 0 0; color: #4a5566">
-                %customer% placed a new order <a href="https://%domain_name%/dashboard/sales" class="hover-underline" style="text-decoration: none; color: #0052e2">%order_id%</a> with your store on %timestamp%.
+                %customer% placed a new order <a href="https://%domain_name%/dashboard/sales" class="hover-underline" style="text-decoration: none; color: #F3A815">%order_id%</a> with your store on %timestamp%.
               </p>
 
               <div style="line-height: 32px">&nbsp;</div>
@@ -77,7 +77,7 @@
               <table style="width: 100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="vertical-align: top; width: 72px" valign="top">
-                    <img src="https://%api_domain%/api/v1/image/%image%" alt="%dataset_name%" width="48" style="border: 0; line-height: 100%; max-width: 100%; vertical-align: middle">
+                    <img src="%image%" alt="%dataset_name%" width="48" style="border: 0; line-height: 100%; max-width: 100%; vertical-align: middle">
                   </td>
                   <td class="sm-w-auto" style="text-align: left; vertical-align: top; width: 488px" valign="top">
                     <p style="font-weight: 700; font-size: 16px; margin-top: 0; margin-bottom: 8px; color: #4a5566">%dataset_name%</p>
@@ -102,7 +102,7 @@
                   <td align="right">
                     <table class="sm-w-full" cellpadding="0" cellspacing="0" role="presentation">
                       <tr>
-                        <td align="center" class="hover-bg-brand-600" style="mso-padding-alt: 16px 32px; border-radius: 4px; color: #ffffff; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" bgcolor="#0052e2">
+                        <td align="center" class="hover-bg-brand-600" style="mso-padding-alt: 16px 32px; border-radius: 4px; color: #ffffff; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" bgcolor="#F3A815">
                           <a href="https://%domain_name%/dashboard/sales" class="sm-block sm-py-16" style="text-decoration: none; display: inline-block; font-weight: 700; font-size: 14px; line-height: 16px; padding: 16px 32px; color: #ffffff">View order</a>
                         </td>
                       </tr>
@@ -120,7 +120,7 @@
                     </td>
                   </tr>
                 </table>
-                <p style="font-size: 12px; line-height: 16px; margin: 0; color: #8492a6">If you have any questions, reply to this email or contact us at <a href="mailto:support@%domain_name%" class="hover-underline" style="text-decoration: none; color: #0052e2">support@%domain%</a></p>
+                <p style="font-size: 12px; line-height: 16px; margin: 0; color: #8492a6">If you have any questions, reply to this email or contact us at <a href="mailto:support@%domain_name%" class="hover-underline" style="text-decoration: none; color: #F3A815">support@%domain_name%</a></p>
                 <table style="width: 100%" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>
                     <td>

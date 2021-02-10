@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,7 +13,9 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/gorilla/mux"
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/nfnt/resize"
 	"gorm.io/gorm"
+	"image/jpeg"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -1190,6 +1193,20 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	// Get image thumb for dataset
+	f, err := os.Open(path.Join(s.staticFileDir, "images", purchase.ImageFilename))
+	if err != nil {
+		http.Error(w, wrapError(ErrImageNotFound), http.StatusNotFound)
+		return
+	}
+
+	image, err := jpeg.Decode(f)
+	thumb := resize.Thumbnail(48, 48, image, resize.NearestNeighbor)
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, thumb, &jpeg.Options{100})
+	imageBit := buf.Bytes()
+	thumbBase64 := base64.StdEncoding.EncodeToString([]byte(imageBit))
+
 	// Send email to seller
 	mg := mailgun.NewMailgun(s.mailDomain, s.mailgunKey)
 
@@ -1211,7 +1228,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.mailDomain)
 	templateString = strings.ReplaceAll(templateString, "%api_domain%", "api."+s.mailDomain)
 	templateString = strings.ReplaceAll(templateString, "%customer%", user.Name)
-	templateString = strings.ReplaceAll(templateString, "%image%", purchase.ImageFilename)
+	templateString = strings.ReplaceAll(templateString, "%image%", "data:image/png;base64, "+thumbBase64)
 	templateString = strings.ReplaceAll(templateString, "%dataset_name%", purchase.Title)
 	templateString = strings.ReplaceAll(templateString, "%dataset_shortdescription%", purchase.ShortDescription)
 	templateString = strings.ReplaceAll(templateString, "%dataset_price%", fmt.Sprintf("%f FIL", purchase.Price))
