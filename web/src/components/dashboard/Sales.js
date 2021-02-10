@@ -60,8 +60,7 @@ export default function Sales() {
             const res = await instance.get(
                 apiUrl
             );
-            console.log(res);
-            setSales(res.data.sales);
+            setSales(res.data.sales.reverse());
 
         }
         getSales();
