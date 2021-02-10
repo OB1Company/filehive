@@ -5,6 +5,7 @@ import {ConvertImageToString, FilecoinPrice} from "./utilities/images";
 import ErrorBox, {SuccessBox} from "./ErrorBox";
 import {getAxiosInstance} from "./Auth";
 import Helmet from "react-helmet";
+import { decode } from 'html-entities';
 
 export default function Settings() {
 
@@ -37,9 +38,9 @@ export default function Settings() {
       console.log(response.data);
 
       const dr = response.data;
-      setTitle(dr.title);
-      setShortDescription(dr.shortDescription);
-      setFullDescription(dr.fullDescription);
+      setTitle(decode(dr.title));
+      setShortDescription(decode(dr.shortDescription));
+      setFullDescription(decode(dr.fullDescription));
       setPrice(dr.price);
       setFileType(dr.fileType);
       setCid(dr.contentID);
