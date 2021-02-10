@@ -3,13 +3,24 @@ import {getAxiosInstance} from "../Auth";
 import DataSetsRow from "../DataSetsRow";
 import {useHistory} from "react-router-dom";
 import TimeAgo from "javascript-time-ago";
-import {FiatPrice, HumanFileSize} from "../utilities/images";
+import {FiatPrice, FilecoinPrice, HumanFileSize} from "../utilities/images";
 import {decode} from "html-entities";
+import useSWR from "swr";
 
 
 function PurchasesRows(props) {
-    let rows = props.purchases.map((purchase)=> {
-        return <PurchaseRow key={purchase.id} metadata={purchase}/>;
+
+    const [filecoinPrice, setFilecoinPrice] = useState("");
+    const retrievePrice = async ()=> {
+        const price = await FilecoinPrice();
+        setFilecoinPrice(price);
+    }
+    retrievePrice();
+
+    const reversePurchases = props.purchases.reverse();
+
+    let rows = reversePurchases.map((purchase)=> {
+        return <PurchaseRow key={purchase.id} metadata={purchase} filecoinPrice={filecoinPrice}/>;
     });
 
     return (
@@ -23,22 +34,14 @@ function PurchasesRows(props) {
 function PurchaseRow(props) {
     const history = useHistory();
 
-    const [fiatPrice, setFiatPrice] = useState("");
-
     const timeAgo = new TimeAgo('en-US')
 
     const imageFilename = props.metadata.imageFilename;
     const title = props.metadata.title;
     const shortDescription = props.metadata.shortDescription;
-    const price = "1.00"; //Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
-
-    const getFiatPrice = async ()=>{
-        setFiatPrice(await FiatPrice("1"));
-    }
-    getFiatPrice();
-
+    const price = Number.parseFloat(props.metadata.price).toFixed(8).toString().replace(/\.?0+$/,"");
+    const fiatPrice = FiatPrice(props.metadata.price, props.filecoinPrice);
     const fileType = props.metadata.fileType;
-    const fileSize = HumanFileSize(props.metadata.fileSize, true);
     const username = props.metadata.username;
     const timestamp = timeAgo.format(Date.parse(props.metadata.Timestamp));
 
@@ -63,13 +66,14 @@ function PurchaseRow(props) {
                 <div className="mini-description">{decode(shortDescription)}</div>
                 <div className="mini-light-description tag-container">
                     <div>{fileType}</div>
-                    <div>{fileSize}</div>
                     <div>{timestamp}</div>
                     <div>{username}</div>
                 </div>
             </div>
             <div className="datasets-details">
                 <div><a href={datasetUrl} download><button className="normal-button">{buttonText}</button></a></div>
+                <div className="small-orange-text dataset-row-price">{price} FIL</div>
+                <div className="mini-light-description">{fiatPrice}</div>
             </div>
         </div>
     )
@@ -87,7 +91,6 @@ export default function Purchases() {
             const res = await instance.get(
                 apiUrl
             );
-            console.log(res);
             setPurchases(res.data.purchases);
 
         }

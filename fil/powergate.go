@@ -116,6 +116,7 @@ func (f *PowergateBackend) CreateUser() (string, string, error) {
 		return "", "", err
 	}
 	sc.DefaultStorageConfig.Hot.Enabled = true
+	sc.DefaultStorageConfig.Cold.Filecoin.ReplicationFactor = 5
 	f.powClient.StorageConfig.SetDefault(uctx, sc.DefaultStorageConfig)
 
 	return response.User.Id, response.User.Token, nil

@@ -1238,7 +1238,7 @@ func (s *FileHiveServer) handleGETPurchases(w http.ResponseWriter, r *http.Reque
 		if err := db.Model(&models.Purchase{}).Where("user_id = ?", user.ID).Count(&count).Error; err != nil {
 			return err
 		}
-		return db.Where("user_id = ?", user.ID).Offset(page * 10).Limit(10).Find(&purchases).Error
+		return db.Where("user_id = ?", user.ID).Order("timestamp DESC").Offset(page * 1000).Limit(1000).Find(&purchases).Error
 
 	})
 	if err != nil {
@@ -1251,7 +1251,7 @@ func (s *FileHiveServer) handleGETPurchases(w http.ResponseWriter, r *http.Reque
 		Page      int               `json:"page"`
 		Purchases []models.Purchase `json:"purchases"`
 	}{
-		Pages:     (int(count) / 10) + 1,
+		Pages:     (int(count) / 1000) + 1,
 		Page:      page,
 		Purchases: purchases,
 	})
@@ -1299,6 +1299,8 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Request) {
+	pageSize := 1000
+
 	var (
 		page int
 		err  error
@@ -1346,17 +1348,17 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		sort.Slice(results, func(i, j int) bool { return results[i].Count > results[j].Count })
 		count = len(results)
 
-		if page > 0 && page*10 > int(count-1) {
+		if page > 0 && page*pageSize > int(count-1) {
 			page = int(count - 1)
 		}
 
-		for _, res := range results[page*10:] {
+		for _, res := range results[page*pageSize:] {
 			var ds models.Dataset
 			if err := db.Where("id = ?", res.DatasetID).First(&ds).Error; err != nil {
 				return err
 			}
 			trending = append(trending, ds)
-			if len(trending) >= 10 {
+			if len(trending) >= pageSize {
 				return nil
 			}
 		}
@@ -1366,14 +1368,14 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 			return err
 		}
 
-		if len(trending) < 10 {
-			trendingPages := (count / 10) + 1
+		if len(trending) < pageSize {
+			trendingPages := (count / pageSize) + 1
 			recentPage := 0
 			if page-trendingPages > 0 {
 				recentPage = page - trendingPages
 			}
 
-			if err := db.Order("created_at desc").Limit((recentPage * 10) + (10 - len(trending))).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := db.Order("created_at desc").Limit((recentPage * pageSize) + (pageSize - len(trending))).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 
@@ -1394,7 +1396,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 		Page     int              `json:"page"`
 		Datasets []models.Dataset `json:"datasets"`
 	}{
-		Pages:    (count / 10) + 1,
+		Pages:    (count / pageSize) + 1,
 		Page:     page,
 		Datasets: trending,
 	})

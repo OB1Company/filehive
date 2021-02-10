@@ -244,6 +244,10 @@ div.subBody {
     cursor: not-allowed;
 }
 
+.modal-container-success p {
+    margin: 15px 0;
+}
+
 .ErrorBox {
     background: #F2DEDE;
     border: 1px solid #EBCCCC;
@@ -530,6 +534,23 @@ div.datasets-details:first-child {
     border-radius: 20px;
     width: 493px;
     height: 376px;
+    padding: 28px 20px 30px 30px;
+    outline: none;
+}
+
+.modal-container-success .orange-link {
+    font-size: 1em;
+}
+
+.dataset-download-modal {
+    position: absolute;
+    margin: auto;
+    top: 0; left: 0; bottom: 0; right: 0;
+    border: none;
+    background: #FFFFFF;
+    border-radius: 20px;
+    width: 493px;
+    height: 260px;
     padding: 28px 20px 30px 30px;
     outline: none;
 }

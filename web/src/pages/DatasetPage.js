@@ -48,27 +48,23 @@ export default function DatasetPage() {
     const DatasetSuccessModal = (props) => {
 
         const HandleClickDownload = async (e) => {
-
-            // 1. Try to retrieve via IPFS
-            const getDatasetFile = async () => {
-                const datasetUrl = "/api/v1/download/"+id;
-                window.open(datasetUrl);
-            }
-            await getDatasetFile();
-
-            // 2. Warn the user that it's being retrieved via Filecoin
-            // 3. Server will attempt to retrieve it from Filecoin
-
             setOpenModal("purchase");
             setModalIsOpen(false);
+            history.push('/dashboard/purchases');
         }
+
+        const downloadLink = "/api/v1/download/"+id;
 
         return (
                 <div className="modal-container-success">
                     <div className="modal-title">✅ Success</div>
-                    <div>It may take a few hours to retrieve your dataset from the Filecoin network.</div>
-                    <div className="modal-button-container"><button className="orange-button" onClick={HandleClickDownload}>Download</button></div>
-                    <div className="mini-light-description text-center top-32">If download is not available yet, please try again in <Link to="/dashboard/datasets">your account</Link>.</div>
+                    <div>
+                        <p>Click the button below to download your purchase.</p>
+                    </div>
+                    <div className="modal-button-container"><a href={downloadLink} download><button className="orange-button" onClick={HandleClickDownload}>Download</button></a></div>
+                    <div className="mini-light-description text-center">
+                        <p>If the file has to be retrieved from Filecoin, you will receive an email notifying you once it has be delivered to your account.</p>
+                        If download is not available yet, please try again in <Link to="/dashboard/datasets" className="orange-link">your account</Link>.</div>
                 </div>
         )
     }
@@ -139,7 +135,7 @@ export default function DatasetPage() {
     );
 
     const Modal2 = ({ onRequestClose, ...otherProps }) => (
-        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-purchase-modal" {...otherProps}>
+        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-download-modal" {...otherProps}>
             <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
         </Modal>
     );
@@ -188,12 +184,6 @@ export default function DatasetPage() {
 
 
                 })
-            //     // setDataset(data.data);
-            //     // setDatasetImageUrl(datasetImageUrl+data.data.imageFilename);
-            // })
-            // .catch((err) => {
-            //     //console.error(err);
-            // })
         }
 
         const fetchData = async() => {
