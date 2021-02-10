@@ -1136,6 +1136,62 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	var seller models.User
+
+	err = s.db.View(func(db *gorm.DB) error {
+		return db.Where("id = ?", purchase.SellerID).First(&seller).Error
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
+			return
+		}
+	}
+
+	// Send email to seller
+	mg := mailgun.NewMailgun(s.mailDomain, s.mailgunKey)
+
+	sender := "administrator@" + s.mailDomain
+	subject := "You've made a sale on Filehive! 🤑"
+	body := ""
+	recipient := seller.Email
+
+	message := mg.NewMessage(sender, subject, body, recipient)
+
+	pwd, _ := os.Getwd()
+	template, err := ioutil.ReadFile(filepath.Join(pwd, "email_templates/sale.tpl"))
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	templateString := strings.ReplaceAll(string(template), "%recipient_name%", seller.Name)
+	templateString = strings.ReplaceAll(templateString, "%domain_name%", s.mailDomain)
+	templateString = strings.ReplaceAll(templateString, "%api_domain%", "api."+s.mailDomain)
+	templateString = strings.ReplaceAll(templateString, "%customer%", user.Name)
+	templateString = strings.ReplaceAll(templateString, "%image%", purchase.ImageFilename)
+	templateString = strings.ReplaceAll(templateString, "%dataset_name%", purchase.Title)
+	templateString = strings.ReplaceAll(templateString, "%dataset_shortdescription%", purchase.ShortDescription)
+	templateString = strings.ReplaceAll(templateString, "%dataset_price%", fmt.Sprintf("%f FIL", purchase.Price))
+	templateString = strings.ReplaceAll(templateString, "%order_id%", purchase.ID)
+	templateString = strings.ReplaceAll(templateString, "%timestamp%", purchase.Timestamp.Format("2006-01-02 15:04:05"))
+	templateString = strings.ReplaceAll(templateString, "%email%", url.QueryEscape(user.Email))
+
+	message.SetHtml(templateString)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Send the message with a 10 second timeout
+	resp, id, err := mg.Send(ctx, message)
+
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+
 	sanitizedJSONResponse(w, struct {
 		Txid string `json:"txid"`
 	}{
