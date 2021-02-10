@@ -207,6 +207,7 @@ function Create() {
 
           <label>
             Price*
+            <p className="mini-light-description">Filehive automatically deducts a 5% fee from every sale.</p>
             <div>
               <input type="text" name="price" placeholder="5.23" onChange={HandleSetPrice}/>
               <span>Set your price in Filecoin (FIL).<br/>Estimated price: <strong>{datasetPrice}</strong></span>
