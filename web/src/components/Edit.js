@@ -27,6 +27,7 @@ export default function Settings() {
   const [dealStatus, setDealStatus] = useState("");
   const [dealPieceCid, setDealPieceCid] = useState("");
   const [dealProposalCid, setDealProposalCid] = useState("");
+  const [dealStatusCode, setDealStatusCode] = useState(0);
 
   useEffect(() => {
     const GetDataset = async (datasetId) => {
@@ -34,10 +35,8 @@ export default function Settings() {
 
       const datasetUrl = "/api/v1/dataset/" + datasetId;
       const response = await instance.get(datasetUrl, {withCredentials: true})
-
-      console.log(response.data);
-
       const dr = response.data;
+
       setTitle(decode(dr.title));
       setShortDescription(decode(dr.shortDescription));
       setFullDescription(decode(dr.fullDescription));
@@ -45,16 +44,17 @@ export default function Settings() {
       setFileType(dr.fileType);
       setCid(dr.contentID);
 
-      const deal = await instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
-      console.log(deal);
+      instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
+          .then((deal)=>{
+            setDealStatusCode(deal.data.status);
+            console.log(deal.data.status, dealStatusCode);
 
-      if(deal.data.hasOwnProperty("error_cause")) {
-        console.log(deal.data.error_cause);
-      } else {
-        setDealStatus(deal.data.deal_info[0].state_name);
-        setDealPieceCid(deal.data.deal_info[0].piece_cid);
-        setDealProposalCid(deal.data.deal_info[0].proposal_cid);
-      }
+            if(deal.data.status !== 3 && deal.data.status !== 4) {
+              setDealStatus(deal.data.deal_info[0].state_name);
+              setDealPieceCid(deal.data.deal_info[0].piece_cid);
+              setDealProposalCid(deal.data.deal_info[0].proposal_cid);
+            }
+          })
 
 
     }
@@ -205,25 +205,34 @@ export default function Settings() {
 
           <div className="form-divider"></div>
 
-          <h3>File</h3>
+          <h3>Dataset Information</h3>
 
           <label>
             File Type: {fileType}
           </label>
 
+
+
           <label>
-            IPFS Address:
+            <h4>IPFS Information</h4>
             <ul className="form-ul">
               <li><a href={"ipfs://"+cid} target="_blank" className="orange-link">ipfs://{cid}</a></li>
               <li><a href={"https://gateway.ipfs.io/ipfs/"+cid} target="_blank" className="orange-link">https://gateway.ipfs.io/ipfs/{cid}</a></li>
             </ul>
           </label>
 
+            {dealStatusCode !== 3 && dealStatusCode != 4 &&
           <label>
-            Status: <strong>{dealStatus}</strong><br/>
-            Piece CID: {dealPieceCid}<br/>
-            Proposal CID: {dealProposalCid}
+            <h4>Filecoin Deal Information</h4>
+
+            <div> {dealStatusCode}
+              Publish Status: <strong>{dealStatus}</strong><br/>
+              Piece CID: {dealPieceCid}<br/>
+              Proposal CID: {dealProposalCid}
+            </div>
+
           </label>
+            }
 
           <label>
             Price*
