@@ -79,13 +79,12 @@ export default function DatasetPage() {
                     updateUserUrl
                 ).then((data)=>{
                     console.log(data);
+                    props.nextModal();
                 }).catch((error)=>{
                     console.log(error);
                 })
             }
             await sendPayment();
-
-            props.nextModal();
 
         }
 
@@ -123,7 +122,6 @@ export default function DatasetPage() {
     }
 
     const NextModal = (e)=>{
-        console.log('Next Modal', this);
         setPurchaseOpen(false);
         setSuccessOpen(true);
     };
