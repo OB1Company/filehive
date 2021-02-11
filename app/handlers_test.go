@@ -6,7 +6,6 @@ import (
 	"github.com/OB1Company/filehive/repo"
 	"github.com/OB1Company/filehive/repo/models"
 	"github.com/filecoin-project/go-address"
-	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 	"io"
 	"math/big"
@@ -378,17 +377,9 @@ func Test_Handlers(t *testing.T) {
 				statusCode: http.StatusOK,
 				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
 					wbe.(*fil.MockWalletBackend).SetNextTime(time.Time{})
-					txid, err := cid.Decode("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
-					if err != nil {
-						return err
-					}
-					wbe.(*fil.MockWalletBackend).SetNextTxid(txid)
-					addr, err := address.NewFromString("f1cu3c2dqsbyt7nq63x2yubyy6ofuini2nfvnnahi")
-					if err != nil {
-						return err
-					}
+					wbe.(*fil.MockWalletBackend).SetNextTxid("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
 					amt, _ := new(big.Int).SetString("15500000000000000000", 10)
-					wbe.(*fil.MockWalletBackend).GenerateToAddress(addr, amt)
+					wbe.(*fil.MockWalletBackend).GenerateToAddress("f1cu3c2dqsbyt7nq63x2yubyy6ofuini2nfvnnahi", amt)
 					return nil
 				},
 				expectedResponse: mustMarshalAndSanitizeJSON(struct {
@@ -404,11 +395,7 @@ func Test_Handlers(t *testing.T) {
 				statusCode: http.StatusOK,
 				body:       []byte(`{"address": "f1gyvikksfdmokwhg5jhcrkvfqkyd2sjdy46klgbq", "amount": 1}`),
 				setup: func(db *repo.Database, wbe fil.WalletBackend) error {
-					txid, err := cid.Decode("bafkreif2mzhq6663465bcb2s3xgqefysbmr3a2bxloobw7s4vrxooj6kva")
-					if err != nil {
-						return err
-					}
-					wbe.(*fil.MockWalletBackend).SetNextTxid(txid)
+					wbe.(*fil.MockWalletBackend).SetNextTxid("bafkreif2mzhq6663465bcb2s3xgqefysbmr3a2bxloobw7s4vrxooj6kva")
 					return nil
 				},
 				expectedResponse: mustMarshalAndSanitizeJSON(struct {
@@ -776,18 +763,9 @@ Snowden Files
 					if err != nil {
 						return err
 					}
-					addr, err := address.NewFromString(user.FilecoinAddress)
-					if err != nil {
-						return err
-					}
 					amt, _ := new(big.Int).SetString("15500000000000000000", 10)
-					wbe.(*fil.MockWalletBackend).GenerateToAddress(addr, amt)
-					txid, err := cid.Decode("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
-					if err != nil {
-						return err
-					}
-
-					wbe.(*fil.MockWalletBackend).SetNextTxid(txid)
+					wbe.(*fil.MockWalletBackend).GenerateToAddress(user.FilecoinAddress, amt)
+					wbe.(*fil.MockWalletBackend).SetNextTxid("bafkreiewgqfti56ls5zt2kko2utajoliipl3te7cl5lvtiowgny6qb2pde")
 					return nil
 				},
 				expectedResponse: mustMarshalAndSanitizeJSON(struct {

@@ -75,21 +75,15 @@ func main() {
 	}
 
 	if config.MailgunKey != "" {
-		serverOpts = append(serverOpts, []app.Option{
-			app.MailgunKey(config.MailgunKey),
-		}...)
+		serverOpts = append(serverOpts, app.MailgunKey(config.MailgunKey))
 	}
 
 	if config.MailDomain != "" {
-		serverOpts = append(serverOpts, []app.Option{
-			app.MailDomain(config.MailDomain),
-		}...)
+		serverOpts = append(serverOpts, app.MailDomain(config.MailDomain))
 	}
 
 	if config.FilecoinAddress != "" {
-		serverOpts = append(serverOpts, []app.Option{
-			app.FilecoinAddress(config.FilecoinAddress),
-		}...)
+		serverOpts = append(serverOpts, app.FilecoinAddress(config.FilecoinAddress))
 	}
 
 	server, err := app.NewServer(listener, db, config.StaticFileDir, wbe, fbe, serverOpts...)

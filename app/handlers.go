@@ -1555,14 +1555,19 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 				recentPage = page - trendingPages
 			}
 
-			if err := db.Order("created_at desc").Limit((recentPage * pageSize) + (pageSize - len(trending))).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+			tx := db.Order("created_at desc").Limit((recentPage * pageSize) + (pageSize - len(trending)))
+
+			for _, r := range results {
+				tx.Where("id != ?", r.DatasetID)
+			}
+			if err := tx.Find(&recent).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 
 			trending = append(trending, recent...)
 		}
 
-		count += int(recentCount)
+		count += int(recentCount) - count
 
 		return nil
 	})
@@ -1669,29 +1674,23 @@ func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.R
 		log.Error(err)
 	}
 
+	var user models.User
 	// Update user record with reset token and time limit
-	err = s.db.View(func(db *gorm.DB) error {
+	err = s.db.Update(func(db *gorm.DB) error {
+		if err := db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error; err != nil {
+			return err
+		}
 		if err := db.Model(&models.User{}).Where("LOWER(email) = ?", strings.ToLower(email)).Update("reset_token", otp).Update("reset_valid", time.Now().Add(time.Hour*24).Format(time.RFC3339)).Error; err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		http.Error(w, wrapError(err), http.StatusBadRequest)
-		return
-	}
-
-	var user models.User
-
-	err = s.db.View(func(db *gorm.DB) error {
-		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
-	})
-	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			http.Error(w, wrapError(ErrUserNotFound), http.StatusNotFound)
 			return
 		}
-		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusInternalServerError)
+		http.Error(w, wrapError(err), http.StatusBadRequest)
 		return
 	}
 
