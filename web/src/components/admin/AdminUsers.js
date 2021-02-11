@@ -47,7 +47,7 @@ export default function AdminUsers() {
 
     return (
         <div className="margins-30">
-            <h2>👻 Users</h2>
+            <h2>Users 👻</h2>
             <br/>
             <div>
                 <Table className="sales-table">

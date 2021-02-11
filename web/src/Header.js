@@ -69,7 +69,7 @@ function Header() {
           { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
           { loggedIn ? <img src={avatar} className="header-avatar"/> : ""}
           { loggedIn ? <Link to='/dashboard'>{name}</Link> : ""}
-          { admin == "true" ? <a href="/admin">👻Admin</a> : ""}
+          { admin == "true" ? <a href="/admin">Admin</a> : ""}
           { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
 
         <Link to='/create'><input type="button" value="Create dataset" className="raise"/></Link>
