@@ -73,7 +73,7 @@ export default function AdminUsers() {
     }
 
     return (
-        <div className="margins-30">
+        <div className="margins-30 bottom-30">
             <h2>Users</h2>
             <br/>
             <div className="admin-toolbar">

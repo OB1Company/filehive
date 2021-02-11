@@ -857,6 +857,10 @@ div.datasets-details:first-child {
     font-size:12px;
 }
 
+.bottom-30 {
+    margin-bottom:30;
+}
+
 .sales-table th, .sales-table td {
     text-align: left;
     padding: 10px 20px;
