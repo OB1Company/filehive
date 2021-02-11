@@ -17,6 +17,7 @@ function Header() {
 
         localStorage.removeItem("email");
         localStorage.removeItem("name");
+        localStorage.removeItem("admin");
 
         const instance = getAxiosInstance();
         instance.post('/api/v1/logout')
