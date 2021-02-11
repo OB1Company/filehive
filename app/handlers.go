@@ -905,8 +905,7 @@ func (s *FileHiveServer) handlePATCHDataset(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Request) {
-	sp := strings.Split(r.URL.Path, "/")
-	id := sp[len(sp)-1]
+	id := mux.Vars(r)["cid"]
 
 	emailIface := r.Context().Value("email")
 
@@ -952,24 +951,14 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fileData, err := ioutil.ReadAll(fileStream)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusBadRequest)
-		return
-	}
-
-	raw := bytes.NewBuffer(fileData)
-
 	w.Header().Set("Content-Disposition", "attachment; filename="+dataset.DatasetFilename)
 	w.Header().Set("Content-Type", dataset.FileType)
 
-	w.Write(raw.Bytes())
-
+	io.Copy(w, fileStream)
 }
 
 func (s *FileHiveServer) handleGETPurchased(w http.ResponseWriter, r *http.Request) {
-	sp := strings.Split(r.URL.Path, "/")
-	id := sp[len(sp)-1]
+	id := mux.Vars(r)["id"]
 
 	// Get email address from session
 	emailIface := r.Context().Value("email")
@@ -1010,8 +999,7 @@ func (s *FileHiveServer) handleGETPurchased(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *FileHiveServer) handleGETDatasetDeal(w http.ResponseWriter, r *http.Request) {
-	sp := strings.Split(r.URL.Path, "/")
-	id := sp[len(sp)-1]
+	id := mux.Vars(r)["id"]
 
 	var dataset models.Dataset
 	err := s.db.View(func(db *gorm.DB) error {
@@ -1140,8 +1128,7 @@ func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Request) {
-	sp := strings.Split(r.URL.Path, "/")
-	id := sp[len(sp)-1]
+	id := mux.Vars(r)["id"]
 	emailIface := r.Context().Value("email")
 
 	email, ok := emailIface.(string)
