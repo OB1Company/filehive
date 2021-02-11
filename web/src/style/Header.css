@@ -851,8 +851,10 @@ div.datasets-details:first-child {
     border-radius: 10px;
     border-style: hidden; /* hide standard table (collapsed) border */
     box-shadow: 0 0 0 1px #ddd; /* this draws the table border  */
+}
 
-
+.font-12 {
+    font-size:12px;
 }
 
 .sales-table th, .sales-table td {

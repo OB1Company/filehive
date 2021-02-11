@@ -7,7 +7,7 @@ export default function AdminSales() {
 
     return (
         <div className="margins-30">
-            <h2>Sales 👻</h2>
+            <h2>Sales</h2>
 
         </div>
     );
