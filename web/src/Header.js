@@ -49,6 +49,7 @@ function Header() {
                     } else {
                         setAvatar(defaultAvatar);
                     }
+                    localStorage.setItem("admin", data.data.Admin);
                 })
                 .catch((error) => {
                     console.log(error.data);

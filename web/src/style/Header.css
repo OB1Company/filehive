@@ -34,6 +34,8 @@ a {
     outline: none;
 }
 
+a:hover { text-decoration: underline; }
+
 img {
     max-width: 100%;
     display: block;
@@ -115,6 +117,10 @@ div.Header input[type=text] {
     width: 392px;
 }
 
+div.Header a:hover:first-child {
+    text-decoration: none;
+}
+
 div.Header a, div.Header a:hover, div.Header a:visited, div.Header a:link, div.Header a:active {
     text-decoration: none;
     font-family: Nunito Sans;
@@ -124,6 +130,8 @@ div.Header a, div.Header a:hover, div.Header a:visited, div.Header a:link, div.H
     line-height: 20px;
     color: #ffffff;
 }
+
+div.Header a:hover { text-decoration: underline; }
 
 h1 {
     font-size:24px;
@@ -171,6 +179,7 @@ div.Footer a {
     text-decoration: none;
     color: #000000;
 }
+div.Footer a:hover { text-decoration: underline; }
 
 div.Footer img { margin-right: 7px; }
 
@@ -808,6 +817,20 @@ div.datasets-details:first-child {
     list-style-type: disc;
     font-size: 16px;
 }
+
+.bold { font-weight: bold; }
+
+.admin-toolbar {
+    display: flex;
+    align-items: center;
+    line-height: 24px;
+}
+.admin-toolbar > div {
+    padding: 5px 10px;
+    vertical-align: center;
+}
+
+
 
 .raise:hover,
 .raise:focus {
