@@ -85,6 +85,9 @@ Filehive requires three components:
 
 See Textile's amazing instructions for setting a Powergate server. If you would like to run this application locally in development mode you can use a `localnet` version of Powergate. Textile provides details on how to use Docker to set it all up very quickly. https://docs.textile.io/powergate/localnet/
 
+1. `go get github.com/textileio/powergate`
+2. Make sure docker is running and in the powergate/docker folder run `make localnet`
+
 #### Filehive Go API Server
 
 Once you have your Powergate server up and running or you have access to a hosted instance that you can connect to from Filehive you can proceed to installing and starting the Filehive Go API Server.
