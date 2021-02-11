@@ -1555,14 +1555,19 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 				recentPage = page - trendingPages
 			}
 
-			if err := db.Order("created_at desc").Limit((recentPage * pageSize) + (pageSize - len(trending))).Find(&recent).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+			tx := db.Order("created_at desc").Limit((recentPage * pageSize) + (pageSize - len(trending)))
+
+			for _, r := range results {
+				tx.Where("id != ?", r.DatasetID)
+			}
+			if err := tx.Find(&recent).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 
 			trending = append(trending, recent...)
 		}
 
-		count += int(recentCount)
+		count += int(recentCount) - count
 
 		return nil
 	})
