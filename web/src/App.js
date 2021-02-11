@@ -13,14 +13,26 @@ import SearchPage from './pages/Search'
 import ConfirmPage from './pages/ConfirmPage'
 import PasswordResetPage from './pages/PasswordResetPage'
 import ChangePasswordPage from './pages/ChangePasswordPage'
+import AdminPage from "./pages/AdminPage";
 import axios from "axios";
 
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route {...rest} render={(props) => (
-        localStorage.getItem("email") == null || localStorage.getItem("username") === ""
+        localStorage.getItem("email") == null || localStorage.getItem("name") === ""
             ? <Redirect to='/login' />
             : <Component {...props} />
+    )
+    } />
+)
+
+const AdminRoute = ({ component: Component, ...rest }) => (
+    <Route {...rest} render={(props) => (
+        localStorage.getItem("email") != null
+            && localStorage.getItem("name") !== ""
+            && localStorage.getItem("admin")
+            ? <Component {...props} />
+            : <Redirect to='/dashboard' />
     )
     } />
 )
@@ -68,6 +80,7 @@ export default function App() {
           <Route path="/change_password" component={ChangePasswordPage} />
 
           <PrivateRoute path="/create" component={CreatePage} />
+
           <PrivateRoute exact path="/dashboard">
               <Redirect to="/dashboard/datasets"/>
           </PrivateRoute>
@@ -79,6 +92,13 @@ export default function App() {
           <PrivateRoute exact path="/dashboard/datasets/:id">
               <CreatePage/>
           </PrivateRoute>
+
+          <AdminRoute exact path="/admin">
+              <Redirect to="/admin/users"/>
+          </AdminRoute>
+          <AdminRoute exact path="/admin/users" component={AdminPage} />
+          <AdminRoute path="/admin/datasets" component={AdminPage} />
+          <AdminRoute path="/admin/sales" component={AdminPage} />
 
           <Route component={HomePage} />
       </Switch>

@@ -308,6 +308,54 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	s.loginUser(w, user.Email)
 }
 
+func (s *FileHiveServer) handleGETUsers(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var (
+		users []models.User
+		count int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.User{}).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Order("created_at DESC").Find(&users).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Users []models.User `json:"users"`
+	}{
+		Users: users,
+	})
+
+}
+
 func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 	var email, userID string
 	emailOrIDFromPath := mux.Vars(r)["emailOrID"]
@@ -353,12 +401,14 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		Country   string
 		Avatar    string
 		Activated bool
+		Admin     bool
 	}{
 		Email:     user.Email,
 		Name:      user.Name,
 		Country:   user.Country,
 		Avatar:    user.AvatarFilename,
 		Activated: user.Activated,
+		Admin:     user.Admin,
 	})
 }
 

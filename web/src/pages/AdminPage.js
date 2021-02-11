@@ -3,21 +3,17 @@ import { useLocation } from 'react-router-dom'
 import Header from '../Header'
 import Footer from '../Footer'
 import TabbedLinks from "../components/TabbedLinks";
-import Datasets from "../components/dashboard/Datasets";
-import Purchases from "../components/dashboard/Purchases";
-import Sales from "../components/dashboard/Sales";
-import Wallet from "../components/dashboard/Wallet";
-import Settings from "../components/dashboard/Settings";
+import AdminUsers from "../components/admin/AdminUsers";
+import AdminDatasets from "../components/admin/AdminDatasets";
+import AdminSales from "../components/admin/AdminSales";
 import {Helmet} from "react-helmet";
 
-export default function DashboardPage() {
+export default function AdminPage() {
 
     const linkNames = [
-        { name: 'Datasets', link: '/dashboard/datasets' },
-        { name: 'Purchases', link: '/dashboard/purchases' },
-        { name: 'Sales', link: '/dashboard/sales' },
-        { name: 'Wallet', link: '/dashboard/wallet' },
-        { name: 'Settings', link: '/dashboard/settings' },
+        { name: 'Users', link: '/admin/users' },
+        { name: 'Datasets', link: '/admin/datasets' },
+        { name: 'Sales', link: '/admin/sales' },
     ];
 
     const location = useLocation();
@@ -27,15 +23,11 @@ export default function DashboardPage() {
 
         switch(tab) {
             case "datasets":
-                return <Datasets/>;
-            case "purchases":
-                return <Purchases/>;
+                return <AdminDatasets/>;
+            case "users":
+                return <AdminUsers/>;
             case "sales":
-                return <Sales/>;
-            case "wallet":
-                return <Wallet/>;
-            case "settings":
-                return <Settings/>;
+                return <AdminSales/>;
         }
 
         return <h2>{tab}</h2>
@@ -45,7 +37,7 @@ export default function DashboardPage() {
     return (
         <div className="container">
             <Helmet>
-                <title>Filehive | Dashboard</title>
+                <title>Filehive | Admin</title>
             </Helmet>
             <Header/>
             <div className="maincontent">

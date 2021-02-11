@@ -9,7 +9,9 @@ export default function Logout() {
   const instance = getAxiosInstance();
   instance.post('/api/v1/logout')
       .then((result) => {
-        console.log(result);
+          localStorage.removeItem("name");
+          localStorage.removeItem("email");
+          localStorage.removeItem("admin");
       })
 
   return null;

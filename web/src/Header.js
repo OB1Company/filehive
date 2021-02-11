@@ -9,6 +9,7 @@ function Header() {
     const history = useHistory();
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
+    const admin = localStorage.getItem('admin');
     const loggedIn = (!(email == null || email === ""));
     const [avatar, setAvatar] = useState("");
 
@@ -68,6 +69,7 @@ function Header() {
           { !loggedIn ? <Link to='/signup'>Sign up</Link> : ""}
           { loggedIn ? <img src={avatar} className="header-avatar"/> : ""}
           { loggedIn ? <Link to='/dashboard'>{name}</Link> : ""}
+          { admin ? <a href="/admin">👻Admin</a> : ""}
           { loggedIn ? <Link onClick={HandleLogout}>Log out</Link> : ""}
 
         <Link to='/create'><input type="button" value="Create dataset" className="raise"/></Link>
