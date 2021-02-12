@@ -454,7 +454,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 
 	var emailChanged bool
 	err = s.db.Update(func(db *gorm.DB) error {
-		if d.Email != "" && d.Email != currentEmail {
+		if d.Email != "" && strings.ToLower(d.Email) != strings.ToLower(currentEmail) {
 			if !isEmailValid(d.Email) {
 				return ErrInvalidEmail
 			}
