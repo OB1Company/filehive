@@ -12,6 +12,7 @@ export default function Logout() {
           localStorage.removeItem("name");
           localStorage.removeItem("email");
           localStorage.removeItem("admin");
+          localStorage.removeItem("userID");
       })
 
   return null;

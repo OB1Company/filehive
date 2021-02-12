@@ -61,6 +61,7 @@ function Login() {
           instance.get("/api/v1/user/" + email)
               .then((data) => {
                 localStorage.setItem("name", data.data.Name);
+                localStorage.setItem("userID", data.data.UserID);
                 localStorage.setItem("admin", data.data.Admin);
                 history.push("/dashboard");
               })
