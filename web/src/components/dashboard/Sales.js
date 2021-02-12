@@ -6,6 +6,7 @@ import {FiatPrice, FilecoinPrice, HumanFileSize} from "../utilities/images";
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table';
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css';
 import useSWR from "swr";
+import defaultAvatar from "../../images/avatar-placeholder.png";
 
 
 function SalesRows(props) {
@@ -23,6 +24,7 @@ function SalesRow(props) {
     console.log(props);
 
     const [fiatPrice, setFiatPrice] = useState("");
+    const [seller, setSeller] = useState("");
 
     const timeAgo = new TimeAgo('en-US');
     const sale = props.metadata;
@@ -33,6 +35,14 @@ function SalesRow(props) {
 
     useEffect(()=> {
         setFiatPrice(FiatPrice(sale.price, filecoinPrice.data));
+        const instance = getAxiosInstance();
+        instance.get("/api/v1/user/"+sale.userID)
+            .then((data) => {
+                setSeller(data.data.Name);
+            })
+            .catch((error) => {
+                console.log(error.data);
+            })
     }, []);
 
 
@@ -40,7 +50,7 @@ function SalesRow(props) {
 
         <Tr>
             <Td>{sale.id}</Td>
-            <Td>{sale.username}</Td>
+            <Td>{seller}</Td>
             <Td>{sale.price} FIL ({fiatPrice})</Td>
             <Td>{timestamp}</Td>
         </Tr>
