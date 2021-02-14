@@ -61,6 +61,7 @@ type Purchase struct {
 	FileType         string  `json:"fileType"`
 	Username         string  `json:"username"`
 	Price            float64 `json:"price"`
+	Cid              string  `json:"cid"`
 }
 
 // Click represents a view on a dataset.

@@ -858,7 +858,7 @@ div.datasets-details:first-child {
 }
 
 .bottom-30 {
-    margin-bottom:30;
+    margin-bottom:30px;
 }
 
 .sales-table th, .sales-table td {
@@ -869,8 +869,17 @@ div.datasets-details:first-child {
 }
 
 .sales-table th {
-
     font-weight: bold;
+}
+
+.tx-table {
+    width: 100%;
+}
+
+.tx-table td, th {
+    text-align: left;
+    padding: 5px 5px;
+    border-bottom: 1px solid #efefef;
 }
 
 
