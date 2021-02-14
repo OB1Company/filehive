@@ -143,13 +143,13 @@ export default function DatasetPage() {
     };
 
     const Modal1 = ({ onRequestClose, ...otherProps }) => (
-        <Modal  isOpen={purchaseOpen} onRequestClose={handleCloseModal} nextModal={NextModal} className="dataset-purchase-modal" {...otherProps}>
+        <Modal  isOpen={purchaseOpen} onRequestClose={handleCloseModal} nextModal={NextModal} className="dataset-purchase-modal" styles={{ modal: {}, overlay: { background: "rgba(156, 156, 156, 0.75)" } }}  {...otherProps}>
             <DatasetPurchaseModal datasetId={otherProps.datasetId} nextModal={NextModal} price={otherProps.price}/>
         </Modal>
     );
 
     const Modal2 = ({ onRequestClose, ...otherProps }) => (
-        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-download-modal" {...otherProps}>
+        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-download-modal" styles={{ modal: {}, overlay: { background: "rgba(156, 156, 156, 0.75)" } }}  {...otherProps}>
             <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
         </Modal>
     );

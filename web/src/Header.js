@@ -64,7 +64,7 @@ function Header() {
       <div>
         <Link to='/'><h1>Filehive</h1></Link>
         <form action="/search" className="filehive-search-form" onSubmit={HandleSearchSubmit}>
-            <input type="text" name="q" placeholder="Search Filehive"/>
+            <input type="text" name="q" placeholder="Search..."/>
         </form>
       </div>
       <div className="Header-Right">
