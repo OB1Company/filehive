@@ -1389,6 +1389,53 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+func (s *FileHiveServer) handleGETAdminSales(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var (
+		sales []models.Purchase
+		count int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Purchase{}).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Order("created_at DESC").Find(&sales).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Users []models.Purchase `json:"sales"`
+	}{
+		Users: sales,
+	})
+}
+
 func (s *FileHiveServer) handleGETSales(w http.ResponseWriter, r *http.Request) {
 	pagesize := 1000
 
