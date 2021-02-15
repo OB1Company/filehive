@@ -401,7 +401,6 @@ div.form-divider {
     padding: 10px 30px 10px 30px;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
 }
 
 .datasets-row div {
@@ -427,6 +426,10 @@ div.form-divider {
     align-content: center;
     flex: 1 1 auto;
     padding: 0 20px;
+}
+
+.datasets-row-info a {
+    color: black;
 }
 
 .wd-description {

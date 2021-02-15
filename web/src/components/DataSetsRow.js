@@ -37,12 +37,12 @@ function DataSetsRow(props) {
     }
 
     return (
-        <div className="datasets-row" onClick={handleClickDatasetRow}>
+        <div className="datasets-row">
             <div className="datasets-row-image">
-                <img className="datasets-image" src={datasetImage} alt={decode(title)}/>
+                <a href={"/dataset/"+props.metadata.id}><img className="datasets-image" src={datasetImage} alt={decode(title)}/></a>
             </div>
             <div className="datasets-row-info">
-                <div className="mini-bold-title">{decode(title)}</div>
+                <div className="mini-bold-title"><a href={"/dataset/"+props.metadata.id}>{decode(title)}</a></div>
                 <div className="mini-description">{decode(shortDescription)}</div>
                 <div className="mini-light-description tag-container">
                     <div>{fileType}</div>
@@ -52,7 +52,7 @@ function DataSetsRow(props) {
                 </div>
             </div>
             <div className="datasets-details">
-                <div><button className="normal-button raise">{buttonText}</button></div>
+                <div><button className="normal-button raise" onClick={handleClickDatasetRow}>{buttonText}</button></div>
                 <div className="small-orange-text dataset-row-price">{price} FIL</div>
                 <div className="mini-light-description">{fiatPrice}</div>
             </div>
