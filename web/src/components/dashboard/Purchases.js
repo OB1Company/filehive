@@ -59,10 +59,10 @@ function PurchaseRow(props) {
     return (
         <div className="datasets-row">
             <div className="datasets-row-image">
-                <img className="datasets-image" src={datasetImage} alt={decode(title)}/>
+                <a href={gotoPage}><img className="datasets-image" src={datasetImage} alt={decode(title)}/></a>
             </div>
             <div className="datasets-row-info">
-                <div className="mini-bold-title" onClick={handleClickDatasetRow}>{decode(title)}</div>
+                <div className="mini-bold-title"><a href={gotoPage}>{decode(title)}</a></div>
                 <div className="mini-description">{decode(shortDescription)}</div>
                 <div className="mini-light-description tag-container">
                     <div>{fileType}</div>
