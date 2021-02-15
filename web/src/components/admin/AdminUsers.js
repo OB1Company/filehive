@@ -75,11 +75,9 @@ export default function AdminUsers() {
 
     const HandleEnable = (e)=>{
         e.preventDefault();
-        console.log(selectedUsers);
         const instance = getAxiosInstance();
         instance.post("/api/v1/users/enable", {"users":selectedUsers})
             .then((result)=>{
-                console.log(result.data);
                 refreshUsers();
             });
 
