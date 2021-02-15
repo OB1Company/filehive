@@ -65,11 +65,9 @@ export default function AdminUsers() {
 
     const HandleDisable = (e)=>{
         e.preventDefault();
-        console.log(selectedUsers);
         const instance = getAxiosInstance();
         instance.post("/api/v1/users/disable", {"users":selectedUsers})
             .then((result)=>{
-                console.log(document.getElementsByName("user"));
                 refreshUsers();
             });
 

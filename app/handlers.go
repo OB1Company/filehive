@@ -1176,25 +1176,6 @@ func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.R
 		})
 	}
 
-	httpOnly := true
-	secureToken := false
-
-	if s.useSSL {
-		httpOnly = false
-		secureToken = true
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    "expired",
-		Expires:  time.Time{},
-		Domain:   s.domain,
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: httpOnly,
-		Secure:   secureToken,
-	})
-
 	log.Debug(disabledUsers)
 }
 
