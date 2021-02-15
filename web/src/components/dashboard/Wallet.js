@@ -41,7 +41,8 @@ export const TxRows = (props) => {
     let rows = props.Cids.map((cid)=> {
 
         const fil = cid.value / 1000000000000000000;
-        const timestamp = timeAgo.format(cid.timestamp);
+        const txDate = new Date(cid.timestamp * 1000);
+        const timestamp = timeAgo.format(txDate);
 
         return <tr>
             <td><a href={"https://filfox.info/en/message/"+cid.cid}>{truncStringPortion(cid.cid, 8, 8, 3)}</a></td>
