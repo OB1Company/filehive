@@ -53,7 +53,12 @@ function Header() {
                     localStorage.setItem("admin", data.data.Admin);
                 })
                 .catch((error) => {
-                    console.log(error.data);
+                    if(error.response.status === 401) {
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("email");
+                        localStorage.removeItem("admin");
+                        localStorage.removeItem("userID");
+                    }
                 })
         }
 

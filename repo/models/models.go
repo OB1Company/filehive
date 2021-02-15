@@ -23,6 +23,7 @@ type User struct {
 	ResetToken      string
 	ResetValid      time.Time
 	Admin           bool `gorm:"default:false;not null"`
+	Disabled        bool `gorm:"default:false;not null"`
 }
 
 // Dataset holds metadata about a dataaset.

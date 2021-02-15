@@ -27,6 +27,7 @@ function UserRow(props) {
             <Td>{user.Email}</Td>
             <Td>{created} </Td>
             <Td>{user.Admin ? "✅" : ""}</Td>
+            <Td>{user.Disabled ? "🚫" : "✅"}</Td>
             <Td>{user.PowergateToken}</Td>
             <Td>{user.PowergateID}</Td>
         </Tr>
@@ -39,18 +40,51 @@ export default function AdminUsers() {
     const [selectedCount, setSelectedCount] = useState(0);
     const [selectedUsers, setSelectedUsers] = useState([]);
 
-    useEffect(() => {
+    const refreshUsers = ()=>{
         const instance = getAxiosInstance();
         instance.get('/api/v1/users')
             .then((res)=>{
                 const users = res.data.users;
                 setUsers(users);
+
+                const checkboxes = document.getElementsByName("user");
+                for (let i = 0; i < checkboxes.length; i++) {
+                    if (checkboxes[i].checked === true) {
+                        checkboxes[i].checked = false;
+                    }
+                }
+
+                setSelectedUsers([]);
+                setSelectedCount(0);
             })
+    }
+
+    useEffect(() => {
+        refreshUsers();
     }, []);
 
     const HandleDisable = (e)=>{
         e.preventDefault();
-        alert(selectedUsers);
+        console.log(selectedUsers);
+        const instance = getAxiosInstance();
+        instance.post("/api/v1/users/disable", {"users":selectedUsers})
+            .then((result)=>{
+                console.log(document.getElementsByName("user"));
+                refreshUsers();
+            });
+
+    }
+
+    const HandleEnable = (e)=>{
+        e.preventDefault();
+        console.log(selectedUsers);
+        const instance = getAxiosInstance();
+        instance.post("/api/v1/users/enable", {"users":selectedUsers})
+            .then((result)=>{
+                console.log(result.data);
+                refreshUsers();
+            });
+
     }
 
     const HandleSelection = (e)=>{
@@ -79,6 +113,7 @@ export default function AdminUsers() {
             <div className="admin-toolbar">
                 <div className="bold">{selectedCount} Selected</div>
                 <div><a href="" className="orange-link2" onClick={HandleDisable}>Disable Account</a></div>
+                <div><a href="" className="orange-link2" onClick={HandleEnable}>Enable Account</a></div>
             </div>
             <div>
                 <Table className="sales-table font-12">
@@ -89,6 +124,7 @@ export default function AdminUsers() {
                             <Th>Email</Th>
                             <Th>Created</Th>
                             <Th>Admin</Th>
+                            <Th>Status</Th>
                             <Th>Token</Th>
                             <Th>ID</Th>
                         </Tr>

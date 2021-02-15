@@ -2,9 +2,12 @@ package app
 
 import (
 	"context"
+	"github.com/OB1Company/filehive/repo/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/csrf"
+	"gorm.io/gorm"
 	"net/http"
+	"strings"
 )
 
 func (s *FileHiveServer) setCSRFHeaderMiddleware(next http.Handler) http.Handler {
@@ -51,6 +54,18 @@ func (s *FileHiveServer) authenticationMiddleware(next http.Handler) http.Handle
 			http.Error(w, wrapError(err), http.StatusUnauthorized)
 			return
 		}
+
+		// Check database for disabled account
+		var user models.User
+		err = s.db.View(func(db *gorm.DB) error {
+			return db.Where("LOWER(email) = ? and disabled = false", strings.ToLower(claims.Email)).First(&user).Error
+
+		})
+		if err != nil {
+			http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+			return
+		}
+
 		ctx := context.WithValue(context.Background(), "email", claims.Email)
 		req := r.WithContext(ctx)
 
