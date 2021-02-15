@@ -885,6 +885,11 @@ div.datasets-details:first-child {
     border-bottom: 1px solid #efefef;
 }
 
+.filecoindeal-container {
+    display: flex;
+    flex-direction: column;
+}
+
 
 @media only screen and (max-width: 600px) {
 
