@@ -106,15 +106,18 @@ div.Header-Right input[type=button] {
 
 div.Header input[type=text] {
     background: #FFFFFF;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 20px;
     height: 38px;
     border: 0;
     padding-left: 25px;
     font-size: 15px;
     line-height: 24px;
-    color: #999999;
+    color: #000000;
     width: 392px;
+}
+
+div.Header input[type=text]::placeholder {
+    color: #999999;
 }
 
 div.Header a:hover:first-child {
@@ -545,7 +548,7 @@ div.datasets-details:first-child {
     border-radius: 20px;
     width: 493px;
     height: 376px;
-    padding: 28px 20px 30px 30px;
+    padding: 30px;
     outline: none;
 }
 

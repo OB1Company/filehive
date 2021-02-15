@@ -202,7 +202,7 @@ export default function Wallet() {
                     <p>Specify a FIL address below to send your funds to.</p>
                     <form onSubmit={HandleSendSubmit}>
                         <label>
-                            Amount*
+                            Amount (FIL)*
                             <input type="text" placeholder="0" value={amount}
                                    onChange={e => setAmount(e.target.value)}/>
                         </label>
