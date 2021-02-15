@@ -43,7 +43,7 @@ function PurchaseRow(props) {
     const fiatPrice = FiatPrice(props.metadata.price, props.filecoinPrice);
     const fileType = props.metadata.fileType;
     const username = props.metadata.username;
-    const timestamp = timeAgo.format(Date.parse(props.metadata.Timestamp));
+    const timestamp = timeAgo.format(Date.parse(props.metadata.timestamp));
 
     const buttonText = "Download";
     const gotoPage = '/dataset/'+props.metadata.datasetID;

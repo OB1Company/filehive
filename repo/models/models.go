@@ -8,7 +8,7 @@ import (
 // User contains all information for each user.
 type User struct {
 	gorm.Model
-	ID              string    `gorm:"primary_key" json:"-"`
+	ID              string    `gorm:"primary_key" json:"id"`
 	Email           string    `gorm:"uniqueIndex" json:"email"`
 	Name            string    `json:"name"`
 	Salt            []byte    `json:"-"`
