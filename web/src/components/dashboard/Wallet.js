@@ -9,8 +9,6 @@ import DataSetsRow from "../DataSetsRow";
 import TimeAgo from 'javascript-time-ago';   
 import en from 'javascript-time-ago/locale/en';
 
-TimeAgo.addDefaultLocale(en);
-
 export const GetWalletBalance = async () => {
 
     const csrftoken = localStorage.getItem('csrf_token');
