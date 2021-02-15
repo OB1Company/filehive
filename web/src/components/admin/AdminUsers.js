@@ -23,13 +23,13 @@ function UserRow(props) {
     return (
         <Tr>
             <Td><input type="checkbox" name="user" value={user.id} onChange={props.selectHandler}/></Td>
-            <Td>{user.Name}</Td>
-            <Td>{user.Email}</Td>
+            <Td>{user.name}</Td>
+            <Td>{user.email}</Td>
             <Td>{created} </Td>
-            <Td>{user.Admin ? "✅" : ""}</Td>
-            <Td>{user.Disabled ? "🚫" : "✅"}</Td>
-            <Td>{user.PowergateToken}</Td>
-            <Td>{user.PowergateID}</Td>
+            <Td>{user.admin ? "✅" : ""}</Td>
+            <Td>{user.disabled ? "🚫" : "✅"}</Td>
+            <Td>{user.powergateToken}</Td>
+            <Td>{user.powergateID}</Td>
         </Tr>
     )
 }

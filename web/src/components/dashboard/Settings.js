@@ -25,11 +25,11 @@ export default function Settings() {
             const data = await instance.get("/api/v1/user/" + localStorage.getItem("email"));
             const user = data.data;
 
-            user.avatarFilename = "/api/v1/image/" + user.Avatar;
-            setEmail(user.Email);
-            setName(user.Name);
-            setCountry(user.Country);
-            const c = Countries.find(obj => obj.value === user.Country);
+            user.avatarFilename = "/api/v1/image/" + user.avatar;
+            setEmail(user.email);
+            setName(user.name);
+            setCountry(user.country);
+            const c = Countries.find(obj => obj.value === user.country);
             setDefaultCountry(c);
         };
 

@@ -16,8 +16,8 @@ type User struct {
 	Country         string    `json:"country"`
 	AvatarFilename  string    `json:"avatar"`
 	FilecoinAddress string    `json:"-"`
-	PowergateToken  string    `json:"-"`
-	PowergateID     string    `json:"-"`
+	PowergateToken  string    `json:"powergateToken"`
+	PowergateID     string    `json:"powergateID"`
 	ActivationCode  string    `json:"-"`
 	Activated       bool      `gorm:"default:false;not null" json:"activated"`
 	ResetToken      string    `json:"-"`

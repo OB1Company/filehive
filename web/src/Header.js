@@ -45,12 +45,12 @@ function Header() {
             const instance = getAxiosInstance();
             instance.get("/api/v1/user")
                 .then((data) => {
-                    if (data.data.Avatar !== "") {
-                        setAvatar("/api/v1/image/" + data.data.Avatar);
+                    if (data.data.avatar !== "") {
+                        setAvatar("/api/v1/image/" + data.data.avatar);
                     } else {
                         setAvatar(defaultAvatar);
                     }
-                    localStorage.setItem("admin", data.data.Admin);
+                    localStorage.setItem("admin", data.data.admin);
                 })
                 .catch((error) => {
                     if(error.response.status === 401) {

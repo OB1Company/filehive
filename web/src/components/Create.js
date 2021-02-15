@@ -32,7 +32,7 @@ function Create() {
     const instance = getAxiosInstance();
     instance.get("/api/v1/user")
         .then((data) => {
-          setActivated(data.data.Activated);
+          setActivated(data.data.activated);
         })
   }, []);
 

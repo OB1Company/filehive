@@ -6,7 +6,6 @@ import {FiatPrice, FilecoinPrice, HumanFileSize} from "../utilities/images";
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table';
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css';
 import useSWR from "swr";
-import defaultAvatar from "../../images/avatar-placeholder.png";
 
 
 function SalesRows(props) {
@@ -28,7 +27,7 @@ function SalesRow(props) {
 
     const timeAgo = new TimeAgo('en-US');
     const sale = props.metadata;
-    const timestamp = timeAgo.format(Date.parse(props.metadata.Timestamp));
+    const timestamp = timeAgo.format(Date.parse(props.metadata.timestamp));
     const gotoPage = '/dataset/'+props.metadata.datasetID;
 
     const filecoinPrice  = useSWR('filecoinPrice', FilecoinPrice);
@@ -38,7 +37,7 @@ function SalesRow(props) {
         const instance = getAxiosInstance();
         instance.get("/api/v1/user/"+sale.userID)
             .then((data) => {
-                setSeller(data.data.Name);
+                setSeller(data.data.name);
             })
             .catch((error) => {
                 console.log(error.data);

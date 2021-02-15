@@ -176,15 +176,15 @@ export default function DatasetPage() {
                     const getPublisher = async () => {
                         instance.get("/api/v1/user/" + dataset.userID)
                             .then((publish) => {
-                                const avatar = publish.data.Avatar;
-                                publish.data.avatarFilename = (avatar === "") ? defaultAvatar : "/api/v1/image/"+publish.data.Avatar;
+                                const avatar = publish.data.avatar;
+                                publish.data.avatarFilename = (avatar === "") ? defaultAvatar : "/api/v1/image/"+publish.data.avatar;
 
                                 // Convert country code to name
-                                const countryObject = Countries.find(c => c.value === publish.data.Country);
+                                const countryObject = Countries.find(c => c.value === publish.data.country);
                                 publish.data.countryName = countryObject.label;
                                 setPublisher(publish.data);
 
-                                const checkPublisher = (publish.data.Email === localStorage.getItem("email")) ? "orange-button-disable" : "";
+                                const checkPublisher = (publish.data.email === localStorage.getItem("email")) ? "orange-button-disable" : "";
                                 setDisableBuy(checkPublisher);
                             })
 
@@ -247,7 +247,7 @@ export default function DatasetPage() {
                         <div>
                             <div className="dataset-publisher">
                                 <div>
-                                    <div className="dataset-publisher-name">{publisher.Name}</div>
+                                    <div className="dataset-publisher-name">{publisher.name}</div>
                                     <div className="dataset-publisher-location">{publisher.countryName}</div>
                                 </div>
                                 <div className="dataset-publisher-avatar"><img src={publisher.avatarFilename} className="dataset-metadata-avatar"/></div>

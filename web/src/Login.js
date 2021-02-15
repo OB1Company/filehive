@@ -61,10 +61,10 @@ function Login() {
           instance.get("/api/v1/user/" + email)
               .then((data) => {
 
-                if(!data.data.Disabled) {
-                  localStorage.setItem("name", data.data.Name);
+                if(!data.data.disabled) {
+                  localStorage.setItem("name", data.data.name);
                   localStorage.setItem("userID", data.data.UserID);
-                  localStorage.setItem("admin", data.data.Admin);
+                  localStorage.setItem("admin", data.data.admin);
                   history.push("/dashboard");
                 } else {
                   localStorage.removeItem("name");
