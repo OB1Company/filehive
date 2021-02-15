@@ -6,6 +6,9 @@ import ErrorBox, {SuccessBox} from "../ErrorBox";
 import {getAxiosInstance} from "../Auth";
 import { FilecoinPrice } from "../utilities/images";
 import DataSetsRow from "../DataSetsRow";
+import TimeAgo from 'javascript-time-ago';   
+
+TimeAgo.addDefaultLocale(en);
 
 export const GetWalletBalance = async () => {
 
@@ -34,12 +37,16 @@ function truncStringPortion(str, firstCharCount = str.length, endCharCount = 0, 
 }
 
 export const TxRows = (props) => {
+    const timeAgo = new TimeAgo('en-US')
+    
     let rows = props.Cids.map((cid)=> {
 
         const fil = cid.value / 1000000000000000000;
+        const timestamp = timeAgo.format(Date.parse(cid.timestamp));
 
         return <tr>
             <td><a href={"https://filfox.info/en/message/"+cid.cid}>{truncStringPortion(cid.cid, 8, 8, 3)}</a></td>
+            <td>{timestamp}</td>
             <td><a href={"https://filfox.info/en/address/"+cid.from}>{truncStringPortion(cid.from, 8, 8, 3)}</a></td>
             <td><a href={"https://filfox.info/en/address/"+cid.to}>{truncStringPortion(cid.to, 8, 8, 3)}</a></td>
             <td>{fil} FIL</td>
@@ -51,8 +58,9 @@ export const TxRows = (props) => {
             <table className="tx-table">
                 <tr>
                     <th>CID</th>
+                    <th>Date</th>
                     <th>From</th>
-                    <th>To</th>
+                    <th>To</th>        
                     <th>Amount</th>
                 </tr>
             {rows}
