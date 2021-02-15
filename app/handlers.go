@@ -438,7 +438,7 @@ func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request)
 
 	var emailChanged bool
 	err = s.db.Update(func(db *gorm.DB) error {
-		if d.Email != "" && d.Email != currentEmail {
+		if d.Email != "" && strings.ToLower(d.Email) != strings.ToLower(currentEmail) {
 			if !isEmailValid(d.Email) {
 				return ErrInvalidEmail
 			}
@@ -936,19 +936,10 @@ func (s *FileHiveServer) handleGETDatasetFile(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fileData, err := ioutil.ReadAll(fileStream)
-	if err != nil {
-		http.Error(w, wrapError(err), http.StatusBadRequest)
-		return
-	}
-
-	raw := bytes.NewBuffer(fileData)
-
 	w.Header().Set("Content-Disposition", "attachment; filename="+dataset.DatasetFilename)
 	w.Header().Set("Content-Type", dataset.FileType)
 
-	w.Write(raw.Bytes())
-
+	io.Copy(w, fileStream)
 }
 
 func (s *FileHiveServer) handleGETPurchased(w http.ResponseWriter, r *http.Request) {
@@ -1123,9 +1114,100 @@ func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Users struct {
+		Users []string `json:"users"`
+	}
+	var disabledUsers Users
+	if err := json.NewDecoder(r.Body).Decode(&disabledUsers); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, userId := range disabledUsers.Users {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("disabled", true).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	log.Debug(disabledUsers)
+}
+
+func (s *FileHiveServer) handlePOSTEnableUsers(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Users struct {
+		Users []string `json:"users"`
+	}
+	var enabledUsers Users
+	if err := json.NewDecoder(r.Body).Decode(&enabledUsers); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, userId := range enabledUsers.Users {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("disabled", false).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	log.Debug(enabledUsers)
+}
+
 func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Request) {
 	sp := strings.Split(r.URL.Path, "/")
 	id := sp[len(sp)-1]
+
 	emailIface := r.Context().Value("email")
 
 	email, ok := emailIface.(string)

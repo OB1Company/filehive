@@ -244,7 +244,7 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 		return "", err
 	}
 
-	log.Debug(resp.ProtoMessage)
+	log.Debug(resp.String())
 
 	//var txid cid.Cid
 	//if w.nextTxid != nil {
@@ -275,7 +275,10 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 	//	w.transactions[from] = append(w.transactions[from], tx)
 	//}
 
-	return "", nil
+	cidString := resp.String()
+	cid := cidString[3 : len(cidString)-1]
+
+	return cid, nil
 }
 
 // Balance returns the balance for an address.

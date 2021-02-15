@@ -60,9 +60,22 @@ function Login() {
 
           instance.get("/api/v1/user/" + email)
               .then((data) => {
-                localStorage.setItem("name", data.data.Name);
-                localStorage.setItem("admin", data.data.Admin);
-                history.push("/dashboard");
+
+                if(!data.data.Disabled) {
+                  localStorage.setItem("name", data.data.Name);
+                  localStorage.setItem("userID", data.data.UserID);
+                  localStorage.setItem("admin", data.data.Admin);
+                  history.push("/dashboard");
+                } else {
+                  localStorage.removeItem("name");
+                  localStorage.removeItem("email");
+                  localStorage.removeItem("admin");
+                  localStorage.removeItem("userID");
+                  setIsLoggingIn(false);
+                  setError("This account has been disabled");
+                  history.push("/login");
+                }
+
               })
 
         }).catch(error => {
@@ -100,7 +113,7 @@ function Login() {
     if (!isLoggingIn) {
       return  <input type="submit" value="Login" className="raise orange-button" />
     } else {
-      return <span>
+      return <span className="spinner-span">
         <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Logging in...
         </span>
     }

@@ -18,6 +18,7 @@ function Header() {
         localStorage.removeItem("email");
         localStorage.removeItem("name");
         localStorage.removeItem("admin");
+        localStorage.removeItem("userID");
 
         const instance = getAxiosInstance();
         instance.post('/api/v1/logout')
@@ -52,7 +53,12 @@ function Header() {
                     localStorage.setItem("admin", data.data.Admin);
                 })
                 .catch((error) => {
-                    console.log(error.data);
+                    if(error.response.status === 401) {
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("email");
+                        localStorage.removeItem("admin");
+                        localStorage.removeItem("userID");
+                    }
                 })
         }
 
@@ -63,7 +69,7 @@ function Header() {
       <div>
         <Link to='/'><h1>Filehive</h1></Link>
         <form action="/search" className="filehive-search-form" onSubmit={HandleSearchSubmit}>
-            <input type="text" name="q" placeholder="Search Filehive"/>
+            <input type="text" name="q" placeholder="Search..."/>
         </form>
       </div>
       <div className="Header-Right">

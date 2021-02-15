@@ -5,6 +5,9 @@ import QRCode from 'qrcode.react';
 import ErrorBox, {SuccessBox} from "../ErrorBox";
 import {getAxiosInstance} from "../Auth";
 import { FilecoinPrice } from "../utilities/images";
+import DataSetsRow from "../DataSetsRow";
+import TimeAgo from 'javascript-time-ago';   
+import en from 'javascript-time-ago/locale/en';
 
 export const GetWalletBalance = async () => {
 
@@ -21,6 +24,49 @@ export const GetWalletBalance = async () => {
     console.debug(apiReq);
 
     return apiReq.data.Balance;
+}
+
+
+function truncStringPortion(str, firstCharCount = str.length, endCharCount = 0, dotCount = 3) {
+    var convertedStr="";
+    convertedStr+=str.substring(0, firstCharCount);
+    convertedStr += ".".repeat(dotCount);
+    convertedStr+=str.substring(str.length-endCharCount, str.length);
+    return convertedStr;
+}
+
+export const TxRows = (props) => {
+    const timeAgo = new TimeAgo('en-US')
+    
+    let rows = props.Cids.map((cid)=> {
+
+        const fil = cid.value / 1000000000000000000;
+        const txDate = new Date(cid.timestamp * 1000);
+        const timestamp = timeAgo.format(txDate);
+
+        return <tr>
+            <td><a href={"https://filfox.info/en/message/"+cid.cid}>{truncStringPortion(cid.cid, 8, 8, 3)}</a></td>
+            <td>{timestamp}</td>
+            <td><a href={"https://filfox.info/en/address/"+cid.from}>{truncStringPortion(cid.from, 8, 8, 3)}</a></td>
+            <td><a href={"https://filfox.info/en/address/"+cid.to}>{truncStringPortion(cid.to, 8, 8, 3)}</a></td>
+            <td>{fil} FIL</td>
+        </tr>
+    });
+
+    return (
+        <div className="datasets-rows">
+            <table className="tx-table">
+                <tr>
+                    <th>CID</th>
+                    <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>        
+                    <th>Amount</th>
+                </tr>
+            {rows}
+            </table>
+        </div>
+    )
 }
 
 export const GetWalletAddress = async () => {
@@ -51,10 +97,17 @@ export default function Wallet() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [filecoinPrice, setFilecoinPrice] = useState("");
+    const [cids, setCids] = useState([]);
 
     const qrSettings = {
         width: 188,
         height: 188
+    }
+
+    const getLedger = async (address)=>{
+        const instance = getAxiosInstance();
+        const data = await instance.get("https://filfox.info/api/v1/address/"+address+"/messages?pageSize=25&page=0");
+        return data.data;
     }
 
     useEffect(() => {
@@ -75,6 +128,11 @@ export default function Wallet() {
             const balanceUSD = formatter.format(filecoinPrice*balance);
 
             setFilecoinPrice(balanceUSD);
+
+            const txs = await getLedger(address);
+            console.log(txs);
+            setCids(txs.messages);
+
         };
         fetchData();
     }, []);
@@ -152,7 +210,7 @@ export default function Wallet() {
                     <p>Specify a FIL address below to send your funds to.</p>
                     <form onSubmit={HandleSendSubmit}>
                         <label>
-                            Amount*
+                            Amount (FIL)*
                             <input type="text" placeholder="0" value={amount}
                                    onChange={e => setAmount(e.target.value)}/>
                         </label>
@@ -178,10 +236,11 @@ export default function Wallet() {
                     </form>
                 </div>
             </div>
-            {/*<div className="transaction-ledger">*/}
-            {/*    <h3>Transactions</h3>*/}
+            <div className="transaction-ledger">
+                <h3>Transactions</h3>
 
-            {/*</div>*/}
+                <TxRows Cids={cids}/>
+            </div>
 
 
         </div>

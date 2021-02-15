@@ -102,10 +102,18 @@ func NewServer(listener net.Listener, db *repo.Database, staticFileDir string, w
 	csrfKey := make([]byte, 32)
 	rand.Read(csrfKey)
 
+	httpOnly := true
+	secureToken := false
+
+	if s.useSSL {
+		httpOnly = false
+		secureToken = true
+	}
+
 	csrfOpts := []csrf.Option{
 		csrf.SameSite(csrf.SameSiteLaxMode),
-		csrf.Secure(false),
-		csrf.HttpOnly(true),
+		csrf.Secure(secureToken),
+		csrf.HttpOnly(httpOnly),
 		csrf.Path("/"),
 	}
 	if options.Domain != "" {
@@ -188,6 +196,8 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/sales", s.handleGETSales).Methods("GET")
 	subRouter.HandleFunc("/download/{cid}", s.handleGETDatasetFile).Methods("GET")
 	subRouter.HandleFunc("/users", s.handleGETUsers).Methods("GET")
+	subRouter.HandleFunc("/users/disable", s.handlePOSTDisableUsers).Methods("POST")
+	subRouter.HandleFunc("/users/enable", s.handlePOSTEnableUsers).Methods("POST")
 
 	return r
 }

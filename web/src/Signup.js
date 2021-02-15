@@ -29,18 +29,27 @@ function Signup() {
 
     if(name === "") {
       setError("Name is required");
+      setIsRegistering(false);
       return false;
     }
     if(country === "") {
       setError("Country is required")
+      setIsRegistering(false);
       return false;
     }
 
     const instance = getAxiosInstance();
 
-    const createUserUrl = "/api/v1/user";
+    const url = "/api/v1/user";
+
+    console.log(url);
+    await instance.get(url)
+        .catch((err)=>{
+          console.debug(err);
+        }); // Refresh CSRF
+
     await instance.post(
-        createUserUrl,
+        url,
         data
     ).then((data) => {
       // Successful login
@@ -52,12 +61,16 @@ function Signup() {
       setIsRegistering(false);
       if(error.response.status === 409) {
         setError("This email address has already been used");
+        setIsRegistering(false);
         return false;
       }
       if(error.response.status === 400) {
         setError("There was an error with your registration: "+error.response.data.error);
+        setIsRegistering(false);
         return false;
       }
+      setError(error.response.data);
+      setIsRegistering(false);
       return false;
     });
 
@@ -71,7 +84,7 @@ function Signup() {
     if (!isRegistering) {
       return  <input type="submit" value="Sign up" className="raise orange-button" />
     } else {
-      return <span>
+      return <span className="spinner-span">
         <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Creating account...
         </span>
     }

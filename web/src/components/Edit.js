@@ -224,10 +224,10 @@ export default function Settings() {
           <label>
             <h4>Filecoin Deal Information</h4>
 
-            <div> {dealStatusCode}
-              Publish Status: <strong>{dealStatus}</strong><br/>
-              Piece CID: {dealPieceCid}<br/>
-              Proposal CID: {dealProposalCid}
+            <div className="filecoindeal-container">
+              <div>Publish Status: <strong>{dealStatus}</strong></div>
+              <div>Piece CID: {dealPieceCid}</div>
+              <div>Proposal CID: {dealProposalCid}</div>
             </div>
 
           </label>

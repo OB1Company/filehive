@@ -13,6 +13,7 @@ import { decode } from 'html-entities';
 import ReactMarkdown from 'react-markdown'
 import useSWR from "swr";
 import {Helmet} from "react-helmet";
+import spinner from "../images/spinner.gif";
 
 const instance = getAxiosInstance();
 
@@ -70,7 +71,10 @@ export default function DatasetPage() {
     }
 
     const DatasetPurchaseModal = (props) => {
+        const [isPurchasing, setIsPurchasing] = useState(false);
+
         const HandleClickPurchase = async () => {
+            setIsPurchasing(true);
 
             // Send payment
             const sendPayment = async () => {
@@ -78,9 +82,11 @@ export default function DatasetPage() {
                 await instance.post(
                     updateUserUrl
                 ).then((data)=>{
+                    setIsPurchasing(false);
                     console.log(data);
                     props.nextModal();
                 }).catch((error)=>{
+                    setIsPurchasing(false);
                     console.log(error);
                 })
             }
@@ -93,6 +99,16 @@ export default function DatasetPage() {
         }
 
         const showWarning = (price > balance);
+
+        const PurchaseButton = () => {
+            if (!isPurchasing) {
+                return  <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
+            } else {
+                return <span className="spinner-span">
+                    <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Purchasing dataset...
+                </span>
+            }
+        }
 
         return (
             <div className="modal-container">
@@ -110,7 +126,7 @@ export default function DatasetPage() {
                 {!showWarning &&
                     <div>
                         <div className="modal-button-container">
-                            <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
+                            <PurchaseButton/>
                         </div>
                         <div className="mini-light-description text-center top-32">The funds will automatically be deducted from
                         your wallet once you proceed.</div>
@@ -127,13 +143,13 @@ export default function DatasetPage() {
     };
 
     const Modal1 = ({ onRequestClose, ...otherProps }) => (
-        <Modal  isOpen={purchaseOpen} onRequestClose={handleCloseModal} nextModal={NextModal} className="dataset-purchase-modal" {...otherProps}>
+        <Modal  isOpen={purchaseOpen} onRequestClose={handleCloseModal} nextModal={NextModal} className="dataset-purchase-modal" styles={{ modal: {}, overlay: { background: "rgba(156, 156, 156, 0.75)" } }}  {...otherProps}>
             <DatasetPurchaseModal datasetId={otherProps.datasetId} nextModal={NextModal} price={otherProps.price}/>
         </Modal>
     );
 
     const Modal2 = ({ onRequestClose, ...otherProps }) => (
-        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-download-modal" {...otherProps}>
+        <Modal  isOpen={successOpen} onRequestClose={handleCloseModal} className="dataset-download-modal" styles={{ modal: {}, overlay: { background: "rgba(156, 156, 156, 0.75)" } }}  {...otherProps}>
             <DatasetSuccessModal datasetId={otherProps.datasetId} price={otherProps.price}/>
         </Modal>
     );
@@ -250,7 +266,7 @@ export default function DatasetPage() {
                                 <div className="dataset-metadata-price">{dataset.price} FIL <span className="tiny-price">({fiatPrice})</span></div>
                                 <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                 <div className="dataset-metadata-button">
-                                        <button className={"orange-button raise "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
+                                    <button className={"orange-button raise "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
                                 </div>
                                 <div className="dataset-metadata-warning">The price includes the miner fee.</div>
                             </div>

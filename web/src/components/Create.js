@@ -62,7 +62,7 @@ function Create() {
       setIsCreating(false);
       return;
     }
-    if(price <= 0) {
+    if(price <= 0 || isNaN(price)) {
       setError("Please provide a price for your dataset");
       setIsCreating(false);
       return;

@@ -23,6 +23,7 @@ type User struct {
 	ResetToken      string    `json:"-"`
 	ResetValid      time.Time `json:"-"`
 	Admin           bool      `gorm:"default:false;not null" json:"admin"`
+	Disabled        bool      `gorm:"default:false;not null json:"disabled"`
 }
 
 // Dataset holds metadata about a dataaset.
@@ -61,6 +62,7 @@ type Purchase struct {
 	FileType         string    `json:"fileType"`
 	Username         string    `json:"username"`
 	Price            float64   `json:"price"`
+	Cid              string    `json:"cid"`
 }
 
 // Click represents a view on a dataset.
