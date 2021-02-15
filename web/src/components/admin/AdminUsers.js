@@ -2,10 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table';
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css';
 import {getAxiosInstance} from "../Auth";
-import {useHistory} from "react-router-dom";
 import TimeAgo from "javascript-time-ago";
-import useSWR from "swr";
-import {FiatPrice, FilecoinPrice} from "../utilities/images";
 
 function UsersRows(props) {
     let rows = props.users.map((user)=> {

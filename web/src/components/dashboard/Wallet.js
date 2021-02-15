@@ -1,13 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import { Link } from 'react-router-dom';
 import axios from "axios";
 import QRCode from 'qrcode.react';
 import ErrorBox, {SuccessBox} from "../ErrorBox";
 import {getAxiosInstance} from "../Auth";
-import { FilecoinPrice } from "../utilities/images";
-import DataSetsRow from "../DataSetsRow";
-import TimeAgo from 'javascript-time-ago';   
-import en from 'javascript-time-ago/locale/en';
+import { FilecoinPrice, truncStringPortion } from "../utilities/images";
+import TimeAgo from 'javascript-time-ago';
 
 export const GetWalletBalance = async () => {
 
@@ -24,15 +21,6 @@ export const GetWalletBalance = async () => {
     console.debug(apiReq);
 
     return apiReq.data.Balance;
-}
-
-
-function truncStringPortion(str, firstCharCount = str.length, endCharCount = 0, dotCount = 3) {
-    var convertedStr="";
-    convertedStr+=str.substring(0, firstCharCount);
-    convertedStr += ".".repeat(dotCount);
-    convertedStr+=str.substring(str.length-endCharCount, str.length);
-    return convertedStr;
 }
 
 export const TxRows = (props) => {
