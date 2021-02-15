@@ -94,9 +94,7 @@ func (d *Database) View(fn func(db *gorm.DB) error) error {
 func (d *Database) Update(fn func(db *gorm.DB) error) error {
 	tx := d.db.Begin()
 	if err := fn(tx); err != nil {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
+		tx.Rollback()
 		return err
 	}
 	return tx.Commit().Error
