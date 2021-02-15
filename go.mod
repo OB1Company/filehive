@@ -21,8 +21,8 @@ require (
 	github.com/textileio/powergate v1.2.6
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gorm.io/driver/mysql v1.0.3
-	gorm.io/driver/postgres v1.0.5
-	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.20.6
+	gorm.io/driver/mysql v1.0.4
+	gorm.io/driver/postgres v1.0.8
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.20.12
 )
