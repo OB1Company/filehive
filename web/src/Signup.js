@@ -84,7 +84,7 @@ function Signup() {
     if (!isRegistering) {
       return  <input type="submit" value="Sign up" className="raise orange-button" />
     } else {
-      return <span>
+      return <span className="spinner-span">
         <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Creating account...
         </span>
     }

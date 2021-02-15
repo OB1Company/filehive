@@ -113,7 +113,7 @@ function Login() {
     if (!isLoggingIn) {
       return  <input type="submit" value="Login" className="raise orange-button" />
     } else {
-      return <span>
+      return <span className="spinner-span">
         <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Logging in...
         </span>
     }

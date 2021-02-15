@@ -104,7 +104,7 @@ export default function DatasetPage() {
             if (!isPurchasing) {
                 return  <button className="orange-button" onClick={HandleClickPurchase}>Confirm Order</button>
             } else {
-                return <span>
+                return <span className="spinner-span">
                     <img src={spinner} width="20" height="20" alt="spinner" className="noblock"/> Purchasing dataset...
                 </span>
             }
