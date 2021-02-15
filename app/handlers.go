@@ -303,8 +303,6 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 		log.Fatal(err)
 	}
 
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
-
 	s.loginUser(w, user.Email)
 }
 
@@ -395,25 +393,7 @@ func (s *FileHiveServer) handleGETUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sanitizedJSONResponse(w, struct {
-		Email     string
-		Name      string
-		Country   string
-		UserID    string
-		Avatar    string
-		Activated bool
-		Admin     bool
-		Disabled  bool
-	}{
-		Email:     user.Email,
-		Name:      user.Name,
-		Country:   user.Country,
-		UserID:    user.ID,
-		Avatar:    user.AvatarFilename,
-		Activated: user.Activated,
-		Admin:     user.Admin,
-		Disabled:  user.Disabled,
-	})
+	sanitizedJSONResponse(w, user)
 }
 
 func (s *FileHiveServer) handlePATCHUser(w http.ResponseWriter, r *http.Request) {
@@ -1400,8 +1380,6 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
-
 	sanitizedJSONResponse(w, struct {
 		Txid string `json:"txid"`
 	}{
@@ -1814,9 +1792,6 @@ func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.R
 		http.Error(w, wrapError(err), http.StatusBadRequest)
 		return
 	}
-
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
-
 }
 
 func (s *FileHiveServer) handleGETConfirm(w http.ResponseWriter, r *http.Request) {
