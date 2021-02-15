@@ -298,6 +298,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 
 	// Send the message with a 10 second timeout
 	resp, id, err := mg.Send(ctx, message)
+	log.Debugf("Mailgun Response: %v, %v", resp, id)
 
 	if err != nil {
 		log.Fatal(err)
@@ -1374,6 +1375,7 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 
 	// Send the message with a 10 second timeout
 	resp, id, err := mg.Send(ctx, message)
+	log.Debugf("Mailgun Response: %v, %v", resp, id)
 
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusBadRequest)
@@ -1787,6 +1789,7 @@ func (s *FileHiveServer) handleGETPasswordReset(w http.ResponseWriter, r *http.R
 
 	// Send the message with a 10 second timeout
 	resp, id, err := mg.Send(ctx, message)
+	log.Debugf("Mailgun Response: %v, %v", resp, id)
 
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusBadRequest)
