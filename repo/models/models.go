@@ -8,21 +8,21 @@ import (
 // User contains all information for each user.
 type User struct {
 	gorm.Model
-	ID              string `json:"id" gorm:"primary_key"`
-	Email           string `gorm:"uniqueIndex"`
-	Name            string
-	Salt            []byte
-	HashedPassword  []byte
-	Country         string
-	AvatarFilename  string
-	FilecoinAddress string
-	PowergateToken  string
-	PowergateID     string
-	ActivationCode  string
-	Activated       bool `gorm:"default:false;not null"`
-	ResetToken      string
-	ResetValid      time.Time
-	Admin           bool `gorm:"default:false;not null"`
+	ID              string    `gorm:"primary_key" json:"-"`
+	Email           string    `gorm:"uniqueIndex" json:"email"`
+	Name            string    `json:"name"`
+	Salt            []byte    `json:"-"`
+	HashedPassword  []byte    `json:"-"`
+	Country         string    `json:"country"`
+	AvatarFilename  string    `json:"avatar"`
+	FilecoinAddress string    `json:"-"`
+	PowergateToken  string    `json:"-"`
+	PowergateID     string    `json:"-"`
+	ActivationCode  string    `json:"-"`
+	Activated       bool      `gorm:"default:false;not null" json:"activated"`
+	ResetToken      string    `json:"-"`
+	ResetValid      time.Time `json:"-"`
+	Admin           bool      `gorm:"default:false;not null" json:"admin"`
 }
 
 // Dataset holds metadata about a dataaset.
@@ -44,23 +44,23 @@ type Dataset struct {
 	Price            float64   `json:"price"`
 	Views            int64     `json:"totalViews"`
 	Purchases        int64     `json:"totalPurchases"`
-	Delisted         bool      `gorm:"default:false;non null"`
+	Delisted         bool      `gorm:"default:false;non null" json:"delisted"`
 }
 
 // Purchase holds information about a user purchase.
 type Purchase struct {
 	gorm.Model       `json:"-"`
-	ID               string `json:"id" gorm:"primary_key"`
-	UserID           string `json:"userID"`
-	SellerID         string `json:"sellerID"`
-	DatasetID        string `json:"datasetID"`
-	Timestamp        time.Time
-	Title            string  `json:"title"`
-	ShortDescription string  `json:"shortDescription"`
-	ImageFilename    string  `json:"imageFilename"`
-	FileType         string  `json:"fileType"`
-	Username         string  `json:"username"`
-	Price            float64 `json:"price"`
+	ID               string    `json:"id" gorm:"primary_key"`
+	UserID           string    `json:"userID"`
+	SellerID         string    `json:"sellerID"`
+	DatasetID        string    `json:"datasetID"`
+	Timestamp        time.Time `json:"timestamp"`
+	Title            string    `json:"title"`
+	ShortDescription string    `json:"shortDescription"`
+	ImageFilename    string    `json:"imageFilename"`
+	FileType         string    `json:"fileType"`
+	Username         string    `json:"username"`
+	Price            float64   `json:"price"`
 }
 
 // Click represents a view on a dataset.
