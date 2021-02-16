@@ -2106,10 +2106,10 @@ func (s *FileHiveServer) handleGETSearch(w http.ResponseWriter, r *http.Request)
 
 		searchTerm = fmt.Sprintf("%%%s%%", searchTerm)
 
-		if err := db.Model(&models.Dataset{}).Where("(delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?) and users.Disabled = false", searchTerm, searchTerm, searchTerm).Joins("JOIN datasets datasets.UserID=users.ID".Count(&count).Error; err != nil {
+		if err := db.Model(&models.Dataset{}).Where("(delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?) and users.Disabled = false", searchTerm, searchTerm, searchTerm).Joins("JOIN datasets datasets.UserID=users.ID").Count(&count).Error; err != nil {
 			return err
 		}
-		if err := db.Model(&models.Dataset{}).Where("(delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?) and users.Disabled = false", searchTerm, searchTerm, searchTerm).Joins("JOIN datasets datasets.UserID=users.ID".Scan(&results).Offset(page * 10).Limit(10).Error; err != nil {
+		if err := db.Model(&models.Dataset{}).Where("(delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?) and users.Disabled = false", searchTerm, searchTerm, searchTerm).Joins("JOIN datasets datasets.UserID=users.ID").Scan(&results).Offset(page * 10).Limit(10).Error; err != nil {
 			return err
 		}
 		return nil
