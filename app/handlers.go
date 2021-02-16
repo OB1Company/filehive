@@ -1234,7 +1234,7 @@ func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.R
 			datasets []models.Dataset
 		)
 		err = s.db.View(func(db *gorm.DB) error {
-			return db.Where("user_id = ?", user.ID).Find(&datasets).Error
+			return db.Where("user_id = ?", userId).Find(&datasets).Error
 		})
 
 		for _, ds := range datasets {
@@ -1390,7 +1390,7 @@ func (s *FileHiveServer) handlePOSTEnableUsers(w http.ResponseWriter, r *http.Re
 			datasets []models.Dataset
 		)
 		err = s.db.View(func(db *gorm.DB) error {
-			return db.Where("user_id = ?", user.ID).Find(&datasets).Error
+			return db.Where("user_id = ?", userId).Find(&datasets).Error
 		})
 
 		for _, ds := range datasets {
