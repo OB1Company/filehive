@@ -1923,6 +1923,11 @@ func (s *FileHiveServer) handlePOSTPasswordReset(w http.ResponseWriter, r *http.
 		return
 	}
 
+	if passwordScore(newPasswordReset.Password) < 3 {
+		http.Error(w, wrapError(ErrWeakPassword), http.StatusBadRequest)
+		return
+	}
+
 	// Hash the password
 	var newPW []byte
 	if newPasswordReset.Password != "" {
