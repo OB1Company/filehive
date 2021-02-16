@@ -15,7 +15,7 @@ type User struct {
 	HashedPassword  []byte    `json:"-"`
 	Country         string    `json:"country"`
 	AvatarFilename  string    `json:"avatar"`
-	FilecoinAddress string    `json:"-"`
+	FilecoinAddress string    `json:"filecoinAddress"`
 	PowergateToken  string    `json:"powergateToken"`
 	PowergateID     string    `json:"powergateID"`
 	ActivationCode  string    `json:"-"`
