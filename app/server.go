@@ -201,6 +201,8 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/users", s.handleGETUsers).Methods("GET")
 	subRouter.HandleFunc("/users/disable", s.handlePOSTDisableUsers).Methods("POST")
 	subRouter.HandleFunc("/users/enable", s.handlePOSTEnableUsers).Methods("POST")
+	subRouter.HandleFunc("/users/makeadmin", s.handlePOSTMakeAdmin).Methods("POST")
+	subRouter.HandleFunc("/users/makeuser", s.handlePOSTMakeUser).Methods("POST")
 
 	return r
 }

@@ -80,6 +80,26 @@ export default function AdminUsers() {
 
     }
 
+    const HandleAdmin = (e)=>{
+        e.preventDefault();
+        const instance = getAxiosInstance();
+        instance.post("/api/v1/users/makeadmin", {"users":selectedUsers})
+            .then((result)=>{
+                refreshUsers();
+            });
+
+    }
+
+    const HandleUser = (e)=>{
+        e.preventDefault();
+        const instance = getAxiosInstance();
+        instance.post("/api/v1/users/makeuser", {"users":selectedUsers})
+            .then((result)=>{
+                refreshUsers();
+            });
+
+    }
+
     const HandleSelection = (e)=>{
         const checked = e.target.checked;
         if(checked) {
@@ -107,6 +127,8 @@ export default function AdminUsers() {
                 <div className="bold">{selectedCount} Selected</div>
                 <div><a href="" className="orange-link2" onClick={HandleDisable}>Disable Account</a></div>
                 <div><a href="" className="orange-link2" onClick={HandleEnable}>Enable Account</a></div>
+                <div><a href="" className="orange-link2" onClick={HandleAdmin}>Make Admin</a></div>
+                <div><a href="" className="orange-link2" onClick={HandleUser}>Make Normal</a></div>
             </div>
             <div>
                 <Table className="sales-table font-12">

@@ -1239,6 +1239,98 @@ func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.R
 	log.Debug(disabledUsers)
 }
 
+func (s *FileHiveServer) handlePOSTMakeAdmin(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Users struct {
+		Users []string `json:"users"`
+	}
+	var adminUsers Users
+	if err := json.NewDecoder(r.Body).Decode(&adminUsers); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, userId := range adminUsers.Users {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("admin", true).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	log.Debug(adminUsers)
+
+}
+
+func (s *FileHiveServer) handlePOSTMakeUser(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Users struct {
+		Users []string `json:"users"`
+	}
+	var adminUsers Users
+	if err := json.NewDecoder(r.Body).Decode(&adminUsers); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, userId := range adminUsers.Users {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("admin", false).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	log.Debug(adminUsers)
+
+}
+
 func (s *FileHiveServer) handlePOSTEnableUsers(w http.ResponseWriter, r *http.Request) {
 	emailIface := r.Context().Value("email")
 
