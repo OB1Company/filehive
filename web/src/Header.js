@@ -51,11 +51,13 @@ function Header() {
                     localStorage.setItem("admin", data.data.admin);
                 })
                 .catch((error) => {
-                    if(error.response.status === 401) {
-                        localStorage.removeItem("name");
-                        localStorage.removeItem("email");
-                        localStorage.removeItem("admin");
-                        localStorage.removeItem("userID");
+                    if(error.response.hasOwnProperty("status")) {
+                        if (error.response.status === 401) {
+                            localStorage.removeItem("name");
+                            localStorage.removeItem("email");
+                            localStorage.removeItem("admin");
+                            localStorage.removeItem("userID");
+                        }
                     }
                 })
         }
