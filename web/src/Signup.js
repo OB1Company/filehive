@@ -39,41 +39,49 @@ function Signup() {
     }
 
     const instance = getAxiosInstance();
-
     const url = "/api/v1/user";
 
-    console.log(url);
-    await instance.get(url)
-        .catch((err)=>{
-          console.debug(err);
-        }); // Refresh CSRF
+    const makeUser = async(csrf)=>{
+      await instance.post(
+          url,
+          data,
+          {
+            headers: {
+              "x-csrf-token": csrf,
+            }
+          }
+      ).then((data) => {
+        // Successful login
+        localStorage.setItem("email", email);
+        localStorage.setItem("name", name);
 
-    await instance.post(
-        url,
-        data
-    ).then((data) => {
-      // Successful login
-      localStorage.setItem("email", email);
-      localStorage.setItem("name", name);
-
-      history.push("/dashboard");
-    }).catch((error) => {
-      setIsRegistering(false);
-      if(error.response.status === 409) {
-        setError("This email address has already been used");
+        history.push("/dashboard");
+      }).catch((error) => {
+        setIsRegistering(false);
+        if(error.response.status === 409) {
+          setError("This email address has already been used");
+          setIsRegistering(false);
+          return false;
+        }
+        if(error.response.status === 400) {
+          setError("There was an error with your registration: "+error.response.data.error);
+          setIsRegistering(false);
+          return false;
+        }
+        setError(error.response.data);
         setIsRegistering(false);
         return false;
-      }
-      if(error.response.status === 400) {
-        setError("There was an error with your registration: "+error.response.data.error);
-        setIsRegistering(false);
-        return false;
-      }
-      setError(error.response.data);
-      setIsRegistering(false);
-      return false;
-    });
+      });
 
+    }
+
+    await instance.get(url, {withCredentials: true})
+        .then((res)=>{
+          makeUser();
+        })
+        .catch((err) => {
+            makeUser(err.response.headers['x-csrf-token']);
+        })
   }
 
   const handleCountry = (e) => {
