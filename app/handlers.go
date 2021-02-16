@@ -1228,6 +1228,25 @@ func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.R
 	}
 
 	for _, userId := range disabledUsers.Users {
+
+		// Delist their listings
+		var (
+			datasets []models.Dataset
+		)
+		err = s.db.View(func(db *gorm.DB) error {
+			return db.Where("user_id = ?", user.ID).Find(&datasets).Error
+		})
+
+		for _, ds := range datasets {
+			err = s.db.Update(func(db *gorm.DB) error {
+				if err := db.Model(&models.Dataset{}).Where("id = ?", ds.ID).Update("delisted", true).Error; err != nil {
+					return err
+				}
+				return nil
+			})
+		}
+
+		// Disable their account
 		err = s.db.Update(func(db *gorm.DB) error {
 			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("disabled", true).Error; err != nil {
 				return err
@@ -1365,6 +1384,25 @@ func (s *FileHiveServer) handlePOSTEnableUsers(w http.ResponseWriter, r *http.Re
 	}
 
 	for _, userId := range enabledUsers.Users {
+
+		// Relist
+		var (
+			datasets []models.Dataset
+		)
+		err = s.db.View(func(db *gorm.DB) error {
+			return db.Where("user_id = ?", user.ID).Find(&datasets).Error
+		})
+
+		for _, ds := range datasets {
+			err = s.db.Update(func(db *gorm.DB) error {
+				if err := db.Model(&models.Dataset{}).Where("id = ?", ds.ID).Update("delisted", false).Error; err != nil {
+					return err
+				}
+				return nil
+			})
+		}
+
+		// Re-enable user
 		err = s.db.Update(func(db *gorm.DB) error {
 			if err := db.Model(&models.User{}).Where("id = ?", userId).Update("disabled", false).Error; err != nil {
 				return err
