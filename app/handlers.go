@@ -1652,7 +1652,7 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		if err := db.Model(&models.Dataset{}).Count(&count).Error; err != nil {
 			return err
 		}
-		return db.Order("created_at desc").Offset(page * 10).Limit(10).Find(&recent).Error
+		return db.Order("created_at desc").Where("delisted = false").Offset(page * 10).Limit(10).Find(&recent).Error
 	})
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
@@ -1726,10 +1726,12 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 
 		for _, res := range results[page*pageSize:] {
 			var ds models.Dataset
-			if err := db.Where("id = ?", res.DatasetID).First(&ds).Error; err != nil {
-				return err
+			if err := db.Where("id = ? and delisted = 0", res.DatasetID).First(&ds).Error; err != nil {
+				log.Debug("found a delisted dataset")
+			} else {
+				trending = append(trending, ds)
 			}
-			trending = append(trending, ds)
+
 			if len(trending) >= pageSize {
 				return nil
 			}
