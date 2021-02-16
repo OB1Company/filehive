@@ -11,7 +11,7 @@ function Header() {
     const name = localStorage.getItem('name');
     const admin = localStorage.getItem('admin');
     const loggedIn = (!(email == null || email === ""));
-    const [avatar, setAvatar] = useState("");
+    const [avatar, setAvatar] = useState(defaultAvatar);
 
     const HandleLogout = () => {
 
@@ -47,8 +47,6 @@ function Header() {
                 .then((data) => {
                     if (data.data.avatar !== "") {
                         setAvatar("/api/v1/image/" + data.data.avatar);
-                    } else {
-                        setAvatar(defaultAvatar);
                     }
                     localStorage.setItem("admin", data.data.admin);
                 })
