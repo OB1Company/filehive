@@ -1971,10 +1971,10 @@ func (s *FileHiveServer) handleGETSearch(w http.ResponseWriter, r *http.Request)
 
 		searchTerm = fmt.Sprintf("%%%s%%", searchTerm)
 
-		if err := db.Model(&models.Dataset{}).Where("title LIKE ? OR short_description LIKE ? OR full_description LIKE ?", searchTerm, searchTerm, searchTerm).Count(&count).Error; err != nil {
+		if err := db.Model(&models.Dataset{}).Where("delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?", searchTerm, searchTerm, searchTerm).Count(&count).Error; err != nil {
 			return err
 		}
-		if err := db.Model(&models.Dataset{}).Where("title LIKE ? OR short_description LIKE ? OR full_description LIKE ?", searchTerm, searchTerm, searchTerm).Scan(&results).Offset(page * 10).Limit(10).Error; err != nil {
+		if err := db.Model(&models.Dataset{}).Where("delisted = 0 and title LIKE ? OR short_description LIKE ? OR full_description LIKE ?", searchTerm, searchTerm, searchTerm).Scan(&results).Offset(page * 10).Limit(10).Error; err != nil {
 			return err
 		}
 		return nil
