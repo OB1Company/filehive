@@ -275,10 +275,11 @@ func (w *PowergateWalletBackend) Send(from, to string, amount *big.Int, userToke
 	//	w.transactions[from] = append(w.transactions[from], tx)
 	//}
 
-	cidString := resp.String()
-	cid := cidString[3 : len(cidString)-1]
+	//TODO: Update when powergate supports
+	//cidString := resp.String()
+	//cid := cidString[3 : len(cidString)-1]
 
-	return cid, nil
+	return "", nil
 }
 
 // Balance returns the balance for an address.
