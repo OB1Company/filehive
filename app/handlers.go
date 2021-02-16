@@ -675,6 +675,85 @@ func (s *FileHiveServer) handlePOSTGenerateCoins(w http.ResponseWriter, r *http.
 	s.walletBackend.(*fil.MockWalletBackend).GenerateToAddress(d.Address, fil.FILtoAttoFIL(d.Amount))
 }
 
+func (s *FileHiveServer) handleGETDelist(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if user.Admin {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ?", id).Update("delisted", true).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	} else {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ? and email = ?", id, email).Update("delisted", true).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+}
+
+func (s *FileHiveServer) handleGETRelist(w http.ResponseWriter, r *http.Request) {
+	sp := strings.Split(r.URL.Path, "/")
+	id := sp[len(sp)-1]
+
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if user.Admin {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ?", id).Update("delisted", false).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	} else {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ? and email = ?", id, email).Update("delisted", false).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+}
+
 func (s *FileHiveServer) handlePOSTDataset(w http.ResponseWriter, r *http.Request) {
 	emailIface := r.Context().Value("email")
 

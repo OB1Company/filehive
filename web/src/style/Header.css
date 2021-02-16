@@ -895,6 +895,26 @@ div.datasets-details:first-child {
 
 .spinner-span { padding-right: 10px; }
 
+.visibility-toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 80px;
+    width:100%;
+}
+
+div.visibility-toggle label {
+    margin:0 10px 0 10px;
+}
+
+div.visibility-toggle div {
+    width: 40%;
+    display: flex;
+    align-items: center;
+    margin-right: 60px;
+}
+
+
 @media only screen and (max-width: 600px) {
 
     div.container {

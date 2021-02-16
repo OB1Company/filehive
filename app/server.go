@@ -187,6 +187,8 @@ func (s *FileHiveServer) newV1Router() *mux.Router {
 	subRouter.HandleFunc("/wallet/send", s.handlePOSTWalletSend).Methods("POST")
 	subRouter.HandleFunc("/wallet/transactions", s.handleGETWalletTransactions).Methods("GET")
 	subRouter.HandleFunc("/dataset", s.handlePOSTDataset).Methods("POST")
+	subRouter.HandleFunc("/delist/{id}", s.handleGETDelist).Methods("GET")
+	subRouter.HandleFunc("/relist/{id}", s.handleGETRelist).Methods("GET")
 	subRouter.HandleFunc("/dataset", s.handlePATCHDataset).Methods("PATCH")
 	subRouter.HandleFunc("/datasets", s.handleGETDatasets).Methods("GET")
 	subRouter.HandleFunc("/datasetdeal/{id}", s.handleGETDatasetDeal).Methods("GET")

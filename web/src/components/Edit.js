@@ -28,6 +28,8 @@ export default function Settings() {
   const [dealPieceCid, setDealPieceCid] = useState("");
   const [dealProposalCid, setDealProposalCid] = useState("");
   const [dealStatusCode, setDealStatusCode] = useState(0);
+  const [active, setActive] = useState(true);
+  const [inactive, setInactive] = useState(false);
 
   useEffect(() => {
     const GetDataset = async (datasetId) => {
@@ -43,6 +45,14 @@ export default function Settings() {
       setPrice(dr.price);
       setFileType(dr.fileType);
       setCid(dr.contentID);
+
+      if(dr.delisted) {
+        setInactive(true);
+        setActive(false);
+      } else {
+        setInactive(false);
+        setActive(true);
+      }
 
       instance.get("/api/v1/datasetdeal/"+dr.contentID, {withCredentials: true})
           .then((deal)=>{
@@ -157,6 +167,29 @@ export default function Settings() {
     setImageFile(e.target.files[0]);
   }
 
+  const handleVisible = (e)=>{
+    const instance = getAxiosInstance();
+    instance.get("/api/v1/relist/"+id)
+        .then((data)=>{
+          setActive(true);
+          setInactive(false);
+        })
+        .catch((err)=>{
+          console.error(err);
+        })
+  }
+
+  const handleInvisible = (e)=>{
+    const instance = getAxiosInstance();
+    instance.get("/api/v1/delist/"+id)
+        .then((data)=>{
+          setActive(false);
+          setInactive(true);
+        })
+        .catch((err)=>{
+          console.error(err);
+        })
+  }
 
   return (
       <div className="CreateDataset">
@@ -173,6 +206,19 @@ export default function Settings() {
             <div>
               <input type="text" placeholder="What's the name?" value={title} onChange={e => setTitle(e.target.value)}/>
               <span>Set a clear description title for your dataset.</span>
+            </div>
+          </label>
+
+          <label>
+            Visibility*
+            <div className="visibility-toggle">
+              <div>
+                <input type="radio" name="visibility_on" checked={active} onChange={handleVisible}/>
+                <label>Active</label>
+                <input type="radio" name="visibility_off" checked={inactive} onChange={handleInvisible}/>
+                <label>Inactive</label>
+              </div>
+              <span>Set your dataset to inactive to hide it from public view.</span>
             </div>
           </label>
 
