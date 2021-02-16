@@ -553,6 +553,7 @@ div.datasets-details:first-child {
     height: 376px;
     padding: 30px;
     outline: none;
+    box-shadow: 1px 1px #bbbbbb;
 }
 
 .modal-container-success .orange-link {
@@ -570,6 +571,7 @@ div.datasets-details:first-child {
     height: 260px;
     padding: 28px 20px 30px 30px;
     outline: none;
+    box-shadow: 1px 1px #bbbbbb;
 }
 
 .dataset-metadata-container {
