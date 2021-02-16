@@ -301,7 +301,7 @@ func (s *FileHiveServer) handlePOSTUser(w http.ResponseWriter, r *http.Request) 
 	log.Debugf("Mailgun Response: %v, %v", resp, id)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	s.loginUser(w, user.Email)
