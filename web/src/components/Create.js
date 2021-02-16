@@ -62,7 +62,7 @@ function Create() {
       setIsCreating(false);
       return;
     }
-    if(price <= 0 || isNaN(price)) {
+    if(price < 0 || isNaN(price)) {
       setError("Please provide a price for your dataset");
       setIsCreating(false);
       return;
@@ -147,6 +147,25 @@ function Create() {
     setDataset(e.target.files[0]);
   }
 
+  const handleClickFree = (e)=>{
+    if(e.target.checked) {
+      document.getElementById('price-container').style.display = "none";
+      document.getElementById('price-input-note').style.display = "none";
+    } else {
+      document.getElementById('price-container').style.display = "";
+      document.getElementById('price-input-note').style.display = "";
+    }
+    setPrice(0);
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 4,
+    });
+
+    const priceUSD = formatter.format(0);
+    setDatasetPrice(priceUSD);
+  }
+
   const CreateButton = () => {
     if (!isCreating) {
       return <input type="submit" value="Submit" className="orange-button"/>;
@@ -207,10 +226,17 @@ function Create() {
 
           <label>
             Price*
-            <p className="mini-light-description">Filehive automatically deducts a 5% fee from every sale.</p>
-            <div>
+            <p className="mini-light-description" id="price-input-note">Filehive automatically deducts a 5% fee from every sale.</p>
+            <div id="price-container">
               <input type="text" name="price" placeholder="5.23" onChange={HandleSetPrice}/>
               <span>Set your price in Filecoin (FIL).<br/>Estimated price: <strong>{datasetPrice}</strong></span>
+            </div>
+            <div className="free-price">
+              <div>
+                <input type="checkbox" id="free" name="free" onClick={handleClickFree}/>
+              </div>
+              <div><label for="free"><strong>MAKE IT FREE 🎁</strong></label></div>
+              <div></div>
             </div>
           </label>
 

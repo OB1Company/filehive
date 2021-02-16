@@ -14,8 +14,13 @@ import ReactMarkdown from 'react-markdown'
 import useSWR from "swr";
 import {Helmet} from "react-helmet";
 import spinner from "../images/spinner.gif";
+import QRCode from 'qrcode.react';
 
 const instance = getAxiosInstance();
+const qrSettings = {
+    width: 188,
+    height: 188
+}
 
 export default function DatasetPage() {
 
@@ -37,6 +42,7 @@ export default function DatasetPage() {
     const [successOpen, setSuccessOpen] = useState(false);
     const [openModal, setOpenModal] = useState("purchase");
     const [disableBuy, setDisableBuy] = useState("orange-button-disable");
+    const [publisherAddress, setPublisherAddress] = useState("");
 
     Modal.setAppElement('#root');
 
@@ -183,6 +189,7 @@ export default function DatasetPage() {
                                 const countryObject = Countries.find(c => c.value === publish.data.country);
                                 publish.data.countryName = countryObject.label;
                                 setPublisher(publish.data);
+                                setPublisherAddress(publish.data.filecoinAddress);
 
                                 const checkPublisher = (publish.data.email === localStorage.getItem("email")) ? "orange-button-disable" : "";
                                 setDisableBuy(checkPublisher);
@@ -263,12 +270,36 @@ export default function DatasetPage() {
                         </div>
                         <div>
                             <div className="dataset-metadata-container">
-                                <div className="dataset-metadata-price">{dataset.price} FIL <span className="tiny-price">({fiatPrice})</span></div>
-                                <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
+                                {dataset.price > 0 &&
+                                    <div>
+                                        <div className="dataset-metadata-price">{dataset.price} FIL <span
+                                            className="tiny-price">({fiatPrice})</span></div>
+                                        <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
+                                    </div>
+                                }
+                                {dataset.price == 0 &&
+                                    <div className="dataset-metadata-price">FREE 🎁</div>
+                                }
                                 <div className="dataset-metadata-button">
-                                    <button className={"orange-button raise "+disableBuy} onClick={HandleBuyButton}>Buy Now</button>
+                                    {dataset.price > 0 &&
+                                    <button className={"orange-button raise " + disableBuy}
+                                            onClick={HandleBuyButton}>Buy Now</button>
+                                    }
+                                    {dataset.price == 0 &&
+                                    <a href={"/api/v1/download/"+dataset.id} download><button className="orange-button" >Download</button></a>
+                                    }
                                 </div>
-                                <div className="dataset-metadata-warning">The price includes the miner fee.</div>
+
+                                <div className="donate-container">
+                                    <h3>Donate</h3>
+                                    <div className="wd-description">Send FIL to the address below to donate to this dataset creator.</div>
+                                    <div className="qr-code-deposit" >
+                                        <QRCode value={publisherAddress} size="99" imageSettings={qrSettings} />
+                                    </div>
+                                    <div className="center">{publisherAddress}</div>
+                                    <div className="center"><a className="orange-link" onClick={() =>  navigator.clipboard.writeText(publisherAddress)}>copy</a></div>
+                                </div>
+
                             </div>
                         </div>
                     </div>

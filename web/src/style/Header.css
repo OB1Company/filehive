@@ -556,6 +556,31 @@ div.datasets-details:first-child {
     box-shadow: 1px 1px #bbbbbb;
 }
 
+div.free-price {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+div.free-price div {
+    margin: 0 10px 0 0;
+}
+
+div.free-price label {
+    margin:0;
+    cursor: pointer;
+}
+
+.donate-container {
+    font-size: 14px;
+}
+
+.donate-container h3 {
+    font-size:16px;
+}
+.donate-container .qr-code-deposit {
+    padding-top:0px
+}
+
 .modal-container-success .orange-link {
     font-size: 1em;
 }

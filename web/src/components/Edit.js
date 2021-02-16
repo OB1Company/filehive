@@ -89,7 +89,7 @@ export default function Settings() {
       setError("Please specify a full description for your dataset");
       return;
     }
-    if(price <= 0 || isNaN(price)) {
+    if(price < 0 || isNaN(price)) {
       setError("Please provide a valid price for your dataset");
       return;
     }

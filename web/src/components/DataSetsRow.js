@@ -53,8 +53,16 @@ function DataSetsRow(props) {
             </div>
             <div className="datasets-details">
                 <div><button className="normal-button raise" onClick={handleClickDatasetRow}>{buttonText}</button></div>
-                <div className="small-orange-text dataset-row-price">{price} FIL</div>
-                <div className="mini-light-description">{fiatPrice}</div>
+                {price > 0 &&
+                    <div>
+                        <div className="small-orange-text dataset-row-price">{price} FIL</div>
+                        <div className="mini-light-description">{fiatPrice}</div>
+                    </div>
+                }
+                {price == 0 &&
+                <div className="small-orange-text dataset-row-price">FREE 🎁</div>
+                }
+
             </div>
         </div>
     )
