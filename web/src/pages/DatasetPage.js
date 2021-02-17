@@ -31,6 +31,7 @@ export default function DatasetPage() {
     let { id } = useParams();
     const [dataset, setDataset] = useState({});
     const [price, setPrice] = useState("");
+    const [contentID, setContentID] = useState("");
     const [fileType, setFileType] = useState("");
     const [fileSize, setFileSize] = useState("");
     const [username, setUsername] = useState("");
@@ -170,6 +171,7 @@ export default function DatasetPage() {
                 .then((data)=>{
                     const dataset = data.data;
                     setDataset(data.data);
+                    setContentID(data.data.contentID);
                     setDatasetImageUrl(datasetImageUrl+dataset.imageFilename);
 
                     setPrice(Number.parseFloat(dataset.price).toFixed(8).toString().replace(/\.?0+$/,""));
@@ -277,16 +279,17 @@ export default function DatasetPage() {
                                         <div className="dataset-metadata-description">Your payment helps support the dataset creator and Filecoin miners.</div>
                                     </div>
                                 }
-                                {dataset.price == 0 &&
-                                    <div className="dataset-metadata-price">FREE 🎁</div>
-                                }
+
                                 <div className="dataset-metadata-button">
                                     {dataset.price > 0 &&
                                     <button className={"orange-button raise " + disableBuy}
                                             onClick={HandleBuyButton}>Buy Now</button>
                                     }
                                     {dataset.price == 0 &&
-                                    <a href={"/api/v1/download/"+dataset.id} download><button className="orange-button" >Download</button></a>
+                                        <div>
+                                            <a href={"/api/v1/download/"+dataset.id} download><button className="orange-button raise" >Download</button></a>
+                                            <a href={"https://gateway.ipfs.io/ipfs/"+contentID} target="_blank" className="orange-link"><button className="normal-button raise">View on IPFS Gateway</button></a>
+                                        </div>
                                     }
                                 </div>
 
