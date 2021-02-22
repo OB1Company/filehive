@@ -1764,6 +1764,7 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		page int
 		err  error
 	)
+	pageSize := 1000
 	pageStr := r.URL.Query().Get("page")
 	if pageStr != "" {
 		page, err = strconv.Atoi(pageStr)
@@ -1782,7 +1783,7 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		if err := db.Model(&models.Dataset{}).Count(&count).Error; err != nil {
 			return err
 		}
-		return db.Order("created_at desc").Where("delisted = false").Offset(page * 10).Limit(10).Find(&recent).Error
+		return db.Order("created_at desc").Where("delisted = false").Offset(page * pageSize).Limit(pageSize).Find(&recent).Error
 	})
 	if err != nil {
 		http.Error(w, wrapError(err), http.StatusInternalServerError)
@@ -1794,7 +1795,7 @@ func (s *FileHiveServer) handleGETRecent(w http.ResponseWriter, r *http.Request)
 		Page     int              `json:"page"`
 		Datasets []models.Dataset `json:"datasets"`
 	}{
-		Pages:    (int(count) / 10) + 1,
+		Pages:    (int(count) / pageSize) + 1,
 		Page:     page,
 		Datasets: recent,
 	})
