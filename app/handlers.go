@@ -1194,6 +1194,92 @@ func (s *FileHiveServer) handleGETDatasets(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+func (s *FileHiveServer) handlePOSTAdminDelist(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Datasets struct {
+		Datasets []string `json:"datasets"`
+	}
+	var delisted Datasets
+	if err := json.NewDecoder(r.Body).Decode(&delisted); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, datasetId := range delisted.Datasets {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ?", datasetId).Update("delisted", true).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+}
+
+func (s *FileHiveServer) handlePOSTAdminRelist(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	type Datasets struct {
+		Datasets []string `json:"datasets"`
+	}
+	var delisted Datasets
+	if err := json.NewDecoder(r.Body).Decode(&delisted); err != nil {
+		http.Error(w, wrapError(ErrInvalidJSON), http.StatusBadRequest)
+		return
+	}
+
+	for _, datasetId := range delisted.Datasets {
+		err = s.db.Update(func(db *gorm.DB) error {
+			if err := db.Model(&models.Dataset{}).Where("id = ?", datasetId).Update("delisted", false).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+}
+
 func (s *FileHiveServer) handlePOSTDisableUsers(w http.ResponseWriter, r *http.Request) {
 	emailIface := r.Context().Value("email")
 
@@ -1598,6 +1684,53 @@ func (s *FileHiveServer) handlePOSTPurchase(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+func (s *FileHiveServer) handleGETAdminDatasets(w http.ResponseWriter, r *http.Request) {
+	emailIface := r.Context().Value("email")
+
+	email, ok := emailIface.(string)
+	if !ok {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var user models.User
+	err := s.db.View(func(db *gorm.DB) error {
+		return db.Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	if !user.Admin {
+		http.Error(w, wrapError(ErrInvalidCredentials), http.StatusUnauthorized)
+		return
+	}
+
+	var (
+		datasets []models.Dataset
+		count    int64
+	)
+	err = s.db.View(func(db *gorm.DB) error {
+		if err := db.Model(&models.Dataset{}).Count(&count).Error; err != nil {
+			return err
+		}
+		return db.Order("created_at DESC").Find(&datasets).Error
+
+	})
+	if err != nil {
+		http.Error(w, wrapError(err), http.StatusInternalServerError)
+		return
+	}
+
+	sanitizedJSONResponse(w, struct {
+		Users []models.Dataset `json:"datasets"`
+	}{
+		Users: datasets,
+	})
+}
+
 func (s *FileHiveServer) handleGETAdminSales(w http.ResponseWriter, r *http.Request) {
 	emailIface := r.Context().Value("email")
 
@@ -1885,7 +2018,7 @@ func (s *FileHiveServer) handleGETTrending(w http.ResponseWriter, r *http.Reques
 			for _, r := range results {
 				tx.Where("id != ?", r.DatasetID)
 			}
-			if err := tx.Find(&recent).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := tx.Where("delisted = 0").Find(&recent).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 
